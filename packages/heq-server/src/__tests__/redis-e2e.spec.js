@@ -3,6 +3,7 @@ const got = require('got');
 const ports = require('port-authority');
 const redis = require('redis');
 const factory = require('../factory');
+const micro = require('micro');
 
 const clean = async config =>
   new Promise(resolve => {
@@ -12,6 +13,19 @@ const clean = async config =>
       client.quit(resolve);
     });
   });
+
+const createServer = async port => {
+  const service = await factory({
+    http: { port },
+  });
+
+  const server = micro(service);
+  return new Promise(resolve => {
+    server.listen(port, err => {
+      resolve(server);
+    });
+  });
+};
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -50,14 +64,7 @@ const simpleParse = buffer => {
 
 it('should able to subscribe from a past event id with redis adapter', async done => {
   const port = await ports.find(30100);
-  const { start } = await factory({
-    http: { port },
-    queue: {
-      driver: '@heq/server-redis',
-      url: 'redis://localhost:6379/2',
-      ns: '__test__',
-    },
-  });
+  const server = await createServer({ port });
 
   await clean({
     driver: '@heq/server-redis',
@@ -65,7 +72,6 @@ it('should able to subscribe from a past event id with redis adapter', async don
     ns: '__test__',
   });
 
-  const server = await start();
   enableDestroy(server);
 
   for (let i = 0; i < 5; ++i) await commitSomething({ port });

@@ -2,10 +2,24 @@ const enableDestroy = require('server-destroy');
 const got = require('got');
 const http = require('http');
 const ports = require('port-authority');
+const micro = require('micro');
 
 const factory = require('../factory');
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+const createServer = async port => {
+  const service = await factory({
+    http: { port },
+  });
+
+  const server = micro(service);
+  return new Promise(resolve => {
+    server.listen(port, err => {
+      resolve(server);
+    });
+  });
+};
 
 const commitSomething = async ({ port }) => {
   const { body } = await got(`http://localhost:${port}/commit`, {
@@ -43,11 +57,7 @@ const simpleParse = buffer => {
 describe('factory()', () => {
   it('should return start function', async () => {
     const port = await ports.find(30000);
-    const { start } = await factory({
-      http: { port },
-    });
-
-    const server = await start();
+    const server = await createServer(port);
     server.close();
 
     expect(server).toBeInstanceOf(http.Server);
@@ -55,11 +65,7 @@ describe('factory()', () => {
 
   it('should able to commit', async () => {
     const port = await ports.find(30000);
-    const { start } = await factory({
-      http: { port },
-    });
-
-    const server = await start();
+    const server = await createServer(port);
     enableDestroy(server);
 
     const { body } = await got(`http://localhost:${port}/commit`, {
@@ -79,11 +85,7 @@ describe('factory()', () => {
 
   it('should able to query', async () => {
     const port = await ports.find(30000);
-    const { start } = await factory({
-      http: { port },
-    });
-
-    const server = await start();
+    const server = await createServer(port);
     enableDestroy(server);
 
     for (let i = 0; i < 5; ++i) await commitSomething({ port });
@@ -106,11 +108,7 @@ describe('factory()', () => {
 
   it('should able to subscribe', async done => {
     const port = await ports.find(30000);
-    const { start } = await factory({
-      http: { port },
-    });
-
-    const server = await start();
+    const server = await createServer(port);
     enableDestroy(server);
 
     for (let i = 0; i < 5; ++i) await commitSomething({ port });
@@ -147,11 +145,7 @@ describe('factory()', () => {
 
   it('should able to subscribe from a past event id', async done => {
     const port = await ports.find(30000);
-    const { start } = await factory({
-      http: { port },
-    });
-
-    const server = await start();
+    const server = await createServer(port);
     enableDestroy(server);
 
     for (let i = 0; i < 5; ++i) await commitSomething({ port });
@@ -198,21 +192,5 @@ describe('factory()', () => {
       ]);
       done();
     });
-  });
-
-  it('should fallback to documentation page instead of 404', async () => {
-    const port = await ports.find(40000);
-    const { start } = await factory({
-      http: { port },
-    });
-
-    const server = await start();
-    enableDestroy(server);
-
-    const { body } = await got(`http://localhost:${port}/`);
-
-    server.destroy();
-
-    expect(body).toMatchSnapshot('documentation content');
   });
 });
