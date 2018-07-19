@@ -8,5 +8,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Tung Vu <me@tungv.com>",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@heq/server-redis": "^1.0.2",
+    "brighten": "^0.0.1",
+    "heq-server": "^1.1.1",
+    "ip": "^1.1.5",
+    "micro": "^9.3.2",
+    "port-authority": "^1.0.4",
+    "sade": "^1.4.1"
+  }
 }

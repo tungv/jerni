@@ -1,7 +1,7 @@
 # event.js
 
 ```
-> npx event.js start
+> npx heq
 ```
 
 ## Custom configuration
@@ -9,5 +9,5 @@
 you can specify a config file, which is a JavaScript file that exports a configuration object
 
 ```
-> npx event.js start PATH/TO/CONFIG.js
+> npx heq --redis=redis://localhost:6379 --redis-namespace=sample
 ```
