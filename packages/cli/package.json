@@ -5,7 +5,13 @@
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
+    "build": "pkg -t node10 -o dist/heq .",
+    "prebuild": "rimraf -rf dist && mkdir -p dist",
+    "build:run": "dist/heq",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engine": {
+    "node": "^10"
   },
   "author": "Tung Vu <me@tungv.com>",
   "license": "ISC",
@@ -17,5 +23,8 @@
     "micro": "^9.3.2",
     "port-authority": "^1.0.4",
     "sade": "^1.4.1"
+  },
+  "devDependencies": {
+    "pkg": "^4.3.3"
   }
 }
