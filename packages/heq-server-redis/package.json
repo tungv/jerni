@@ -1,0 +1,37 @@
+{
+  "name": "@heq/server-redis",
+  "version": "1.0.2",
+  "description": "Redis Adapter for heq-server",
+  "main": "index.js",
+  "engines": {
+    "node": "^8.9.0 || ^9.0.0 || ^10.0.0"
+  },
+  "scripts": {
+    "test": "jest --forceExit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tungv/events.git"
+  },
+  "keywords": [
+    "heq",
+    "event",
+    "sourcing",
+    "redis",
+    "adapter"
+  ],
+  "author": "Tung Vu <me@tungv.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tungv/events/issues"
+  },
+  "homepage": "https://github.com/tungv/events#readme",
+  "devDependencies": {
+    "jest": "^22.4.3"
+  },
+  "dependencies": {
+    "kefir": "^3.8.3",
+    "redis": "^2.8.0",
+    "run-lua": "^1.0.1"
+  }
+}
