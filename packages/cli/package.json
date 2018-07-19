@@ -1,0 +1,12 @@
+{
+  "name": "heq",
+  "version": "2.0.0-beta.0",
+  "description": "CLI to start an event.js server",
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tung Vu <me@tungv.com>",
+  "license": "ISC"
+}
