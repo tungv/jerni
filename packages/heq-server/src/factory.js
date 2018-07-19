@@ -1,5 +1,3 @@
-const documentationPage = require('./documentationPage');
-
 const { handleErrors } = require('micro-boom');
 const { router, get, post } = require('microrouter');
 const micro = require('micro');
@@ -52,7 +50,7 @@ const factory = async userConfig => {
       return queue.commit(body);
     }),
     get(http.subscribePath, async (req, res) => {
-      const [lastEventId, count = 20, time = 1, retry = 10] = over([
+      const [lastEventId = 0, count = 20, time = 1, retry = 10] = over([
         getLastEventId,
         getBurstCount,
         getBurstTime,
@@ -108,30 +106,10 @@ const factory = async userConfig => {
         console.error(ex);
         res.end();
       }
-    }),
-    documentationPage({ http })
+    })
   );
 
-  const server = micro(handleErrors(service, true));
-
-  const start = (port = http.port) =>
-    new Promise((resolve, reject) => {
-      server.listen(port, err => {
-        if (err) {
-          console.error(
-            'cannot start on port %d. Error: %s',
-            http.port,
-            err.message
-          );
-          reject(err);
-        } else {
-          // console.log('start listening on port %d', http.port);
-          resolve(server);
-        }
-      });
-    });
-
-  return { start };
+  return service;
 };
 
 const parseConfig = ({ queue: queueConfig = {}, http: httpConfig = {} }) => {
