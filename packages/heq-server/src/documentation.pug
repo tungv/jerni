@@ -1,0 +1,29 @@
+title heq-server hint page
+
+body
+  h3 commit
+  ol
+    li
+      code
+        pre curl -XPOST http://#{ipAddress}:#{http.port}#{http.commitPath} \
+    li
+      code
+        pre      -d'{"type": "<event-name>", "payload": {"key": "value"}}' \
+    li
+      code
+        pre      -H"content-type: application/json"
+
+  h3 query from event #101 - now
+  ol
+    li
+      code
+        pre curl http://#{ipAddress}:#{http.port}#{http.queryPath}?lastEventId=100
+
+  h3 subscribe from event #101 - now
+  ol
+    li
+      code
+        pre http://#{ipAddress}:#{http.port}#{http.subscribePath} \
+    li
+      code
+        pre -H"Last-Event-ID: 100"
