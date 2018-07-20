@@ -8,7 +8,9 @@
     "build": "pkg -t node10 -o dist/heq .",
     "prebuild": "rm -rf dist && mkdir -p dist",
     "build:run": "dist/heq",
-    "test": "ava"
+    "test": "ava",
+    "e2e": "BINARY=dist/heq ava",
+    "pree2e": "yarn build"
   },
   "engine": {
     "node": "^10"

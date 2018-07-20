@@ -3,7 +3,10 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const start = async ({ args = [], timeoutMs = 300 } = {}) =>
   new Promise((resolve, reject) => {
-    const heq = spawn('node', ['index', ...args]);
+    const heq = process.env.BINARY
+      ? spawn(process.env.BINARY, args)
+      : spawn('node', ['index', ...args]);
+
     const buffer = [];
 
     const killHeq = async () => {
