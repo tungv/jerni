@@ -2,6 +2,7 @@
 const sade = require('sade');
 
 const program = sade('heq');
+const { version } = require('./package.json');
 
 const {
   HEQ_REDIS_URL = 'redis://localhost:6379',
@@ -9,7 +10,7 @@ const {
   HEQ_PORT = '8080',
 } = process.env;
 
-program.version('2.0.0').option('banner', 'BANNER FTW', false);
+program.version(version).option('banner', 'BANNER FTW', false);
 
 program
   .command(
