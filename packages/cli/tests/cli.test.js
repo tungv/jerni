@@ -33,3 +33,10 @@ test('should report if port cannot be opened', async t => {
 
   t.true(error.message.includes('Error: listen EACCES 0.0.0.0:80'));
 });
+
+test('should pickup env variables HEQ_*', async t => {
+  process.env.HEQ_PORT = '8083';
+  const output = await start();
+
+  t.true(output.includes('8083'), 'must include INFO log');
+});
