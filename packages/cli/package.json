@@ -8,7 +8,7 @@
     "build": "pkg -t node10 -o dist/heq .",
     "prebuild": "rimraf -rf dist && mkdir -p dist",
     "build:run": "dist/heq",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ava"
   },
   "engine": {
     "node": "^10"
@@ -25,6 +25,7 @@
     "sade": "^1.4.1"
   },
   "devDependencies": {
+    "ava": "^0.25.0",
     "pkg": "^4.3.3"
   }
 }
