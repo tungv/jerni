@@ -1,0 +1,8 @@
+{
+  "name": "@heq/client-subscribe",
+  "version": "1.0.0",
+  "description": "Example for using official subscriber to connect heq-server and mongodb",
+  "main": "index.js",
+  "author": "Tung Vu <me@tungv.com>",
+  "license": "MIT"
+}
