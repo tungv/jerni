@@ -4,7 +4,11 @@ const { start } = require('./utils');
 test('should start normally', async t => {
   const output = await start();
 
-  t.true(output.includes('8080'), 'must include INFO log');
+  t.true(output.includes('8080'), 'must include port in INFO log');
+  t.true(
+    output.includes('local - redis://localhost:6379'),
+    'must include redis in INFO log'
+  );
   t.true(output.includes('terminating'), 'must include terminating at the end');
 });
 
