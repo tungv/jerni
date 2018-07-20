@@ -98,6 +98,25 @@ describe('redis adapter', () => {
     ]);
   });
 
+  it('should get latest', async () => {
+    const queueConfig = {
+      driver: '@heq/redis-server',
+      url: 'redis://localhost:6379/2',
+      ns: '__test__',
+    };
+
+    await clean(queueConfig);
+
+    const queue = adapter(queueConfig);
+
+    for (let i = 0; i < 10; ++i) {
+      await queue.commit({ type: 'test', payload: i + 1 });
+    }
+
+    const latest = await queue.getLatest();
+    expect(latest).toEqual({ id: 10, type: 'test', payload: 10 });
+  });
+
   it('should subscribe', async done => {
     const queueConfig = {
       driver: '@heq/redis-server',

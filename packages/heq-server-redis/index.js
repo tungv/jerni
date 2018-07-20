@@ -29,6 +29,11 @@ end
 return newArray
 `;
 
+const lua_latest = `
+  local id = tonumber(redis.call('get', KEYS[1]));
+  return {id, redis.call('hget', KEYS[2], id)};
+`;
+
 const adapter = ({ url, ns = 'local' }) => {
   const redisClient = redis.createClient(url);
   const subClient = redis.createClient(url);
@@ -52,13 +57,16 @@ const adapter = ({ url, ns = 'local' }) => {
     return event;
   };
 
-  const getLatest = () =>
-    new Promise((resolve, reject) => {
-      redisClient.get(
-        `{${ns}}::id`,
-        (err, value) => (err ? reject(err) : resolve(Number(value)))
-      );
+  const getLatest = async () => {
+    const [id, event] = await runLua(redisClient, lua_latest, {
+      keys: [`{${ns}}::id`, `{${ns}}::events`],
     });
+
+    return {
+      ...JSON.parse(event),
+      id,
+    };
+  };
 
   const query = async ({ from = -1, to }) => {
     if (from === -1) {
@@ -103,7 +111,7 @@ const adapter = ({ url, ns = 'local' }) => {
     subClient.quit();
   };
 
-  return { commit, subscribe, query, destroy };
+  return { commit, subscribe, query, destroy, getLatest };
 };
 
 module.exports = adapter;
