@@ -9,7 +9,7 @@ module.exports = async opts => {
     queue: {
       driver: '@heq/server-redis',
       url: opts.redis,
-      ns: opts.redisNamespace,
+      ns: opts['redis-namespace'],
     },
   };
 
@@ -37,6 +37,11 @@ module.exports = async opts => {
 
     console.log(`heq-server started!`);
     console.log(`running locally on port ${PUBLIC_PORT}`);
+    console.log(
+      `using @heq/server-redis implementation (${opts['redis-namespace']} - ${
+        opts.redis
+      })`
+    );
     console.log(
       `public API is listening on http://${ipAddress}:${PUBLIC_PORT}`
     );
