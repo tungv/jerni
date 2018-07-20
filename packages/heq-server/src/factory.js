@@ -94,7 +94,7 @@ const factory = async userConfig => {
           from: lastEventId,
         });
 
-        res.write(toOutput(pastEvents));
+        if (pastEvents.length) res.write(toOutput(pastEvents));
 
         events$
           .filter(e => e.id > pastEvents[pastEvents.length - 1].id)
