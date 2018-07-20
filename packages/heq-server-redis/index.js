@@ -60,7 +60,10 @@ const adapter = ({ url, ns = 'local' }) => {
       );
     });
 
-  const query = async ({ from, to }) => {
+  const query = async ({ from = -1, to }) => {
+    if (from === -1) {
+      return [];
+    }
     try {
       const argv = [String(from)];
 
