@@ -6,7 +6,7 @@
   "bin": "index.js",
   "scripts": {
     "build": "pkg -t node10 -o dist/heq .",
-    "prebuild": "rimraf -rf dist && mkdir -p dist",
+    "prebuild": "rm -rf dist && mkdir -p dist",
     "build:run": "dist/heq",
     "test": "ava"
   },
