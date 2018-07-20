@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="2.0.3"></a>
+## [2.0.3](https://github.com/tungv/heq/compare/heq-server@2.0.2...heq-server@2.0.3) (2018-07-20)
+
+
+### Bug Fixes
+
+* **server:** do nothing when pastEvents = [] ([23eae60](https://github.com/tungv/heq/commit/23eae60))
+
+
+
+
 <a name="2.0.2"></a>
 ## [2.0.2](https://github.com/tungv/heq/compare/heq-server@2.0.1...heq-server@2.0.2) (2018-07-20)
 
