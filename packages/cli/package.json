@@ -15,6 +15,7 @@
   "engine": {
     "node": "^10"
   },
+  "repository": "https://github.com/tungv/heq",
   "author": "Tung Vu <me@tungv.com>",
   "license": "ISC",
   "dependencies": {
