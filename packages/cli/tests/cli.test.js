@@ -40,7 +40,13 @@ test('should report if port cannot be opened', async t => {
 
 test('should pickup env variables HEQ_*', async t => {
   process.env.HEQ_PORT = '8083';
+  process.env.HEQ_REDIS_NAMESPACE = 'test-env';
+  process.env.HEQ_REDIS_URL = 'redis://localhost:6379/1';
   const output = await start();
 
-  t.true(output.includes('8083'), 'must include INFO log');
+  t.true(output.includes('8083'), 'must include port INFO log');
+  t.true(
+    output.includes('test-env - redis://localhost:6379/1'),
+    'must include redis in INFO log'
+  );
 });
