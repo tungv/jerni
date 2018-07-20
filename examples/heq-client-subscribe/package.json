@@ -4,5 +4,9 @@
   "description": "Example for using official subscriber to connect heq-server and mongodb",
   "main": "index.js",
   "author": "Tung Vu <me@tungv.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@events/snapshot-mongo": "^2.4.2",
+    "heq-client": "^1.1.5"
+  }
 }
