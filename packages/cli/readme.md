@@ -9,5 +9,5 @@
 you can specify a config file, which is a JavaScript file that exports a configuration object
 
 ```
-> npx heq --redis=redis://localhost:6379 --redis-namespace=sample
+> npx heq --redis=redis://localhost:6379 --redis-namespace=sample --port=9000
 ```
