@@ -1,0 +1,51 @@
+{
+  "name": "heq-client",
+  "version": "1.1.3",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "heq-client": "./dist/cli.js"
+  },
+  "scripts": {
+    "prepare": "babel src -d dist",
+    "dev": "export MONGODB_URL=\"mongodb://localhost/client_test_1\" && mongo $MONGODB_URL --eval \"db.dropDatabase()\" && node index --config fixtures/config/sample.config.js",
+    "test": "EVENT_STORE_URL=http://localhost:43366 MONGO_TEST=mongodb://localhost/client_test jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@events/subscriber": "^2.2.3",
+    "@events/transform": "^2.2.3",
+    "brighten": "^0.0.1",
+    "chalk": "^2.3.0",
+    "chokidar": "^2.0.0",
+    "date-fns": "^1.29.0",
+    "debounce": "^1.1.0",
+    "execa": "^0.9.0",
+    "filtr": "^0.3.0",
+    "got": "^8.0.3",
+    "micro": "^9.1.0",
+    "pkg-dir": "^2.0.0",
+    "pkg-up": "^2.0.0",
+    "pretty-ms": "^3.1.0",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2",
+    "sade": "^1.3.1"
+  },
+  "devDependencies": {
+    "@events/server": "^2.2.3",
+    "@events/snapshot-mongo": "^2.4.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-jest": "^22.1.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
+    "create-test-server": "^2.1.1",
+    "jest": "^22.1.4",
+    "kefir": "^3.8.1",
+    "mongodb": "^2",
+    "redis": "^2.8.0",
+    "redis-functional": "^2.2.0",
+    "server-destroy": "^1.0.1"
+  }
+}
