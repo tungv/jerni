@@ -98,6 +98,21 @@ describe('redis adapter', () => {
     ]);
   });
 
+  it('should return [] when query if queue is empty', async () => {
+    const queueConfig = {
+      driver: '@heq/redis-server',
+      url: 'redis://localhost:6379/2',
+      ns: '__test__',
+    };
+
+    await clean(queueConfig);
+
+    const queue = adapter(queueConfig);
+
+    const events = await queue.query({ from: 0 });
+    expect(events).toEqual([]);
+  });
+
   it('should get latest', async () => {
     const queueConfig = {
       driver: '@heq/redis-server',
@@ -115,6 +130,36 @@ describe('redis adapter', () => {
 
     const latest = await queue.getLatest();
     expect(latest).toEqual({ id: 10, type: 'test', payload: 10 });
+  });
+
+  it('should return @@INIT if empty', async () => {
+    const queueConfig = {
+      driver: '@heq/redis-server',
+      url: 'redis://localhost:6379/2',
+      ns: '__test__',
+    };
+
+    await clean(queueConfig);
+
+    const queue = adapter(queueConfig);
+
+    const latest = await queue.getLatest();
+    expect(latest).toEqual({ id: 0, type: '@@INIT' });
+  });
+
+  it('should return @@INIT if empty', async () => {
+    const queueConfig = {
+      driver: '@heq/redis-server',
+      url: 'redis://localhost:6379/2',
+      ns: '__test__',
+    };
+
+    await clean(queueConfig);
+
+    const queue = adapter(queueConfig);
+
+    const latest = await queue.getLatest();
+    expect(latest).toEqual({ id: 0, type: '@@INIT' });
   });
 
   it('should subscribe', async done => {

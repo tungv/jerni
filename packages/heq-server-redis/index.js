@@ -13,7 +13,7 @@ const lua_commit = `
 
 const lua_query = `
 if redis.call('exists', KEYS[1]) == 0 then
-  redis.call('set', KEYS[1], 0);
+  return {}
 end
 
 local from = tonumber(ARGV[1]) + 1;
@@ -30,7 +30,11 @@ return newArray
 `;
 
 const lua_latest = `
+  if redis.call('exists', KEYS[1]) == 0 then
+    return {0}
+  end
   local id = tonumber(redis.call('get', KEYS[1]));
+
   return {id, redis.call('hget', KEYS[2], id)};
 `;
 
@@ -61,6 +65,13 @@ const adapter = ({ url, ns = 'local' }) => {
     const [id, event] = await runLua(redisClient, lua_latest, {
       keys: [`{${ns}}::id`, `{${ns}}::events`],
     });
+
+    if (id === 0) {
+      return {
+        id: 0,
+        type: '@@INIT',
+      };
+    }
 
     return {
       ...JSON.parse(event),
