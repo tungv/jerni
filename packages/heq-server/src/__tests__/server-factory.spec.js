@@ -9,9 +9,23 @@ const factory = require('../factory');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 const createServer = async port => {
-  const service = await factory({
+  const config = {
     http: { port },
-  });
+  };
+
+  if (process.env.REDIS_E2E) {
+    const { execSync } = require('child_process');
+
+    execSync('redis-cli -n 2 flush');
+
+    config.queue = {
+      driver: '@heq/server-redis',
+      url: 'redis://localhost:6379/2',
+      ns: '__test__',
+    };
+  }
+
+  const service = await factory();
 
   const server = micro(service);
   return new Promise(resolve => {
@@ -104,6 +118,24 @@ describe('factory()', () => {
       { id: 4, payload: { key: 'value' }, type: 'TEST' },
       { id: 5, payload: { key: 'value' }, type: 'TEST' },
     ]);
+  });
+
+  it('should able to get latest event', async () => {
+    const port = await ports.find(30000);
+    const server = await createServer(port);
+    enableDestroy(server);
+
+    for (let i = 0; i < 5; ++i) await commitSomething({ port });
+
+    const { body } = await got(`http://localhost:${port}/events/latest`, {
+      json: true,
+      query: {
+        lastEventId: 2,
+      },
+    });
+
+    server.destroy();
+    expect(body).toEqual({ id: 5, payload: { key: 'value' }, type: 'TEST' });
   });
 
   it('should able to subscribe', async done => {

@@ -40,6 +40,9 @@ const factory = async userConfig => {
 
       return queue.query({ from: lastEventId });
     }),
+    get(`${http.eventsPath}/latest`, () => {
+      return queue.getLatest();
+    }),
     post(http.commitPath, async req => {
       const body = await micro.json(req);
 
@@ -120,6 +123,7 @@ const parseConfig = ({ queue: queueConfig = {}, http: httpConfig = {} }) => {
     commitPath = '/commit',
     subscribePath = '/subscribe',
     queryPath = '/query',
+    eventsPath = '/events',
     port,
   } = httpConfig;
 
@@ -134,6 +138,7 @@ const parseConfig = ({ queue: queueConfig = {}, http: httpConfig = {} }) => {
       commitPath,
       subscribePath,
       queryPath,
+      eventsPath,
       port,
     },
   };

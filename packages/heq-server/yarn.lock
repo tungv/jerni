@@ -16,9 +16,9 @@
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
-"@heq/server-redis@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-1.0.1.tgz#efe8c3a1942d22bfbd496b6e566340a51f77b433"
+"@heq/server-redis@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-1.0.3.tgz#7e46911d3221a846fce2fd540d2504a975bd2f8d"
   dependencies:
     kefir "^3.8.3"
     redis "^2.8.0"

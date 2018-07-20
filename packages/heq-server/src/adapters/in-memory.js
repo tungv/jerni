@@ -27,7 +27,9 @@ const adapter = () => {
     return { latest, events$ };
   };
 
-  return { commit, subscribe, query };
+  const getLatest = () => events[events.length - 1];
+
+  return { commit, subscribe, query, getLatest };
 };
 
 module.exports = adapter;

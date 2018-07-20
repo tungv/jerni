@@ -5,9 +5,10 @@
   "main": "src/factory.js",
   "scripts": {
     "dev": "node index",
-    "test": "jest --forceExit"
+    "test": "jest --forceExit",
+    "test:e2e": "REDIS_E2E=1 jest --forceExit"
   },
-  "author": "",
+  "author": "Tung Vu <me@tungv.com>",
   "license": "ISC",
   "dependencies": {
     "ip": "^1.1.5",
