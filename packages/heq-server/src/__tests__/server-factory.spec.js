@@ -138,6 +138,22 @@ describe('factory()', () => {
     expect(body).toEqual({ id: 5, payload: { key: 'value' }, type: 'TEST' });
   });
 
+  it('should able to get @@INIT event when empty', async () => {
+    const port = await ports.find(30000);
+    const server = await createServer(port);
+    enableDestroy(server);
+
+    const { body } = await got(`http://localhost:${port}/events/latest`, {
+      json: true,
+      query: {
+        lastEventId: 2,
+      },
+    });
+
+    server.destroy();
+    expect(body).toEqual({ id: 0, type: '@@INIT' });
+  });
+
   it('should able to subscribe', async done => {
     const port = await ports.find(30000);
     const server = await createServer(port);

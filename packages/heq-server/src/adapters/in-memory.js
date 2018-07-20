@@ -27,7 +27,8 @@ const adapter = () => {
     return { latest, events$ };
   };
 
-  const getLatest = () => events[events.length - 1];
+  const getLatest = () =>
+    events.length === 0 ? { id: 0, type: '@@INIT' } : events[events.length - 1];
 
   return { commit, subscribe, query, getLatest };
 };
