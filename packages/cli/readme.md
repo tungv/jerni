@@ -1,4 +1,4 @@
-# event.js
+# heq CLI
 
 ```
 > npx heq
