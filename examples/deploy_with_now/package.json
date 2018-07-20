@@ -1,0 +1,14 @@
+{
+  "name": "@heq/example-deploy-with-now",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "heq": "^2.0.0"
+  },
+  "scripts": {
+    "start": "heq --redis-namespace=\"cloud\""
+  },
+  "now": {
+    "alias": "events.tung.ninja"
+  }
+}
