@@ -1,6 +1,6 @@
 {
   "name": "@heq/server-redis",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Redis Adapter for heq-server",
   "main": "index.js",
   "engines": {
