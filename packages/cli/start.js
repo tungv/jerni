@@ -16,6 +16,16 @@ module.exports = async opts => {
   const service = await factory(config);
   const server = micro(service);
 
+  process.on('SIGTERM', () => {
+    console.log('terminating...');
+    process.exit(0);
+  });
+
+  process.on('SIGINT', () => {
+    console.log('interuptted! Goodbye');
+    process.exit(0);
+  });
+
   server.listen(PUBLIC_PORT, err => {
     if (err) {
       console.error('cannot start server');
