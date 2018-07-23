@@ -4,6 +4,8 @@
 > npx heq
 ```
 
+this command will start a new http server that serves heq-server protocol.
+
 ## Custom configuration
 
 you can specify a config file, which is a JavaScript file that exports a configuration object
