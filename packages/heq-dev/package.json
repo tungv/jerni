@@ -8,5 +8,13 @@
   },
   "author": "Tung Vu <me@tungv.com>",
   "repository": "https://github.com/tungv/heq",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "ava": "^0.25.0"
+  },
+  "dependencies": {
+    "heq-server": "^2.0.4",
+    "micro": "^9.3.2",
+    "sade": "^1.4.1"
+  }
 }
