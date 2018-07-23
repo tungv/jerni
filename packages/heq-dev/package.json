@@ -1,0 +1,12 @@
+{
+  "name": "heq-dev",
+  "version": "1.0.0",
+  "description": "CLI tool for develop clients of `heq-server` instances",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava"
+  },
+  "author": "Tung Vu <me@tungv.com>",
+  "repository": "https://github.com/tungv/heq",
+  "license": "ISC"
+}
