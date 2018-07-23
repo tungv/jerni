@@ -611,7 +611,7 @@ boom@^4.2.0:
   dependencies:
     hoek "4.x.x"
 
-boxen@^1.2.1:
+boxen@^1.2.1, boxen@^1.3.0:
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/boxen/-/boxen-1.3.0.tgz#55c6c39a8ba58d9c61ad22cd877532deb665a20b"
   dependencies:
@@ -637,6 +637,10 @@ braces@^1.8.2:
     expand-range "^1.8.1"
     preserve "^0.2.0"
     repeat-element "^1.1.2"
+
+brighten@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/brighten/-/brighten-0.0.1.tgz#fdf2d462effc8a6e55062cb3959d174895607f65"
 
 buf-compare@^1.0.0:
   version "1.0.1"
