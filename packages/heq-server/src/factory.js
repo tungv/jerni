@@ -97,7 +97,12 @@ const factory = async userConfig => {
         if (pastEvents.length) res.write(toOutput(pastEvents));
 
         events$
-          .filter(e => e.id > pastEvents[pastEvents.length - 1].id)
+          .filter(
+            e =>
+              pastEvents.length
+                ? e.id > pastEvents[pastEvents.length - 1].id
+                : true
+          )
           .bufferWithTimeOrCount(time, count)
           .filter(b => b.length)
           .map(toOutput)
