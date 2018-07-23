@@ -198,9 +198,9 @@ has@^1.0.1:
   dependencies:
     function-bind "^1.1.1"
 
-heq-server@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.0.3.tgz#1beed9d311031eb123222373c4573f86125604c0"
+heq-server@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.0.4.tgz#88c63ed784fbdf651ec37febddd484c4122a0496"
   dependencies:
     ip "^1.1.5"
     kefir "^3.8.3"
@@ -210,13 +210,13 @@ heq-server@^2.0.3:
     mitt "^1.1.3"
     pug "^2.0.3"
 
-heq@^2.0.3:
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/heq/-/heq-2.0.3.tgz#61f76782b20c0ce48223a02a77a6a64a03565cf6"
+heq@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/heq/-/heq-2.0.4.tgz#0641eed1548b96624991a64168d6e87678512b1d"
   dependencies:
     "@heq/server-redis" "^1.0.4"
     brighten "^0.0.1"
-    heq-server "^2.0.3"
+    heq-server "^2.0.4"
     ip "^1.1.5"
     micro "^9.3.2"
     port-authority "^1.0.4"

@@ -19,3 +19,7 @@ running on `mongodb://localhost:27017/heq-example`, `heq-client` will receive un
 `heq-server` and dispatch mongodb operations to the aforementioned database.
 
 # get started
+
+```
+> npx heq-client
+```
