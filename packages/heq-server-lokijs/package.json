@@ -1,0 +1,9 @@
+{
+  "name": "@heq/server-lokijs",
+  "version": "1.0.0",
+  "description": "LokiJS adapter for heq-server",
+  "main": "index.js",
+  "repository": "git+https://github.com/tungv/heq.git",
+  "author": "Tung Vu <me@tungv.com>",
+  "license": "MIT"
+}
