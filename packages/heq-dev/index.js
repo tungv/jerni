@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const sade = require('sade');
 const program = sade('heq-dev');
 
