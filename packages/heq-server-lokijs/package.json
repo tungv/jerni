@@ -3,7 +3,19 @@
   "version": "1.0.0",
   "description": "LokiJS adapter for heq-server",
   "main": "index.js",
+  "scripts": {
+    "test": "ava"
+  },
   "repository": "git+https://github.com/tungv/heq.git",
   "author": "Tung Vu <me@tungv.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "kefir": "^3.8.3",
+    "lokijs": "^1.5.5",
+    "mitt": "^1.1.3"
+  },
+  "devDependencies": {
+    "ava": "^0.25.0",
+    "tempy": "^0.2.1"
+  }
 }
