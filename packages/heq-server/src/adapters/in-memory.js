@@ -22,9 +22,8 @@ const adapter = () => {
   const subscribe = () => {
     // console.log('subscribe', { id });
     const events$ = kefir.fromEvents(emitter, 'data');
-    const latest = id;
 
-    return { latest, events$ };
+    return { events$ };
   };
 
   const getLatest = () =>
