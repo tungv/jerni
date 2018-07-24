@@ -44,6 +44,14 @@
   dependencies:
     arrify "^1.0.1"
 
+"@heq/server-lokijs@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@heq/server-lokijs/-/server-lokijs-1.0.0.tgz#ca01a4c693f58a46d00d3e301b9fb519d903f672"
+  dependencies:
+    kefir "^3.8.3"
+    lokijs "^1.5.5"
+    mitt "^1.1.3"
+
 "@ladjs/time-require@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@ladjs/time-require/-/time-require-0.1.4.tgz#5c615d75fd647ddd5de9cf6922649558856b21a1"
@@ -1758,6 +1766,10 @@ lodash.merge@^4.6.0:
 lodash@^4.17.4:
   version "4.17.10"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
+
+lokijs@^1.5.5:
+  version "1.5.5"
+  resolved "https://registry.yarnpkg.com/lokijs/-/lokijs-1.5.5.tgz#1c21f82af7579037fade7b9e4813485c23708bb6"
 
 longest@^1.0.1:
   version "1.0.1"
