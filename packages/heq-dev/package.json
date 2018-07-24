@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "CLI tool for develop clients of `heq-server` instances",
   "main": "index.js",
+  "bin": "index.js",
   "scripts": {
     "test": "ava"
   },
