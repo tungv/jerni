@@ -1,6 +1,6 @@
 {
   "name": "heq",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "CLI to start an event.js server",
   "main": "index.js",
   "bin": "index.js",
@@ -21,7 +21,7 @@
   "dependencies": {
     "@heq/server-redis": "^1.0.4",
     "brighten": "^0.0.1",
-    "heq-server": "^2.0.4",
+    "heq-server": "^2.0.5",
     "ip": "^1.1.5",
     "micro": "^9.3.2",
     "port-authority": "^1.0.4",
