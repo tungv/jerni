@@ -1,14 +1,9 @@
-const reducer = (state = { events: [] }, action) => {
-  switch (action.type) {
-    case 'SERVER:INCOMING_EVENTS':
-      return {
-        ...state,
-        events: [...action.payload.reverse(), ...state.events],
-      };
+import { combineReducers } from 'redux';
 
-    default:
-      return state;
-  }
-};
+import subscriptionState from '../components/subscription.state';
+
+const reducer = combineReducers({
+  ...subscriptionState,
+});
 
 export default reducer;

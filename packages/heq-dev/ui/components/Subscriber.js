@@ -1,23 +1,36 @@
+import { connect } from 'react-redux';
+import { format } from 'date-fns';
 import React from 'react';
 
+import { eventsReceived } from './subscription.state';
 import tryParse from '../tryParse';
 
-const connect = () => {
-  const events$ = new EventSource('/subscribe');
+const subscribe = ({ from = 0 }, onIncomingEvents) => {
+  const events$ = new EventSource(`/subscribe?lastEventId=${from}`);
 
   events$.addEventListener('INCMSG', e => {
     const incoming = tryParse(e.data);
     if (incoming) {
-      console.log(incoming);
+      onIncomingEvents(incoming);
     }
   });
 
   return events$;
 };
 
+const connectToRedux = connect(
+  state => ({ lastReceivedAt: state.lastReceivedAt }),
+  {
+    onIncomingEvents: eventsReceived,
+  }
+);
+
 class Subscriber extends React.Component {
   componentDidMount() {
-    this.connection = connect();
+    this.connection = subscribe(
+      { from: this.props.latest.id },
+      this.props.onIncomingEvents
+    );
     console.log('connected');
   }
 
@@ -29,8 +42,16 @@ class Subscriber extends React.Component {
   }
 
   render() {
-    return <div>....</div>;
+    const {
+      props: { lastReceivedAt },
+    } = this;
+    return (
+      <div>
+        connected last received at{' '}
+        {format(lastReceivedAt, 'YYYY-MMM-DD hh:mm:ss')}
+      </div>
+    );
   }
 }
 
-export default Subscriber;
+export default connectToRedux(Subscriber);
