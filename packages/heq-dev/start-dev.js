@@ -1,3 +1,5 @@
+const withUI = require('./withUI');
+
 module.exports = async opts => {
   const factory = require('heq-server');
   const ip = require('ip');
@@ -13,7 +15,9 @@ module.exports = async opts => {
   };
 
   const service = await factory(config);
-  const server = micro(service);
+
+  const serviceWithUI = await withUI(service);
+  const server = micro(serviceWithUI);
 
   process.on('SIGTERM', () => {
     console.log('terminating...');
