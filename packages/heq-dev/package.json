@@ -5,6 +5,7 @@
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
+    "dev": "NODE_ENV=heq_development node index",
     "test": "ava"
   },
   "author": "Tung Vu <me@tungv.com>",
