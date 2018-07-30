@@ -3,9 +3,11 @@ import React from 'react';
 import classnames from 'classnames';
 import locale from 'react-json-editor-ajrm/dist/locale/en';
 
-import tryParse from '../tryParse';
+import delayUnmounting from './delayUnmounting';
 
 const EMPTY = {};
+
+const JSONInputAnimated = delayUnmounting(JSONInput);
 
 const dispatch = async (type, payload) => {
   const resp = await fetch('/commit', {
@@ -75,20 +77,20 @@ class Dispatcher extends React.Component {
           </div>
         </header>
 
-        {open && (
-          <div className="detail">
-            <JSONInput
-              id="event-body"
-              placeholder={EMPTY}
-              onChange={({ jsObject }) => {
-                this.setState({ payload: jsObject });
-              }}
-              locale={locale}
-              height={this.props.height}
-              width="100%"
-            />
-          </div>
-        )}
+        <div className="detail">
+          <JSONInputAnimated
+            isMounted={open}
+            delayTime={300}
+            id="event-body"
+            placeholder={EMPTY}
+            onChange={({ jsObject }) => {
+              this.setState({ payload: jsObject });
+            }}
+            locale={locale}
+            height={this.props.height}
+            width="100%"
+          />
+        </div>
 
         <style jsx>{`
           .root {
