@@ -626,9 +626,9 @@
   dependencies:
     arrify "^1.0.1"
 
-"@heq/server-lokijs@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@heq/server-lokijs/-/server-lokijs-1.0.1.tgz#035032c7ce12a7c67e48e14e8cbd5e24f9fb10ed"
+"@heq/server-lokijs@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@heq/server-lokijs/-/server-lokijs-1.1.0.tgz#1c67b40b83e9706bf92efd491f65bb0eec705ba5"
   dependencies:
     kefir "^3.8.3"
     lokijs "^1.5.5"
@@ -2805,9 +2805,9 @@ hash.js@^1.0.0, hash.js@^1.0.3:
     inherits "^2.0.3"
     minimalistic-assert "^1.0.1"
 
-heq-server@^2.0.5:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.0.5.tgz#2695139c650964202985a583ba586e3d9db959f6"
+heq-server@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.1.0.tgz#01e47eef305593a5edaef989701e024397f887b7"
   dependencies:
     ip "^1.1.5"
     kefir "^3.8.3"
