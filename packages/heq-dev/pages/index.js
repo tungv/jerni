@@ -130,7 +130,9 @@ IndexPage.getInitialProps = async ({ req, query: { eventId }, store }) => {
 
   const selected = eventId ? await getEventById(base, eventId) : latest;
 
-  store.dispatch(eventSelected(selected.id));
+  if (selected) {
+    store.dispatch(eventSelected(selected.id));
+  }
 
   return {
     latest,
