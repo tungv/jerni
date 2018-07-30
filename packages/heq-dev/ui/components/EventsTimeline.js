@@ -55,6 +55,7 @@ const connectToRedux = connect(state => ({
 const EventsTimeline = ({ activities }) => (
   <section>
     <h3>Events</h3>
+    {activities.length === 0 && <EmptyQueue />}
     {activities.map(activity => (
       <ActivityBox
         key={activity.from}
@@ -73,6 +74,31 @@ const EventsTimeline = ({ activities }) => (
       }
     `}</style>
   </section>
+);
+
+const EmptyQueue = () => (
+  <div>
+    <span className="line" />
+    <span>this is the beginning of time</span>
+    <span className="line" />
+    <style jsx>{`
+      div {
+        padding: 32px;
+        font-family: 'Roboto Slab';
+        color: rgba(0, 0, 0, 0.54);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .line {
+        flex: 1;
+        height: 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.14);
+        margin: 8px;
+      }
+    `}</style>
+  </div>
 );
 
 export default connectToRedux(EventsTimeline);

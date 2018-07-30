@@ -60,14 +60,14 @@ const Header = ({ children }) => (
 
 const IndexPage = ({ latest }) => (
   <Page title="events timeline | heq devtool">
-    <Subscriber lastSeen={latest.id} />
+    <Subscriber lastSeen={latest ? latest.id : 0} />
     <Header>events timeline</Header>
     <div>
       <section>
         <EventsTimeline />
       </section>
       <section>
-        <EventDetailBox event={latest} />
+        {latest && <EventDetailBox event={latest} />}
         {/* <Dispatcher /> */}
       </section>
     </div>
