@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="2.1.0"></a>
+# [2.1.0](https://github.com/tungv/heq/compare/heq-server@2.0.5...heq-server@2.1.0) (2018-07-30)
+
+
+### Features
+
+* **server:** receive actual queue instead of config only ([914d9f3](https://github.com/tungv/heq/commit/914d9f3))
+
+
+
+
 <a name="2.0.4"></a>
 ## [2.0.4](https://github.com/tungv/heq/compare/heq-server@2.0.3...heq-server@2.0.4) (2018-07-23)
 
