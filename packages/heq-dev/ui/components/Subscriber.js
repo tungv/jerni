@@ -49,12 +49,7 @@ class Subscriber extends React.Component {
     const {
       props: { lastReceivedAt },
     } = this;
-    return (
-      <div>
-        connected last received at{' '}
-        {format(lastReceivedAt, 'YYYY-MMM-DD hh:mm:ss')}
-      </div>
-    );
+    return null;
   }
 }
 

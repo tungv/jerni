@@ -4,6 +4,7 @@ import fetch from 'isomorphic-fetch';
 
 import { eventsReceived } from '../ui/components/subscription.state';
 import Dispatcher from '../ui/components/Dispatcher';
+import EventDetailBox from '../ui/components/EventDetailBox';
 import EventsTimeline from '../ui/components/EventsTimeline';
 import Subscriber from '../ui/components/Subscriber';
 
@@ -59,15 +60,15 @@ const Header = ({ children }) => (
 
 const IndexPage = ({ latest }) => (
   <Page title="events timeline | heq devtool">
+    <Subscriber lastSeen={latest.id} />
     <Header>events timeline</Header>
     <div>
       <section>
         <EventsTimeline />
       </section>
       <section>
-        <pre>{JSON.stringify(latest, null, 2)}</pre>
-        <Subscriber lastSeen={latest.id} />
-        <Dispatcher />
+        <EventDetailBox event={latest} />
+        {/* <Dispatcher /> */}
       </section>
     </div>
 
