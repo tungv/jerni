@@ -7,7 +7,9 @@ import Time from './Time';
 const EventDetailBox = ({ event }) => (
   <section>
     <header>
-      <h3>{event.type}</h3>
+      <h3>
+        {event.type} (id: {event.id})
+      </h3>
       <span className="spacer" />
       <span>
         {event.meta.occurredAt && (
