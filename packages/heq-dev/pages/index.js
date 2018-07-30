@@ -59,7 +59,7 @@ const Header = ({ children }) => (
   </header>
 );
 
-const IndexPage = ({ latest, selected }) => (
+const IndexPage = ({ latest, selected, store }) => (
   <Page title="events timeline | heq devtool">
     <Subscriber lastSeen={latest ? latest.id : 0} />
     <Header>heq devtool</Header>
@@ -67,11 +67,10 @@ const IndexPage = ({ latest, selected }) => (
       <section>
         <EventsTimeline />
       </section>
-      <section>
-        {latest && <EventDetailBox event={selected} />}
-        <Dispatcher />
-      </section>
+      <section>{latest && <EventDetailBox event={selected} />}</section>
     </div>
+
+    <Dispatcher />
 
     <style jsx>{`
       div {
