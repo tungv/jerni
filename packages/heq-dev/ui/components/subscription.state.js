@@ -9,7 +9,7 @@ export const eventsReceived = events => ({
 const events = (state = [], action) => {
   switch (action.type) {
     case 'SERVER:INCOMING_EVENTS':
-      return [...action.payload.events.reverse(), ...state];
+      return [...state, ...action.payload.events];
 
     default:
       return state;

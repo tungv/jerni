@@ -10,7 +10,7 @@ const subscribe = ({ from = 0 }, onIncomingEvents) => {
 
   events$.addEventListener('INCMSG', e => {
     const incoming = tryParse(e.data);
-    if (incoming) {
+    if (incoming && incoming.length) {
       onIncomingEvents(incoming);
     }
   });
@@ -26,12 +26,16 @@ const connectToRedux = connect(
 );
 
 class Subscriber extends React.Component {
+  state = {
+    lastSeen: this.props.lastSeen,
+  };
+
   componentDidMount() {
-    this.connection = subscribe(
-      { from: this.props.latest.id },
-      this.props.onIncomingEvents
-    );
-    console.log('connected');
+    this.connection = subscribe({ from: this.state.lastSeen }, eventsArray => {
+      this.props.onIncomingEvents(eventsArray);
+      this.setState({ lastSeen: eventsArray[eventsArray.length - 1].id });
+    });
+    console.log(`connected from ${this.state.lastSeen}`);
   }
 
   componentWillUnmount() {

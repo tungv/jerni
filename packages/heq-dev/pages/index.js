@@ -1,10 +1,24 @@
+import Head from 'next/head';
 import React from 'react';
 import fetch from 'isomorphic-fetch';
-import Head from 'next/head';
 
 import { eventsReceived } from '../ui/components/subscription.state';
 import Dispatcher from '../ui/components/Dispatcher';
+import EventsTimeline from '../ui/components/EventsTimeline';
 import Subscriber from '../ui/components/Subscriber';
+
+const getJSON = async (endpoint, opts = {}) => {
+  const { headers = {} } = opts;
+  const enhancedHeaders = {
+    ...headers,
+    'content-type': 'application/json',
+  };
+  const resp = await fetch(endpoint, { ...opts, headers: enhancedHeaders });
+
+  const json = await resp.json();
+
+  return json;
+};
 
 const Page = ({ children, title = 'heq devtool' }) => (
   <React.Fragment>
@@ -46,10 +60,29 @@ const Header = ({ children }) => (
 const IndexPage = ({ latest }) => (
   <Page title="events timeline | heq devtool">
     <Header>events timeline</Header>
+    <div>
+      <section>
+        <EventsTimeline />
+      </section>
+      <section>
+        <pre>{JSON.stringify(latest, null, 2)}</pre>
+        <Subscriber lastSeen={latest.id} />
+        <Dispatcher />
+      </section>
+    </div>
 
-    <pre>{JSON.stringify(latest, null, 2)}</pre>
-    <Subscriber latest={latest} />
-    <Dispatcher />
+    <style jsx>{`
+      div {
+        display: flex;
+        flex-direction: row;
+      }
+      section {
+        display: flex;
+        flex-direction: column;
+
+        flex: 1;
+      }
+    `}</style>
   </Page>
 );
 
@@ -57,13 +90,17 @@ IndexPage.getInitialProps = async ({ req, store }) => {
   const base = req ? `http://${req.headers.host}` : '';
   const endpoint = `${base}/events/latest`;
 
-  const resp = await fetch(endpoint, {
-    headers: { 'content-type': 'application/json' },
-  });
-  const latest = await resp.json();
-  store.dispatch(eventsReceived([latest]));
+  const latest = await getJSON(endpoint);
+
+  const { id } = latest;
+
+  const last10 = await getJSON(
+    `${base}/query?lastEventId=${Math.max(0, id - 10)}`
+  );
+
+  store.dispatch(eventsReceived(last10));
   return {
-    latest,
+    latest: last10[last10.length - 1],
   };
 };
 
