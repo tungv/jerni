@@ -25,7 +25,7 @@ const Page = ({ children, title = 'heq devtool' }) => (
     <Head>
       <title>{title}</title>
       <link
-        href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto+Slab"
+        href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto+Slab|Overpass+Mono"
         rel="stylesheet"
       />
     </Head>
@@ -73,8 +73,13 @@ const IndexPage = ({ latest }) => (
 
     <style jsx>{`
       div {
-        display: flex;
-        flex-direction: row;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-column-gap: 16px;
+        width: 1600px;
+        max-width: 100%;
+        min-width: 800px;
+        margin: auto;
       }
       section {
         display: flex;

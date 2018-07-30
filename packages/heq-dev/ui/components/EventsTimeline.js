@@ -2,6 +2,8 @@ import { connect } from 'react-redux';
 import React from 'react';
 import ms from 'ms';
 
+import ActivityBox from './ActivityBox';
+
 const groupActivitiesByTime = events => {
   const groups = events.reduce((activities, evt) => {
     const occurredAt = evt.meta.occurredAt;
@@ -18,10 +20,10 @@ const groupActivitiesByTime = events => {
 
     const lastActivity = activities[0];
 
-    const fiveMinutes = ms('1m');
+    const activityGap = ms('1m');
 
     // should go to same group
-    if (lastActivity.to + fiveMinutes > occurredAt) {
+    if (lastActivity.to + activityGap > occurredAt) {
       return [
         {
           events: [evt, ...lastActivity.events],
@@ -51,26 +53,26 @@ const connectToRedux = connect(state => ({
 }));
 
 const EventsTimeline = ({ activities }) => (
-  <div>
-    <h3>events</h3>
+  <section>
+    <h3>Events</h3>
     {activities.map(activity => (
-      <div className="activity" key={activity.from}>
-        {activity.events.map(evt => (
-          <div className="event" key={evt.id}>
-            <code>{evt.id}</code>
-            <code>{evt.type}</code>
-          </div>
-        ))}
-      </div>
+      <ActivityBox
+        key={activity.from}
+        from={activity.from}
+        to={activity.to}
+        events={activity.events}
+      />
     ))}
-
     <style jsx>{`
-      .activity {
-        margin: 12px;
-        background: cyan;
+      section {
+        padding: 8px;
+      }
+      h3 {
+        margin: 8px;
+        font-family: 'Open Sans';
       }
     `}</style>
-  </div>
+  </section>
 );
 
 export default connectToRedux(EventsTimeline);
