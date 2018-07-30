@@ -120,10 +120,18 @@ const factory = async userConfig => {
   return service;
 };
 
-const parseConfig = ({ queue: queueConfig = {}, http: httpConfig = {} }) => {
-  const adapterPkgName = queueConfig.driver || './adapters/in-memory';
-  const adapter = require(adapterPkgName);
+const getQueue = queueConfigOrActualQueue => {
+  if (typeof queueConfigOrActualQueue.subscribe === 'function') {
+    return queueConfigOrActualQueue;
+  }
 
+  const adapterPkgName =
+    queueConfigOrActualQueue.driver || './adapters/in-memory';
+  const adapter = require(adapterPkgName);
+  return adapter(queueConfigOrActualQueue);
+};
+
+const parseConfig = ({ queue: queueConfig = {}, http: httpConfig = {} }) => {
   const {
     commitPath = '/commit',
     subscribePath = '/subscribe',
@@ -138,7 +146,7 @@ const parseConfig = ({ queue: queueConfig = {}, http: httpConfig = {} }) => {
   }
 
   return {
-    queue: adapter(queueConfig),
+    queue: getQueue(queueConfig),
     http: {
       commitPath,
       subscribePath,
