@@ -7,14 +7,13 @@ module.exports = async opts => {
 
   const { port: PUBLIC_PORT } = opts;
 
-  const config = {
-    queue: {
-      driver: '@heq/server-lokijs',
-      ns: opts.namespace,
-    },
-  };
+  const adapter = require('@heq/server-lokijs');
 
-  const service = await factory(config);
+  const queue = await adapter({
+    ns: opts.namespace,
+  });
+
+  const service = await factory({ queue });
 
   const serviceWithUI = await withUI(service);
   const server = micro(serviceWithUI);
