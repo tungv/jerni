@@ -1,6 +1,5 @@
 const next = require('next');
 const { parse } = require('url');
-const { router, get } = require('microrouter');
 
 module.exports = async function(service) {
   const dev = process.env.NODE_ENV === 'heq_development';
@@ -16,7 +15,7 @@ module.exports = async function(service) {
 
     const { pathname } = parsedUrl;
 
-    if (pathname.match(/^\/(query|subscribe|commit|events)/)) {
+    if (pathname.match(/^\/(query|subscribe|commit|events|dev)/)) {
       return service(req, res);
     }
 

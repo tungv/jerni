@@ -54,7 +54,7 @@ const connectToRedux = connect(state => ({
 
 const EventsTimeline = ({ activities }) => (
   <section>
-    <h3>Events</h3>
+    <h3>Events timeline</h3>
     {activities.length === 0 && <EmptyQueue />}
     {activities.map(activity => (
       <ActivityBox
@@ -71,6 +71,8 @@ const EventsTimeline = ({ activities }) => (
       h3 {
         margin: 8px;
         font-family: 'Open Sans';
+        text-align: center;
+        text-transform: uppercase;
       }
     `}</style>
   </section>

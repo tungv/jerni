@@ -19,14 +19,38 @@ const delokize = obj => {
   return event;
 };
 
+const defer = () => {
+  let resolve, reject;
+  const promise = new Promise((_res, _rej) => {
+    resolve = _res;
+    reject = _rej;
+  });
+
+  return { promise, resolve, reject };
+};
+
 const adapter = ({ ns = 'local' }) => {
   const emitter = mitt();
-  const db = new Loki('heq-events.json');
-  const events = db.addCollection('events');
+  const { promise: events, resolve: done } = defer();
   let latest = null;
 
+  const db = new Loki('heq-events.db', {
+    autosave: true,
+    autoload: true,
+    autosaveInterval: 4000,
+    autoloadCallback: () => {
+      let coll = db.getCollection(ns);
+
+      if (coll == null) {
+        coll = db.addCollection(ns);
+      }
+
+      done(coll);
+    },
+  });
+
   const commit = async event => {
-    latest = events.insert({ ...event, meta: { ...event.meta } });
+    latest = (await events).insert({ ...event, meta: { ...event.meta } });
     emitter.emit('data', latest);
     event.id = latest.$loki;
 
@@ -43,10 +67,12 @@ const adapter = ({ ns = 'local' }) => {
     }
 
     if (to) {
-      return events.find({ $loki: { $between: [from + 1, to] } }).map(delokize);
+      return (await events)
+        .find({ $loki: { $between: [from + 1, to] } })
+        .map(delokize);
     }
 
-    return events.find({ $loki: { $gt: from } }).map(delokize);
+    return (await events).find({ $loki: { $gt: from } }).map(delokize);
   };
 
   const subscribe = () => ({

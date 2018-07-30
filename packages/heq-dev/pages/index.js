@@ -2,6 +2,7 @@ import Head from 'next/head';
 import React from 'react';
 import fetch from 'isomorphic-fetch';
 
+import { eventSelected } from '../ui/components/timeline.state';
 import { eventsReceived } from '../ui/components/subscription.state';
 import Dispatcher from '../ui/components/Dispatcher';
 import EventDetailBox from '../ui/components/EventDetailBox';
@@ -58,17 +59,17 @@ const Header = ({ children }) => (
   </header>
 );
 
-const IndexPage = ({ latest }) => (
+const IndexPage = ({ latest, selected }) => (
   <Page title="events timeline | heq devtool">
     <Subscriber lastSeen={latest ? latest.id : 0} />
-    <Header>events timeline</Header>
+    <Header>heq devtool</Header>
     <div>
       <section>
         <EventsTimeline />
       </section>
       <section>
-        {latest && <EventDetailBox event={latest} />}
-        {/* <Dispatcher /> */}
+        {latest && <EventDetailBox event={selected} />}
+        <Dispatcher />
       </section>
     </div>
 
@@ -92,21 +93,48 @@ const IndexPage = ({ latest }) => (
   </Page>
 );
 
-IndexPage.getInitialProps = async ({ req, store }) => {
-  const base = req ? `http://${req.headers.host}` : '';
+const getLatestEvents = async (base, max) => {
   const endpoint = `${base}/events/latest`;
-
   const latest = await getJSON(endpoint);
-
   const { id } = latest;
 
-  const last10 = await getJSON(
-    `${base}/query?lastEventId=${Math.max(0, id - 10)}`
+  const lastN = await getJSON(
+    `${base}/query?lastEventId=${Math.max(0, id - max)}`
   );
 
-  store.dispatch(eventsReceived(last10));
+  return lastN;
+};
+
+const getEventById = async (base, id) => {
+  const endpoint = `${base}/dev/events/${id}`;
+  try {
+    const event = await getJSON(endpoint);
+    return event;
+  } catch (ex) {
+    return null;
+  }
+};
+
+IndexPage.getInitialProps = async ({ req, query: { eventId }, store }) => {
+  const base = req ? `http://${req.headers.host}` : '';
+  let latest = null;
+  const loadedEvents = store.getState().events;
+
+  if (loadedEvents.length === 0) {
+    const last10 = await getLatestEvents(base, 10);
+    latest = last10[last10.length - 1];
+    store.dispatch(eventsReceived(last10));
+  } else {
+    latest = loadedEvents[loadedEvents.length - 1];
+  }
+
+  const selected = eventId ? await getEventById(base, eventId) : latest;
+
+  store.dispatch(eventSelected(selected.id));
+
   return {
-    latest: last10[last10.length - 1],
+    latest,
+    selected,
   };
 };
 
