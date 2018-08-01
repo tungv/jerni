@@ -3,6 +3,8 @@ import { transparentize } from 'polished';
 import React from 'react';
 import ms from 'ms';
 
+import PrimaryButton from './PrimaryButton';
+import SecondaryButton from './SecondaryButton';
 import Time from './Time';
 
 const EventDetailBox = ({ event }) => (
@@ -35,10 +37,16 @@ const EventDetailBox = ({ event }) => (
     </header>
     <pre>{JSON.stringify(event.payload, null, 2)}</pre>
 
+    <footer>
+      <PrimaryButton>clone</PrimaryButton>
+      <SecondaryButton>Jump</SecondaryButton>
+    </footer>
+
     <style jsx>{`
       section {
         display: flex;
         flex-direction: column;
+        padding: 8px;
       }
       header {
         display: flex;
@@ -65,10 +73,16 @@ const EventDetailBox = ({ event }) => (
         font-family: 'Overpass Mono', monospace;
         font-size: 18px;
         padding: 16px;
-        background: ${transparentize(1 / 7, '#0091ea')};
-        color: white;
+        background: ${transparentize(1 / 7, '#dcedc8')};
         border-radius: 16px;
-        box-shadow: 0px 6px 48px 1px rgba(0, 0, 0, 0.29);
+      }
+
+      footer {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        margin-top: -8px;
       }
     `}</style>
   </section>
