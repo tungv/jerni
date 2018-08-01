@@ -5,25 +5,17 @@ import locale from 'react-json-editor-ajrm/dist/locale/en';
 
 import delayUnmounting from './delayUnmounting';
 
-const EMPTY = {};
+const EMPTY = { type: 'TEST', payload: {} };
 
 const JSONInputAnimated = delayUnmounting(JSONInput);
 
-const dispatch = async (type, payload) => {
+const dispatch = async body => {
   const resp = await fetch('/commit', {
     method: 'POST',
     headers: {
       'content-type': 'application/json',
     },
-    body: JSON.stringify({
-      type,
-      payload,
-      meta: {
-        occurredAt: Date.now(),
-        client: 'heq-dev',
-        clientVersion: 'alpha',
-      },
-    }),
+    body: JSON.stringify(body),
   });
 
   const json = await resp.json();
@@ -35,11 +27,22 @@ class Dispatcher extends React.Component {
   state = { eventType: 'TEST', open: false, payload: EMPTY, submitting: false };
 
   submit = async () => {
-    const { eventType, payload } = this.state;
+    const { payload } = this.state;
 
     if (payload) {
+      const body = {
+        type: payload.type,
+        payload: payload.payload,
+        meta: {
+          occurredAt: Date.now(),
+          client: 'heq-dev',
+          clientVersion: 'alpha',
+          ...(payload.meta || {}),
+        },
+      };
+
       this.setState({ submitting: true });
-      await dispatch(eventType, payload);
+      await dispatch(body);
       this.setState({ submitting: false });
     }
   };
@@ -67,12 +70,12 @@ class Dispatcher extends React.Component {
               })}
               onClick={() => {
                 this.submit();
-                this.setState({ open: false });
+                // this.setState({ open: false });
               }}
             >
               Commit
             </span>
-            <span onClick={() => this.setState({ open: false })}>Reset</span>
+            {/* <span onClick={() => this.setState({ open: false })}>Reset</span> */}
             <span onClick={() => this.setState({ open: false })}>Close</span>
           </div>
         </header>
@@ -87,8 +90,13 @@ class Dispatcher extends React.Component {
               this.setState({ payload: jsObject });
             }}
             locale={locale}
-            height={this.props.height}
             width="100%"
+            style={{
+              body: {
+                fontSize: '16px',
+                fontFamily: "'Overpass Mono', monospace",
+              },
+            }}
           />
         </div>
 
@@ -118,7 +126,7 @@ class Dispatcher extends React.Component {
             flex-direction: row;
             align-items: center;
             justify-content: center;
-            transition: all 300ms 150ms ease-in-out;
+            transition: all 300ms 250ms ease-in-out;
             text-transform: uppercase;
           }
 
@@ -146,10 +154,10 @@ class Dispatcher extends React.Component {
           }
 
           .root.open {
-            width: calc(100% - 240px);
-            height: 250px;
-            bottom: 72px;
-            box-shadow: 0 5px 50px 5px rgba(0, 0, 0, 0.29);
+            width: calc(50% - 120px);
+            height: 550px;
+            bottom: 36px;
+            box-shadow: 0 5px 48px 5px rgba(0, 0, 0, 0.29);
           }
 
           .open .closed-header {
