@@ -1,4 +1,5 @@
 import { distanceInWordsToNow } from 'date-fns';
+import { transparentize } from 'polished';
 import React from 'react';
 import ms from 'ms';
 
@@ -10,7 +11,6 @@ const EventDetailBox = ({ event }) => (
       <h3>
         {event.type} (id: {event.id})
       </h3>
-      <span className="spacer" />
       <span>
         {event.meta.occurredAt && (
           <Time refresh={ms('10s')}>
@@ -42,7 +42,7 @@ const EventDetailBox = ({ event }) => (
       }
       header {
         display: flex;
-        flex-direction: row;
+        flex-direction: column;
         font-family: 'Overpass Mono', monospace;
         align-items: center;
         color: rgba(0, 0, 0, 0.86);
@@ -65,9 +65,10 @@ const EventDetailBox = ({ event }) => (
         font-family: 'Overpass Mono', monospace;
         font-size: 18px;
         padding: 16px;
-        background: rgba(0, 0, 0, 0.14);
+        background: ${transparentize(1 / 7, '#0091ea')};
+        color: white;
         border-radius: 16px;
-        box-shadow: 0px 3px 10px 1px rgba(0, 0, 0, 0.29);
+        box-shadow: 0px 6px 48px 1px rgba(0, 0, 0, 0.29);
       }
     `}</style>
   </section>
