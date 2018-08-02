@@ -1,6 +1,6 @@
 # heq-dev
 
-This package enables more convenient development experience when developing `heq-server`'s clients by providing a web UI.
+This package enables more convenient development experience when developing `heq-server`'s clients by providing a web UI listening on the same port.
 
 ![web UI screenshot](./UI.png)
 
