@@ -1,8 +1,10 @@
+import { connect } from 'react-redux';
 import JSONInput from 'react-json-editor-ajrm';
 import React from 'react';
 import classnames from 'classnames';
 import locale from 'react-json-editor-ajrm/dist/locale/en';
 
+import { closeDispatcher, startCompose } from './dispatcher.state';
 import delayUnmounting from './delayUnmounting';
 
 const EMPTY = { type: 'TEST', payload: {} };
@@ -23,8 +25,23 @@ const dispatch = async body => {
   return json.id;
 };
 
+const connectToRedux = connect(
+  state => {
+    const { id, ...initialEvent } = state.dispatcherInitialEvent;
+    return {
+      open: state.isDispatcherOpen,
+      initialEvent,
+      cloningId: id,
+    };
+  },
+  {
+    onRequestClose: closeDispatcher,
+    onRequestOpen: startCompose,
+  }
+);
+
 class Dispatcher extends React.Component {
-  state = { eventType: 'TEST', open: false, payload: EMPTY, submitting: false };
+  state = { payload: this.props.initialEvent, submitting: false };
 
   submit = async () => {
     const { payload } = this.state;
@@ -47,21 +64,22 @@ class Dispatcher extends React.Component {
     }
   };
 
-  handleTextAreaChange = e => {
-    const value = e.currentTarget.value;
-    this.setState({ payloadAsString: value });
-  };
+  componentDidUpdate(prevProps) {
+    if (prevProps.cloningId !== this.props.cloningId) {
+      this.setState({ payload: this.props.initialEvent });
+    }
+  }
 
   render() {
     const {
-      state: { open },
+      props: { open },
     } = this;
 
     return (
       <div className={classnames({ open }, 'root')}>
         <header>
           <div className="closed-header">
-            <span onClick={() => this.setState({ open: true })}>Compose</span>
+            <span onClick={this.props.onRequestOpen}>Compose</span>
           </div>
           <div className="open-header">
             <span
@@ -70,13 +88,11 @@ class Dispatcher extends React.Component {
               })}
               onClick={() => {
                 this.submit();
-                // this.setState({ open: false });
               }}
             >
               Commit
             </span>
-            {/* <span onClick={() => this.setState({ open: false })}>Reset</span> */}
-            <span onClick={() => this.setState({ open: false })}>Close</span>
+            <span onClick={this.props.onRequestClose}>Close</span>
           </div>
         </header>
 
@@ -85,7 +101,7 @@ class Dispatcher extends React.Component {
             isMounted={open}
             delayTime={300}
             id="event-body"
-            placeholder={EMPTY}
+            placeholder={this.props.initialEvent}
             onChange={({ jsObject }) => {
               this.setState({ payload: jsObject });
             }}
@@ -171,19 +187,7 @@ class Dispatcher extends React.Component {
         `}</style>
       </div>
     );
-
-    return (
-      <div>
-        <button disabled={!this.state.payload || this.state.submitting}>
-          {this.state.submitting ? 'sending...' : 'dispatch'}
-        </button>
-        <style jsx>{`
-          display: flex;
-          flex-direction: row;
-        `}</style>
-      </div>
-    );
   }
 }
 
-export default Dispatcher;
+export default connectToRedux(Dispatcher);

@@ -1,13 +1,24 @@
+import { connect } from 'react-redux';
 import { distanceInWordsToNow } from 'date-fns';
 import { transparentize } from 'polished';
 import React from 'react';
 import ms from 'ms';
 
+import { cloneEvent } from './dispatcher.state';
 import PrimaryButton from './PrimaryButton';
 import SecondaryButton from './SecondaryButton';
 import Time from './Time';
 
-const EventDetailBox = ({ event }) => (
+const connectToRedux = connect(
+  null,
+  (dispatch, props) => ({
+    clone: () => {
+      dispatch(cloneEvent(props.event));
+    },
+  })
+);
+
+const EventDetailBox = ({ event, clone }) => (
   <section>
     <header>
       <h3>
@@ -38,7 +49,7 @@ const EventDetailBox = ({ event }) => (
     <pre>{JSON.stringify(event.payload, null, 2)}</pre>
 
     <footer>
-      <PrimaryButton>clone</PrimaryButton>
+      <PrimaryButton onClick={clone}>Copy</PrimaryButton>
       <SecondaryButton>Jump</SecondaryButton>
     </footer>
 
@@ -88,4 +99,4 @@ const EventDetailBox = ({ event }) => (
   </section>
 );
 
-export default EventDetailBox;
+export default connectToRedux(EventDetailBox);
