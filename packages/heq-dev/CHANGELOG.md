@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.2.0"></a>
+# [1.2.0](https://github.com/tungv/heq/compare/heq-dev@1.1.0...heq-dev@1.2.0) (2018-08-02)
+
+
+### Bug Fixes
+
+* **devtool:** animation on unmounting JSON editor ([4464d95](https://github.com/tungv/heq/commit/4464d95))
+* **devtool:** bug when composing empty event ([e709972](https://github.com/tungv/heq/commit/e709972))
+* **devtool:** only select event when necessary ([927b0e6](https://github.com/tungv/heq/commit/927b0e6))
+
+
+### Features
+
+* **devtool:** add ID to event detail box ([5855946](https://github.com/tungv/heq/commit/5855946))
+* **devtool:** apply button style ([bb74d84](https://github.com/tungv/heq/commit/bb74d84))
+* **devtool:** commit event ([cec8855](https://github.com/tungv/heq/commit/cec8855))
+* **devtool:** committer ([79c802b](https://github.com/tungv/heq/commit/79c802b))
+* **devtool:** copy events ([61a088e](https://github.com/tungv/heq/commit/61a088e))
+* **devtool:** implement buttons ([2f0c6b8](https://github.com/tungv/heq/commit/2f0c6b8))
+
+
+
+
 <a name="1.1.0"></a>
 # [1.1.0](https://github.com/tungv/heq/compare/heq-dev@1.0.2...heq-dev@1.1.0) (2018-07-30)
 
