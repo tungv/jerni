@@ -2,9 +2,7 @@ const SAMPLE_EVENT = { type: 'TEST', payload: {} };
 
 export const startCompose = () => ({
   type: 'DISPATCHER:COMPOSING_STARTED',
-  payload: {
-    body: SAMPLE_EVENT,
-  },
+  payload: SAMPLE_EVENT,
 });
 
 export const closeDispatcher = () => ({
