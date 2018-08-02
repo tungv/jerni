@@ -1,0 +1,9 @@
+{
+  "name": "heq-client-dev",
+  "version": "0.0.0",
+  "description": "development tool for heq-client",
+  "main": "index.js",
+  "repository": "https://github.com/tungv/heq",
+  "author": "Tung Vu <me@tungv.com>",
+  "license": "MIT"
+}
