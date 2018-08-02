@@ -2,7 +2,7 @@
 
 This package enables more convenient development experience when developing `heq-server`'s clients by providing a web UI listening on the same port.
 
-![web UI screenshot](./UI.png)
+![web UI screenshot](https://raw.githubusercontent.com/tungv/heq/master/packages/heq-dev//UI.png)
 
 ## One command that does it all
 
@@ -17,4 +17,4 @@ This package enables more convenient development experience when developing `heq
 ✅ interact with and manipulate events with ease.\
 ✅ TIME TRAVELING! [WIP]
 
-![web screencast](./ui-screencast.gif)
+![web screencast](https://raw.githubusercontent.com/tungv/heq/master/packages/heq-dev//ui-screencast.gif)
