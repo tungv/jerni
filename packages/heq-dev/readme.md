@@ -10,16 +10,11 @@ This package enables more convenient development experience when developing `heq
 > npx heq-dev
 ```
 
-✅ use local filesystem as persistence layer (no need to install redis)
-
-✅ search through timeline for all past events [WIP]
-
-✅ compose new event with embedded JSON editor
-
-✅ duplicate past events with modification
-
-✅ interact with and manipulate events with ease.
-
+✅ use local filesystem as persistence layer (no need to install redis)\
+✅ search through timeline for all past events [WIP]\
+✅ compose new event with embedded JSON editor\
+✅ duplicate past events with modification\
+✅ interact with and manipulate events with ease.\
 ✅ TIME TRAVELING! [WIP]
 
 ![web screencast](./ui-screencast.gif)
