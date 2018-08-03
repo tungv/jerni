@@ -2,7 +2,7 @@ const mitt = require('mitt');
 class ReadModel {
   subscribe(fn) {}
 
-  getInstance() {
+  getReadOnlyInstance() {
     return null;
   }
 }
@@ -18,7 +18,7 @@ class DummyModel extends ReadModel {
     });
   }
 
-  getInstance() {
+  getReadOnlyInstance() {
     return this.name;
   }
 
