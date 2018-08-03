@@ -49,3 +49,36 @@ test('store should be able to commit event', async t => {
 
   server.close();
 });
+
+test('store should return specific driver instance', async t => {
+  const model1 = {
+    getInstance() {
+      return 'internal_1';
+    },
+  };
+  const model2 = {
+    getInstance() {
+      return 'internal_2';
+    },
+  };
+  const model3 = {
+    getInstance() {
+      return 'internal_3';
+    },
+  };
+  const model4 = {
+    getInstance() {
+      return 'internal_4';
+    },
+  };
+
+  const store = initStore({
+    writeTo: 'http://localhost:8080',
+    readFrom: [model1, model2, model3, model4],
+  });
+
+  t.is(store.read(model1), 'internal_1');
+  t.is(store.read(model2), 'internal_2');
+  t.is(store.read(model3), 'internal_3');
+  t.is(store.read(model4), 'internal_4');
+});

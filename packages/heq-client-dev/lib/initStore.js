@@ -3,7 +3,9 @@ const readPkgUp = require('read-pkg-up');
 const { pkg: packageJSON } = readPkgUp.sync();
 
 module.exports = function initStore({ writeTo, readForm }) {
-  const read = model => {};
+  const read = model => {
+    return model.getInstance();
+  };
 
   const commit = async event => {
     const finalEvent = {
