@@ -5,5 +5,15 @@
   "main": "index.js",
   "repository": "https://github.com/tungv/heq",
   "author": "Tung Vu <me@tungv.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@heq/server-lokijs": "^1.1.0",
+    "ava": "^0.25.0",
+    "heq-server": "^2.1.0",
+    "micro": "^9.3.2"
+  },
+  "dependencies": {
+    "got": "^8.3.2",
+    "read-pkg-up": "^4.0.0"
+  }
 }
