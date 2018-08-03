@@ -1,35 +1,10 @@
 const got = require('got');
 const readPkgUp = require('read-pkg-up');
+
+const makeDefer = require('./makeDefer');
+const partition = require('./partition');
+
 const { pkg: packageJSON } = readPkgUp.sync();
-
-const makeDefer = () => {
-  let resolve, reject;
-  const promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
-  });
-
-  return {
-    promise,
-    resolve,
-    reject,
-  };
-};
-
-const partition = (array, condition) => {
-  const left = [];
-  const right = [];
-
-  for (const item of array) {
-    if (condition(item)) {
-      left.push(item);
-    } else {
-      right.push(item);
-    }
-  }
-
-  return [left, right];
-};
 
 module.exports = function initStore({ writeTo, readFrom }) {
   const latestIds = readFrom.map(() => 0);
