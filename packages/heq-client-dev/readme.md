@@ -2,16 +2,19 @@
 
 ```js
 // store.js
-const { initStore } = require('heq-client');
+const { initStore, connect } = require('heq-client');
+const { Connection } = require('@heq/client-mongodb');
+const people = require('./models/people');
 
-const mongoDBConfig = {
+const mongoSource = new Connection({
   url: 'mongodb://localhost:27017',
   dbName: 'examples',
-};
+  models: [people],
+});
 
 const store = initStore({
   writeTo: 'https://events.tung.ninja',
-  readFrom: [people.connect(mongoDBConfig)],
+  readFrom: [mongoSource],
 });
 
 module.exports = store;

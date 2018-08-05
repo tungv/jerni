@@ -1,17 +1,20 @@
 const mitt = require('mitt');
 const test = require('ava');
 
+const {
+  Model: DummyModel,
+  Connection: DummyConnection,
+} = require('./DummyConnection');
 const { version, name } = require('../package.json');
 const initStore = require('../lib/initStore');
 const makeServer = require('./makeServer');
-const DummyModel = require('./DummyModel');
 
 test('initStore to return a store', t => {
-  const dumpConnectedModel = new DummyModel();
+  const dummyConnection = new DummyConnection({});
 
   const store = initStore({
     writeTo: 'http://localhost:8080',
-    readFrom: [dumpConnectedModel],
+    readFrom: [dummyConnection],
   });
 
   t.true(typeof store.read === 'function');
@@ -25,11 +28,14 @@ test('store should be able to commit event', async t => {
     port: 18080,
   });
 
-  const dumpConnectedModel = new DummyModel();
+  const dummyConnection = new DummyConnection({
+    name: 'conn_0',
+    models: [],
+  });
 
   const store = initStore({
     writeTo: 'http://localhost:18080',
-    readFrom: [dumpConnectedModel],
+    readFrom: [dummyConnection],
   });
 
   const now = Date.now();
@@ -52,31 +58,49 @@ test('store should be able to commit event', async t => {
 });
 
 test('store should return specific driver instance', async t => {
-  const model1 = new DummyModel('internal_1');
-  const model2 = new DummyModel('internal_2');
-  const model3 = new DummyModel('internal_3');
-  const model4 = new DummyModel('internal_4');
+  const model1 = new DummyModel({ name: 'internal_1' });
+  const model2 = new DummyModel({ name: 'internal_2' });
+  const model3 = new DummyModel({ name: 'internal_3' });
+  const model4 = new DummyModel({ name: 'internal_4' });
+  const conn = new DummyConnection({
+    name: 'conn_1',
+    models: [model1, model2, model3, model4],
+  });
 
   const store = initStore({
     writeTo: 'http://localhost:8080',
-    readFrom: [model1, model2, model3, model4],
+    readFrom: [conn],
   });
 
-  t.is(store.read(model1), 'internal_1');
-  t.is(store.read(model2), 'internal_2');
-  t.is(store.read(model3), 'internal_3');
-  t.is(store.read(model4), 'internal_4');
+  t.is(store.read(model1), 'internal_1@conn_1');
+  t.is(store.read(model2), 'internal_2@conn_1');
+  t.is(store.read(model3), 'internal_3@conn_1');
+  t.is(store.read(model4), 'internal_4@conn_1');
 });
 
 test('store should waitFor all models', async t => {
   const emitter1 = mitt();
   const emitter2 = mitt();
-  const model1 = new DummyModel('internal_1', emitter1);
-  const model2 = new DummyModel('internal_2', emitter2);
+
+  const model1 = new DummyModel({ name: 'internal_1' });
+  const model2 = new DummyModel({ name: 'internal_2' });
+  const model3 = new DummyModel({ name: 'internal_3' });
+  const model4 = new DummyModel({ name: 'internal_4' });
+
+  const conn1 = new DummyConnection({
+    name: 'conn_1',
+    models: [model1, model2],
+    emitter: emitter1,
+  });
+  const conn2 = new DummyConnection({
+    name: 'conn_2',
+    models: [model3, model4],
+    emitter: emitter2,
+  });
 
   const store = initStore({
     writeTo: 'http://localhost:8080',
-    readFrom: [model1, model2],
+    readFrom: [conn1, conn2],
   });
 
   const startWaiting = Date.now();

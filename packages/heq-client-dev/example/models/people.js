@@ -1,7 +1,7 @@
 const mapEvents = require('heq-client/mapEvents');
-const { MongoDBReadModel } = require('@heq/client-mongodb');
+const { Model } = require('@heq/client-mongodb');
 
-module.exports = new MongoDBReadModel({
+module.exports = new Model({
   name: 'people',
   version: '1.0.0',
   transform: mapEvents({
