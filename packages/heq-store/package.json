@@ -1,7 +1,7 @@
 {
-  "name": "heq-client-dev",
+  "name": "heq-store",
   "version": "0.0.0",
-  "description": "development tool for heq-client",
+  "description": "client lib for heq-server",
   "main": "index.js",
   "repository": "https://github.com/tungv/heq",
   "author": "Tung Vu <me@tungv.com>",

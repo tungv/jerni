@@ -1,5 +1,5 @@
-const mapEvents = require('heq-client/mapEvents');
-const { Model } = require('@heq/client-mongodb');
+const mapEvents = require('heq-store/mapEvents');
+const { Model } = require('@heq/store-mongodb');
 
 module.exports = new Model({
   name: 'people',

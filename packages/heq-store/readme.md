@@ -2,8 +2,8 @@
 
 ```js
 // store.js
-const { initStore, connect } = require('heq-client');
-const { Connection } = require('@heq/client-mongodb');
+const { initStore, connect } = require('heq-store');
+const { Connection } = require('@heq/store-mongo');
 const people = require('./models/people');
 
 const mongoSource = new Connection({
@@ -43,8 +43,8 @@ app.post('/api/births', req => {
 ```json
 {
   "scripts": {
-    "subscribe:dev": "heq-client ./store.js --watch=./models",
-    "subscribe": "NODE_ENV=production heq-client"
+    "subscribe:dev": "heq-store ./store.js --watch=./models",
+    "subscribe": "NODE_ENV=production heq-store"
   }
 }
 ```
