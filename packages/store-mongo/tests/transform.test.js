@@ -113,6 +113,27 @@ test('transform: insertMany', t => {
   ]);
 });
 
+test('transform: insertOne', t => {
+  const ops = transform(
+    event => [
+      {
+        insertOne: { id: 1, name: 'doc_1' },
+      },
+    ],
+    { id: 2, type: 'test' }
+  );
+
+  t.deepEqual(ops, [
+    {
+      updateOne: {
+        filter: { $or: [{ __v: { $gt: 2 } }, { __v: 2, __op: { $gt: 0 } }] },
+        update: { $setOnInsert: { id: 1, name: 'doc_1', __v: 2, __op: 0 } },
+        upsert: true,
+      },
+    },
+  ]);
+});
+
 const sampleChildrenBornEventHandler = event => {
   if (event.type === 'CHILDREN_BORN') {
     const {
