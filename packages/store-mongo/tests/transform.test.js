@@ -134,6 +134,76 @@ test('transform: insertOne', t => {
   ]);
 });
 
+test('transform: updateMany', t => {
+  const ops = transform(
+    event => [
+      {
+        updateMany: {
+          where: { x: 1 },
+          changes: {
+            $set: { x: 2 },
+            $inc: { y: 1 },
+          },
+        },
+      },
+    ],
+    { id: 2, type: 'test' }
+  );
+
+  t.deepEqual(ops, [
+    {
+      updateMany: {
+        filter: {
+          $and: [
+            { x: 1 },
+            { $or: [{ __v: { $lt: 2 } }, { __v: 2, __op: { $lt: 0 } }] },
+          ],
+        },
+        update: {
+          $set: { x: 2, __v: 2, __op: 0 },
+          $inc: { y: 1 },
+        },
+        upsert: false,
+      },
+    },
+  ]);
+});
+
+test('transform: updateOne', t => {
+  const ops = transform(
+    event => [
+      {
+        updateOne: {
+          where: { x: 1 },
+          changes: {
+            $set: { x: 2 },
+            $inc: { y: 1 },
+          },
+        },
+      },
+    ],
+    { id: 2, type: 'test' }
+  );
+
+  t.deepEqual(ops, [
+    {
+      updateOne: {
+        filter: {
+          $and: [
+            { x: 1 },
+            { $or: [{ __v: { $lt: 2 } }, { __v: 2, __op: { $lt: 0 } }] },
+          ],
+        },
+        update: {
+          $set: { x: 2, __v: 2, __op: 0 },
+          $inc: { y: 1 },
+        },
+        upsert: false,
+      },
+    },
+  ]);
+});
+
 const sampleChildrenBornEventHandler = event => {
   if (event.type === 'CHILDREN_BORN') {
     const {
