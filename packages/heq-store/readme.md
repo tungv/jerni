@@ -2,7 +2,7 @@
 
 ```js
 // store.js
-const { initStore, connect } = require('heq-store');
+const { initStore } = require('heq-store');
 const { Connection } = require('@heq/store-mongo');
 const people = require('./models/people');
 
