@@ -3,35 +3,75 @@ const test = require('ava');
 
 const transform = require('../lib/transform');
 
+const childrenBorn = () => ({
+  id: 10,
+  type: 'CHILDREN_BORN',
+  payload: {
+    children: [
+      {
+        id: '11',
+        name: 'child_1',
+      },
+      {
+        id: '12',
+        name: 'child_2',
+      },
+      {
+        id: '13',
+        name: 'child_3',
+      },
+    ],
+    parents: ['1', '2'],
+  },
+  meta: {
+    occurred_at: 1533632235302,
+  },
+});
+
 test('transform', t => {
-  const event = {
-    id: 10,
-    type: 'CHILDREN_BORN',
-    payload: {
-      children: [
-        {
-          id: '11',
-          name: 'child_1',
-        },
-        {
-          id: '12',
-          name: 'child_2',
-        },
-        {
-          id: '13',
-          name: 'child_3',
-        },
-      ],
-      parents: ['1', '2'],
-    },
-    meta: {
-      occurred_at: 1533632235302,
-    },
-  };
-
-  const ops = transform(sampleChildrenBornEventHandler, event);
-
+  const ops = transform(sampleChildrenBornEventHandler, childrenBorn());
   t.snapshot(ops);
+});
+
+test('transform: updateMany', t => {
+  const ops = transform(
+    event => [
+      {
+        updateMany: {
+          where: { x: 2 },
+          changes: {
+            $set: { x: 1 },
+            $inc: { y: 1 },
+          },
+        },
+      },
+    ],
+    { id: 2, type: 'test' }
+  );
+
+  t.deepEqual(ops, [
+    {
+      updateMany: {
+        filter: {
+          $and: [
+            { x: 2 },
+            {
+              $or: [{ __v: { $lt: 2 } }, { __v: 2, __op: { $lt: 0 } }],
+            },
+          ],
+        },
+        update: {
+          $set: {
+            __v: 2,
+            __op: 0,
+            x: 1,
+          },
+          $inc: { y: 1 },
+        },
+        upsert: false,
+      },
+    },
+  ]);
 });
 
 const sampleChildrenBornEventHandler = event => {
@@ -65,45 +105,3 @@ const sampleChildrenBornEventHandler = event => {
 
   return [];
 };
-
-const Model = require('../lib/MongoDBReadModel');
-const Connection = require('../lib/MongoDBConnection');
-
-const makeStream = array => kefir.sequentially(10, array);
-
-test.cb('transform', t => {
-  const incomingBatchedEvents = [
-    [{ id: 1 }, { id: 2 }],
-    [{ id: 3 }, { id: 4 }],
-    [{ id: 5 }, { id: 6 }],
-  ];
-  const stream = makeStream(incomingBatchedEvents);
-
-  const model1 = new Model({
-    name: 'collection_1',
-    version: 'abc',
-    transform: event => [{ insertOne: { x: 1 } }],
-  });
-
-  const model2 = new Model({
-    name: 'collection_2',
-    version: '1.2.3',
-    transform: event => [{ insertOne: { x: 2 } }],
-  });
-
-  const conn = new Connection({
-    url: 'mongodb://localhost:27017',
-    dbName: 'test_transform',
-    models: [model1, model2],
-  });
-
-  conn.subscribe(id => {
-    if (id === 6) {
-      t.end();
-    }
-  });
-
-  conn.clean().then(() => {
-    conn.receive(stream);
-  });
-});

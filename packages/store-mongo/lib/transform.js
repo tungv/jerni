@@ -1,4 +1,5 @@
 const applyInsertMany = require('./optimistic/insertMany');
+const applyUpdateMany = require('./optimistic/updateMany');
 
 const transform = (transformFn, event) => {
   const rawOps = transformFn(event);
@@ -21,6 +22,9 @@ const transform = (transformFn, event) => {
 const applyOptimisticLocking = (op, eventId, opId) => {
   if (op.insertMany) {
     return applyInsertMany(op, eventId, opId);
+  }
+  if (op.updateMany) {
+    return applyUpdateMany(op, eventId, opId);
   }
 
   return { ops: [], nextOpId: opId };
