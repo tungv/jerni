@@ -61,16 +61,32 @@ module.exports = class MongoDBConnection extends Connection {
   }
 
   async actuallyConnect() {
-    const {
-      connectionInfo: { url, dbName },
-    } = this;
-    const client = await MongoClient.connect(
-      url,
-      { useNewUrlParser: true }
-    );
-    const db = client.db(dbName);
+    try {
+      const {
+        connectionInfo: { url, dbName },
+      } = this;
+      const client = await MongoClient.connect(
+        url,
+        { useNewUrlParser: true }
+      );
+      const db = client.db(dbName);
+      const hb = MongoHeartbeat(db, {
+        interval: 5 * 60 * 1000,
+        timeout: 30000,
+        tolerance: 3,
+      });
 
-    return { client, db };
+      hb.on('error', err => {
+        console.error('mongodb didnt respond the heartbeat message');
+        process.nextTick(function() {
+          process.exit(1);
+        });
+      });
+      return { client, db };
+    } catch (ex) {
+      console.error(ex);
+      process.exit(1);
+    }
   }
 
   async getDriver(model) {
