@@ -3,9 +3,10 @@ const kefir = require('kefir');
 const PLazy = require('p-lazy');
 const MongoClient = require('mongodb').MongoClient;
 const makeDefer = require('./makeDefer');
-const SNAPSHOT_COLLECTION_NAME = '__snapshots_v1.0.0';
 const { watchWithoutReplicaSet } = require('./watch');
 const transform = require('./transform');
+
+const SNAPSHOT_COLLECTION_NAME = '__snapshots_v1.0.0';
 
 module.exports = class MongoDBConnection extends Connection {
   constructor({ name, url, dbName, models }) {

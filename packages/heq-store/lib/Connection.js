@@ -1,3 +1,5 @@
+const kefir = require('kefir');
+
 class Connection {
   constructor({ models = [] } = {}) {
     this.models = models;
@@ -29,6 +31,10 @@ class Connection {
 
     // unsubscribe fn
     return () => {};
+  }
+
+  async receive(inputKefirStream) {
+    return kefir.never();
   }
 }
 

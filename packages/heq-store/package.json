@@ -16,5 +16,8 @@
   "dependencies": {
     "got": "^8.3.2",
     "read-pkg-up": "^4.0.0"
+  },
+  "scripts": {
+    "test": "ava"
   }
 }
