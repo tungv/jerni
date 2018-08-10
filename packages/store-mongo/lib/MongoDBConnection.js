@@ -106,7 +106,9 @@ module.exports = class MongoDBConnection extends Connection {
           return {
             event: event.id,
             model: model.collectionName,
-            added: modelOpsResult.upsertedCount,
+            added: modelOpsResult.nUpserted,
+            modified: modelOpsResult.nModified,
+            removed: modelOpsResult.nRemoved,
           };
         });
 
@@ -115,9 +117,6 @@ module.exports = class MongoDBConnection extends Connection {
 
     return kefirStreamOfBatchedEvents
       .flatten()
-      .flatMapConcat(event => kefir.fromPromise(transformEvent(event)))
-      .observe(resp => {
-        console.log(require('util').inspect(resp, { depth: null }));
-      });
+      .flatMapConcat(event => kefir.fromPromise(transformEvent(event)));
   }
 };

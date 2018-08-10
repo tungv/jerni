@@ -52,8 +52,8 @@ test.cb('subscribe', t => {
     .then(coll => coll.countDocuments({}))
     .then(count => {
       t.is(count, 0);
-      conn.receive(stream).then(sub => {
-        subscription = sub;
+      conn.receive(stream).then(outputStream => {
+        subscription = outputStream.observe();
       });
     });
 });
