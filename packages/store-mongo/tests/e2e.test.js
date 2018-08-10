@@ -93,7 +93,7 @@ test.cb('e2e', t => {
       const coll = await conn.getDriver(model);
 
       const items = await coll.find({}).toArray();
-      console.log(items.map(({ _id, ...item }) => item));
+
       t.deepEqual(items.map(({ _id, ...item }) => item), [
         {
           __op: 3,
