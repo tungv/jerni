@@ -17,13 +17,13 @@ test.cb('subscribe', t => {
   const model1 = new Model({
     name: 'collection_1',
     version: 'abc',
-    transform: event => [{ insertOne: { x: 1 } }],
+    transform: event => [{ insertOne: event }],
   });
 
   const model2 = new Model({
     name: 'collection_2',
     version: '1.2.3',
-    transform: event => [{ insertOne: { x: 2 } }],
+    transform: event => [{ insertOne: { x: 1 } }],
   });
 
   const conn = new Connection({
@@ -32,13 +32,28 @@ test.cb('subscribe', t => {
     models: [model1, model2],
   });
 
-  conn.subscribe(id => {
+  let subscription;
+
+  conn.subscribe(async id => {
     if (id === 6) {
+      const coll = await conn.getDriver(model1);
+
+      const items = await coll.find({}).toArray();
+      t.is(items.length, 6);
+      t.deepEqual(items.map(item => item.id), [1, 2, 3, 4, 5, 6]);
+      subscription.unsubscribe();
       t.end();
     }
   });
 
-  conn.clean().then(() => {
-    conn.receive(stream);
-  });
+  conn
+    .clean()
+    .then(() => conn.getDriver(model1))
+    .then(coll => coll.countDocuments({}))
+    .then(count => {
+      t.is(count, 0);
+      conn.receive(stream).then(sub => {
+        subscription = sub;
+      });
+    });
 });

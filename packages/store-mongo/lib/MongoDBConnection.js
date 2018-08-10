@@ -1,9 +1,11 @@
 const Connection = require('heq-store/lib/Connection');
-
+const kefir = require('kefir');
+const PLazy = require('p-lazy');
 const MongoClient = require('mongodb').MongoClient;
 const makeDefer = require('./makeDefer');
 const SNAPSHOT_COLLECTION_NAME = '__snapshots_v1.0.0';
 const { watchWithoutReplicaSet } = require('./watch');
+const transform = require('./transform');
 
 module.exports = class MongoDBConnection extends Connection {
   constructor({ name, url, dbName, models }) {
@@ -39,7 +41,7 @@ module.exports = class MongoDBConnection extends Connection {
     const { db } = this.connection;
     const promises = this.models.map(m => {
       const col = db.collection(m.collectionName);
-      return col.remove({});
+      return col.deleteMany({});
     });
 
     await Promise.all(promises);
@@ -58,10 +60,8 @@ module.exports = class MongoDBConnection extends Connection {
     return { client, db };
   }
 
-  getDriver(model) {
-    if (!this.connection) {
-      throw new Error(`connection has not been made`);
-    }
+  async getDriver(model) {
+    await this.connected.promise;
 
     return this.connection.db.collection(model.collectionName);
   }
@@ -81,24 +81,43 @@ module.exports = class MongoDBConnection extends Connection {
     const conn = this.connection;
 
     const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
-    return kefirStreamOfBatchedEvents.flatten().observe(async event => {
-      // observe
-      const allPromises = this.models.map(model => {
-        return snapshotsCol.findOneAndUpdate(
-          {
-            name: model.name,
-            version: model.version,
-          },
-          {
-            $set: { __v: event.id },
-          },
-          {
-            upsert: true,
-          }
-        );
+
+    const transformEvent = event =>
+      new PLazy(resolve => {
+        const allPromises = this.models.map(async model => {
+          const ops = transform(model.transform, event);
+
+          const coll = conn.db.collection(model.collectionName);
+          const modelOpsResult = await coll.bulkWrite(ops);
+
+          await snapshotsCol.findOneAndUpdate(
+            {
+              name: model.name,
+              version: model.version,
+            },
+            {
+              $set: { __v: event.id },
+            },
+            {
+              upsert: true,
+            }
+          );
+
+          return {
+            event: event.id,
+            model: model.collectionName,
+            added: modelOpsResult.upsertedCount,
+          };
+        });
+
+        return Promise.all(allPromises).then(resolve);
       });
 
-      const resp = await Promise.all(allPromises);
-    });
+    return kefirStreamOfBatchedEvents
+      .flatten()
+      .flatMapConcat(event => kefir.fromPromise(transformEvent(event)))
+      .observe(resp => {
+        console.log(require('util').inspect(resp, { depth: null }));
+      });
   }
 };
