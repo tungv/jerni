@@ -4,7 +4,7 @@ const test = require('ava');
 const Model = require('../lib/MongoDBReadModel');
 const Connection = require('../lib/MongoDBConnection');
 
-const makeStream = array => kefir.sequentially(10, array);
+const makeStream = array => kefir.sequentially(1, array);
 
 test.cb('e2e', t => {
   const incomingBatchedEvents = [
@@ -129,7 +129,7 @@ test.cb('e2e', t => {
     .then(count => {
       t.is(count, 0);
       conn.receive(stream).then(outputStream => {
-        subscription = outputStream.observe();
+        subscription = outputStream.observe(ops => console.log(ops));
       });
     });
 });

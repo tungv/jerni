@@ -8,10 +8,22 @@ const transform = require('./transform');
 
 const SNAPSHOT_COLLECTION_NAME = '__snapshots_v1.0.0';
 
+const flatten = arrayDeep => [].concat(...arrayDeep);
+
 module.exports = class MongoDBConnection extends Connection {
-  constructor({ name, url, dbName, models }) {
+  constructor({
+    name,
+    url,
+    dbName,
+    models,
+    buffer = {
+      time: 2,
+      count: 100,
+    },
+  }) {
     super({ name });
     this.models = models;
+    this.buffer = buffer;
     this.listeners = [];
     this.connectionInfo = {
       url,
@@ -83,10 +95,12 @@ module.exports = class MongoDBConnection extends Connection {
 
     const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
 
-    const transformEvent = event =>
+    const transformEvent = events =>
       new PLazy(resolve => {
         const allPromises = this.models.map(async model => {
-          const ops = transform(model.transform, event);
+          const ops = flatten(
+            events.map(event => transform(model.transform, event))
+          );
 
           const coll = conn.db.collection(model.collectionName);
           const modelOpsResult = await coll.bulkWrite(ops);
@@ -97,7 +111,7 @@ module.exports = class MongoDBConnection extends Connection {
               version: model.version,
             },
             {
-              $set: { __v: event.id },
+              $set: { __v: events[events.length - 1].id },
             },
             {
               upsert: true,
@@ -105,7 +119,7 @@ module.exports = class MongoDBConnection extends Connection {
           );
 
           return {
-            event: event.id,
+            events,
             model: model.collectionName,
             added: modelOpsResult.nUpserted,
             modified: modelOpsResult.nModified,
@@ -118,6 +132,8 @@ module.exports = class MongoDBConnection extends Connection {
 
     return kefirStreamOfBatchedEvents
       .flatten()
-      .flatMapConcat(event => kefir.fromPromise(transformEvent(event)));
+      .bufferWithTimeOrCount(this.buffer.time, this.buffer.count)
+      .filter(buf => buf.length)
+      .flatMapConcat(events => kefir.fromPromise(transformEvent(events)));
   }
 };
