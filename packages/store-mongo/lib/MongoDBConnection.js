@@ -6,12 +6,20 @@ const kefir = require('kefir');
 
 const MongoClient = require('mongodb').MongoClient;
 const makeDefer = require('./makeDefer');
-const { watchWithoutReplicaSet } = require('./watch');
+const watch = require('./watch');
 const transform = require('./transform');
 
 const SNAPSHOT_COLLECTION_NAME = '__snapshots_v1.0.0';
 
 const flatten = arrayDeep => [].concat(...arrayDeep);
+
+const connect = async url => {
+  const client = await MongoClient.connect(
+    url,
+    { useNewUrlParser: true }
+  );
+  return client;
+};
 
 module.exports = class MongoDBConnection extends Connection {
   constructor({
@@ -43,7 +51,7 @@ module.exports = class MongoDBConnection extends Connection {
       // get change stream from __snapshots collection
       const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
 
-      const change$ = watchWithoutReplicaSet(snapshotsCol, this.models);
+      const change$ = watch(conn.client, snapshotsCol, this.models);
 
       change$.observe(id => {
         this.lastReceivedEventId = id;
@@ -65,19 +73,21 @@ module.exports = class MongoDBConnection extends Connection {
       return col.deleteMany({});
     });
 
+    const condition = {
+      $or: this.models.map(m => ({ name: m.name, version: m.version })),
+    };
+
+    promises.push(
+      db.collection(SNAPSHOT_COLLECTION_NAME).deleteMany(condition)
+    );
+
     await Promise.all(promises);
   }
 
   async actuallyConnect() {
     try {
-      const {
-        connectionInfo: { url, dbName },
-      } = this;
-      const client = await MongoClient.connect(
-        url,
-        { useNewUrlParser: true }
-      );
-      const db = client.db(dbName);
+      const client = await connect(this.connectionInfo.url);
+      const db = client.db(this.connectionInfo.dbName);
       const hb = MongoHeartbeat(db, {
         interval: 5 * 60 * 1000,
         timeout: 30000,
