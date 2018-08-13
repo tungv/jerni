@@ -5,6 +5,7 @@ const Model = require('../lib/MongoDBReadModel');
 const Connection = require('../lib/MongoDBConnection');
 
 const makeStream = array => kefir.sequentially(10, array);
+const { MONGODB = 'mongodb://localhost:27017' } = process.env;
 
 test.cb('subscribe', t => {
   const incomingBatchedEvents = [
@@ -27,7 +28,7 @@ test.cb('subscribe', t => {
   });
 
   const conn = new Connection({
-    url: 'mongodb://localhost:27017',
+    url: MONGODB,
     dbName: 'test_transform',
     models: [model1, model2],
   });

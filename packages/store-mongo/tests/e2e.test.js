@@ -4,6 +4,8 @@ const test = require('ava');
 const Model = require('../lib/MongoDBReadModel');
 const Connection = require('../lib/MongoDBConnection');
 
+const { MONGODB = 'mongodb://localhost:27017' } = process.env;
+
 const makeStream = array => kefir.sequentially(1, array);
 
 test.cb('e2e', t => {
@@ -81,7 +83,7 @@ test.cb('e2e', t => {
   });
 
   const conn = new Connection({
-    url: 'mongodb://localhost:27017',
+    url: MONGODB,
     dbName: 'test_e2e',
     models: [model],
   });
