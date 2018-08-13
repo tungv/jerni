@@ -129,7 +129,7 @@ test.cb('e2e', t => {
     .then(count => {
       t.is(count, 0);
       conn.receive(stream).then(outputStream => {
-        subscription = outputStream.observe(ops => console.log(ops));
+        subscription = outputStream.observe();
       });
     });
 });
