@@ -1,6 +1,9 @@
+const MongoHeartbeat = require('mongo-heartbeat');
+
 const Connection = require('heq-store/lib/Connection');
-const kefir = require('kefir');
 const PLazy = require('p-lazy');
+const kefir = require('kefir');
+
 const MongoClient = require('mongodb').MongoClient;
 const makeDefer = require('./makeDefer');
 const { watchWithoutReplicaSet } = require('./watch');
@@ -43,9 +46,14 @@ module.exports = class MongoDBConnection extends Connection {
       const change$ = watchWithoutReplicaSet(snapshotsCol, this.models);
 
       change$.observe(id => {
+        this.lastReceivedEventId = id;
         this.listeners.forEach(fn => fn(id));
       });
     });
+  }
+
+  get latestEventId() {
+    return this.lastReceivedEventId;
   }
 
   async clean() {
