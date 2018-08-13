@@ -5,7 +5,7 @@ class Connection {
     this.models = models;
   }
 
-  getDriver() {
+  async getDriver() {
     return null;
   }
 
