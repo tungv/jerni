@@ -1,4 +1,5 @@
 const kefir = require('kefir');
+const MongoOplog = require('@tungv/mongo-oplog');
 
 const watchWithoutReplicaSet = (colleciton, models) => {
   const condition = {
@@ -30,4 +31,83 @@ const watchWithoutReplicaSet = (colleciton, models) => {
   });
 };
 
+const watchWithChangeStream = (client, namespace, models) => {
+  const oplog = MongoOplog(client.db('local'), { ns: namespace });
+
+  const condition = {
+    $or: models.map(m => ({ name: m.name, version: m.version })),
+  };
+
+  let version = 0;
+
+  return kefir.stream(async emitter => {
+    oplog.on('error', error => {
+      emitter.error(error);
+    });
+
+    await oplog.tail();
+    oplog.on('update', doc => {
+      if (doc.o.$set.__v) {
+        emitter.emit(doc.o.$set.__v);
+      }
+    });
+
+    return () => {
+      oplog.stop();
+    };
+  });
+};
+
 exports.watchWithoutReplicaSet = watchWithoutReplicaSet;
+exports.watchWithChangeStream = watchWithChangeStream;
+
+const once = fn => {
+  let run = false;
+  return (...args) => {
+    if (!run) {
+      run = true;
+      fn(...args);
+    }
+  };
+};
+
+const logRealtime = once(() => console.log('receive signal in realtime'));
+const logInterval = once(() => console.log('receive signal by polling'));
+
+module.exports = (client, snapshotCol, models) => {
+  return kefir.stream(emitter => {
+    // try realtime op logs first
+
+    const streamRealtime = watchWithChangeStream(
+      client,
+      snapshotCol.namespace,
+      models
+    );
+
+    let subscription = null;
+
+    subscription = streamRealtime.observe(
+      id => {
+        logRealtime();
+        emitter.emit(id);
+      },
+      error => {
+        subscription.unsubscribe();
+
+        const streamInterval = watchWithoutReplicaSet(snapshotCol, models);
+        subscription = streamInterval.observe(
+          id => {
+            logInterval();
+            emitter.emit(id);
+          },
+          intervalError => {
+            emitter.error(intervalError);
+            emitter.end();
+          }
+        );
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  });
+};

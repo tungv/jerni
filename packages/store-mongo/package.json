@@ -6,6 +6,7 @@
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
   "dependencies": {
+    "@tungv/mongo-oplog": "3.0.0",
     "heq-store": "^0.0.1",
     "kefir": "^3.8.3",
     "mongo-heartbeat": "^1.1.0",
