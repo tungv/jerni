@@ -3,7 +3,10 @@ const subscribe = require('../lib/subscribe');
 const initStore = require('../lib/initStore');
 const test = require('ava');
 const makeServer = require('./makeServer');
-const { Connection: DummyConnection } = require('./DummyConnection');
+const {
+  Model: DummyModel,
+  Connection: DummyConnection,
+} = require('./DummyConnection');
 
 test('should subscribe', async t => {
   brighten();
@@ -121,6 +124,77 @@ test('should subscribe with filter', async t => {
     16,
     18,
     20,
+  ]);
+});
+
+test('await store.subscribe()', async t => {
+  brighten();
+  const { queue, server } = await makeServer({
+    ns: 'test_subscribe',
+    port: 19092,
+  });
+
+  const model1 = new DummyModel({ name: 'internal_1' });
+  const model2 = new DummyModel({ name: 'internal_2' });
+
+  const dummyConnection = new DummyConnection({
+    name: 'conn_0',
+    models: [model1, model2],
+  });
+
+  const store = initStore({
+    writeTo: 'http://localhost:19092',
+    readFrom: [dummyConnection],
+  });
+
+  for (let i = 0; i < 10; ++i) {
+    await store.commit({
+      type: 'TEST',
+      payload: { key: 'value' },
+      meta: { some: 'meta' },
+    });
+  }
+
+  await sleep(100);
+
+  const stream = await store.subscribe();
+
+  const outputs = [];
+
+  stream.observe(output => {
+    outputs.push(output);
+  });
+
+  for (let i = 0; i < 10; ++i) {
+    await store.commit({
+      type: 'TEST',
+      payload: { key: 'value' },
+      meta: { some: 'meta' },
+    });
+  }
+  server.close();
+
+  await sleep(100);
+
+  // 4 outputs
+  // 1. first patch (10 events) id:4 and id:8 will match
+  // 2. id:12
+  // 3. id:16
+  // 4. id:20
+
+  t.true(outputs.length === 4);
+  t.deepEqual(outputs.map(out => out.source), [
+    dummyConnection,
+    dummyConnection,
+    dummyConnection,
+    dummyConnection,
+  ]);
+
+  t.deepEqual(outputs.map(out => out.output.events.map(event => event.id)), [
+    [4, 8],
+    [12],
+    [16],
+    [20],
   ]);
 });
 
