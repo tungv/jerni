@@ -6,7 +6,8 @@
   "bin": "index.js",
   "scripts": {
     "dev": "NODE_ENV=heq_development node index",
-    "test": "ava"
+    "test": "ava",
+    "prepare": "next build"
   },
   "author": "Tung Vu <me@tungv.com>",
   "repository": "https://github.com/tungv/heq",
