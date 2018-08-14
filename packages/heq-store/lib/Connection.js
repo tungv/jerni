@@ -1,7 +1,8 @@
 const kefir = require('kefir');
 
 class Connection {
-  constructor({ models = [] } = {}) {
+  constructor({ name, models = [] } = {}) {
+    this.name = name;
     this.models = models;
   }
 

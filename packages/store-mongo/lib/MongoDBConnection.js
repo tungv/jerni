@@ -32,8 +32,7 @@ module.exports = class MongoDBConnection extends Connection {
       count: 100,
     },
   }) {
-    super({ name });
-    this.models = models;
+    super({ name, models });
     this.buffer = buffer;
     this.listeners = [];
     this.connectionInfo = {
