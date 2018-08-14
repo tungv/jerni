@@ -1,56 +1,72 @@
 const got = require('got');
 
-const subscriber = require('@events/subscriber');
+const kefir = require('kefir');
 
-const { write } = require('./logger');
+const getChunks = require('./getChunks');
 
-module.exports = async function getEventsStream({
-  subscriptionConfig: { serverUrl, burstCount, burstTime },
-  from,
+module.exports = async function subscribe({
+  queryURL,
+  subscribeURL,
+  lastSeenId,
+  includes = [],
 }) {
-  const latestEvent = await getLatestEvent(serverUrl);
-  if (!latestEvent) {
-    throw {
-      type: 'err-server-disconnected',
-      payload: {
-        reason: `cannot connect to ${serverUrl}`,
-      },
-    };
-  }
+  const { body: unreadEvents } = await got(
+    `${queryURL}?lastEventId=${lastSeenId}`,
+    {
+      json: true,
+    }
+  );
 
-  if (!latestEvent.id) {
-    latestEvent.id = 0;
-  }
+  const realtimeFrom = unreadEvents.length
+    ? unreadEvents[unreadEvents.length - 1].id
+    : lastSeenId;
 
-  const { raw$, events$, abort } = subscriber(`${serverUrl}/subscribe`, {
-    'Last-Event-ID': from,
-    'burst-count': burstCount,
-    'burst-time': burstTime,
+  const pool = kefir.pool();
+
+  const filterEvents = includes.length
+    ? e => includes.includes(e.type)
+    : x => x;
+
+  const unread$ = kefir.constant(unreadEvents.filter(filterEvents));
+
+  setTimeout(() => pool.plug(unread$), 1);
+  unread$.onEnd(() => {
+    const realtime$ = kefir
+      .stream(emitter => {
+        const resp$ = got.stream(`${subscribeURL}?lastEventId=${realtimeFrom}`);
+
+        resp$.on('data', buffer => {
+          const data = String(buffer);
+          emitter.emit(data);
+        });
+
+        resp$.on('end', () => {
+          emitter.end();
+        });
+
+        return () => {
+          resp$.close();
+        };
+      })
+      .thru(getChunks)
+      .thru(handleMsg(filterEvents));
+
+    pool.plug(realtime$);
   });
 
-  const ready = raw$
-    .take(1)
-    .toPromise()
-    .then(() => Date.now());
-
-  return {
-    latestEvent,
-    events$,
-    ready,
-  };
+  return pool.filter();
 };
 
-async function getLatestEvent(url) {
+const handleMsg = filterEvents => messages$ =>
+  messages$
+    .filter(msg => msg.event === 'INCMSG')
+    .map(msg => safeParseArray(msg.data).filter(filterEvents))
+    .filter(x => x.length);
+
+const safeParseArray = str => {
   try {
-    write('SILLY', {
-      type: 'inspect',
-      payload: url,
-    });
-    const resp = await got(`${url}/events/latest`, {
-      json: true,
-    });
-    return resp.body;
+    return JSON.parse(str);
   } catch (ex) {
-    return null;
+    return [];
   }
-}
+};
