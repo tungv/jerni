@@ -4,7 +4,7 @@ const Connection = require('../lib/Connection');
 
 exports.Connection = class DummyConnection extends Connection {
   constructor({ name, models, emitter = mitt() }) {
-    super({ models });
+    super({ name, models });
 
     this.name = name;
     this.emitter = emitter;
@@ -33,6 +33,15 @@ exports.Connection = class DummyConnection extends Connection {
     return () => {
       this.listeners = this.listeners.filter(listener => listener !== fn);
     };
+  }
+
+  async receive(event$) {
+    return event$
+      .map(events => events.filter(e => e.id % 4 === 0))
+      .filter(x => x.length)
+      .map(events => ({
+        events,
+      }));
   }
 };
 
