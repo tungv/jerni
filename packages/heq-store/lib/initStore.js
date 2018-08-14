@@ -1,5 +1,7 @@
 const commitEventToHeqServer = require('./commit');
 const makeRacer = require('./racer');
+const getEventsStream = require('./subscribe');
+const kefir = require('kefir');
 
 module.exports = function initStore({ writeTo, readFrom }) {
   const SOURCE_BY_MODELS = new Map();
@@ -35,11 +37,31 @@ module.exports = function initStore({ writeTo, readFrom }) {
     return racer.wait(event.id);
   };
 
-  const subscribe = () => {};
+  const subscribe = async () => {
+    const incomingEvents$ = await getEventsStream({
+      queryURL: `${writeTo}/query`,
+      subscribeURL: `${writeTo}/subscribe`,
+      lastSeenId: 0,
+    });
+
+    const output$PromiseArray = readFrom.map(source => {
+      return source.receive(incomingEvents$).then(stream =>
+        stream.map(output => ({
+          source,
+          output,
+        }))
+      );
+    });
+
+    const output$Array = await Promise.all(output$PromiseArray);
+
+    return kefir.merge(output$Array);
+  };
 
   return {
     read,
     commit,
     waitFor,
+    subscribe,
   };
 };
