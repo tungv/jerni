@@ -1,6 +1,6 @@
 {
   "name": "@heq/store-mongo",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "index.js",
   "repository": "https://github.com/tungv/heq",
   "author": "Tung Vu <me@tungv.com>",
