@@ -132,8 +132,36 @@ module.exports = class MongoDBConnection extends Connection {
       new PLazy(resolve => {
         const allPromises = this.models.map(async model => {
           const ops = flatten(
-            events.map(event => transform(model.transform, event))
+            events.map(event => {
+              try {
+                return transform(model.transform, event);
+              } catch (ex) {
+                return [];
+              }
+            })
           );
+
+          if (ops.length === 0) {
+            await snapshotsCol.findOneAndUpdate(
+              {
+                name: model.name,
+                version: model.version,
+              },
+              {
+                $set: { __v: events[events.length - 1].id },
+              },
+              {
+                upsert: true,
+              }
+            );
+            return {
+              events,
+              model: model.collectionName,
+              added: 0,
+              modified: 0,
+              removed: 0,
+            };
+          }
 
           const coll = conn.db.collection(model.collectionName);
           const modelOpsResult = await coll.bulkWrite(ops);
