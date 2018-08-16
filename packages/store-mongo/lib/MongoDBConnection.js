@@ -45,8 +45,6 @@ module.exports = class MongoDBConnection extends Connection {
     this.actuallyConnect().then(async conn => {
       this.connection = conn;
 
-      this.connected.resolve();
-
       // get change stream from __snapshots collection
       const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
 
@@ -56,6 +54,8 @@ module.exports = class MongoDBConnection extends Connection {
         this.lastReceivedEventId = id;
         this.listeners.forEach(fn => fn(id));
       });
+
+      this.connected.resolve();
     });
   }
 
