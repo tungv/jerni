@@ -7,6 +7,8 @@ module.exports = function initStore({ writeTo, readFrom }) {
   const SOURCE_BY_MODELS = new Map();
   const racer = makeRacer(readFrom.map(() => 0));
 
+  let currentWriteTo = writeTo;
+
   readFrom.forEach((readSource, index) => {
     // register every models in each read source to SOURCE_BY_MODELS map
     // so we can retrieve them later in `#read(model)`
@@ -30,7 +32,7 @@ module.exports = function initStore({ writeTo, readFrom }) {
   };
 
   const commit = event => {
-    return commitEventToHeqServer(`${writeTo}/commit`, event);
+    return commitEventToHeqServer(`${currentWriteTo}/commit`, event);
   };
 
   const waitFor = event => {
@@ -38,10 +40,16 @@ module.exports = function initStore({ writeTo, readFrom }) {
   };
 
   const subscribe = async () => {
+    const latestEventIdArray = readFrom.map(source => source.latestEventId);
+
+    const oldestVersion = Math.min(...latestEventIdArray);
+
+    console.log({ oldestVersion });
+
     const incomingEvents$ = await getEventsStream({
-      queryURL: `${writeTo}/query`,
-      subscribeURL: `${writeTo}/subscribe`,
-      lastSeenId: 0,
+      queryURL: `${currentWriteTo}/query`,
+      subscribeURL: `${currentWriteTo}/subscribe`,
+      lastSeenId: oldestVersion,
     });
 
     const output$PromiseArray = readFrom.map(source => {
@@ -63,5 +71,9 @@ module.exports = function initStore({ writeTo, readFrom }) {
     commit,
     waitFor,
     subscribe,
+
+    replaceWriteTo: nextWriteTo => {
+      currentWriteTo = nextWriteTo;
+    },
   };
 };
