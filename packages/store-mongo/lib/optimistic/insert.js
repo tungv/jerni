@@ -13,8 +13,9 @@ exports.applyInsertMany = returnEmptyOnException((op, eventId, opId) => {
 });
 
 const makeOptimisticInsertCondition = (eventId, opId) => {
+  // we only insert if this query doesn't match
   const gtEventId = { __v: { $gt: eventId } };
-  const gtOpCounterInSameEvent = { __op: { $gt: opId }, __v: eventId };
+  const gtOpCounterInSameEvent = { __op: { $gte: opId }, __v: eventId };
 
   return {
     $or: [gtEventId, gtOpCounterInSameEvent],
