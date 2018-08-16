@@ -1,7 +1,7 @@
 const kefir = require('kefir');
 const MongoOplog = require('@tungv/mongo-oplog');
 
-const watchWithoutReplicaSet = (colleciton, models) => {
+const watchWithoutReplicaSet = (collection, models) => {
   const condition = {
     $or: models.map(m => ({ name: m.name, version: m.version })),
   };
@@ -10,7 +10,7 @@ const watchWithoutReplicaSet = (colleciton, models) => {
 
   return kefir.stream(emitter => {
     const intervalID = setInterval(async () => {
-      const resp = await colleciton.find(condition).toArray();
+      const resp = await collection.find(condition).toArray();
 
       const oldestVersion = resp.reduce((v, obj) => {
         if (obj.__v > v) {
