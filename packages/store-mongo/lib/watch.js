@@ -75,7 +75,22 @@ const logRealtime = once(() => console.log('receive signal in realtime'));
 const logInterval = once(() => console.log('receive signal by polling'));
 
 module.exports = (client, snapshotCol, models) => {
-  return kefir.stream(emitter => {
+  return kefir.stream(async emitter => {
+    const condition = {
+      $or: models.map(m => ({ name: m.name, version: m.version })),
+    };
+
+    const resp = await snapshotCol.find(condition).toArray();
+
+    const oldestVersion = resp.reduce((v, obj) => {
+      if (obj.__v > v) {
+        return obj.__v;
+      }
+      return v;
+    }, 0);
+
+    emitter.emit(oldestVersion);
+
     // try realtime op logs first
 
     const streamRealtime = watchWithChangeStream(
