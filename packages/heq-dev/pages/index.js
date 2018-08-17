@@ -1,4 +1,3 @@
-import Head from 'next/head';
 import React from 'react';
 import fetch from 'isomorphic-fetch';
 
@@ -7,6 +6,8 @@ import { eventsReceived } from '../ui/components/subscription.state';
 import Dispatcher from '../ui/components/Dispatcher';
 import EventDetailBox from '../ui/components/EventDetailBox';
 import EventsTimeline from '../ui/components/EventsTimeline';
+import Page from '../ui/components/Page';
+import Header from '../ui/components/Header';
 import Subscriber from '../ui/components/Subscriber';
 
 const getJSON = async (endpoint, opts = {}) => {
@@ -21,43 +22,6 @@ const getJSON = async (endpoint, opts = {}) => {
 
   return json;
 };
-
-const Page = ({ children, title = 'heq devtool' }) => (
-  <React.Fragment>
-    <Head>
-      <title>{title}</title>
-      <link
-        href="https://fonts.googleapis.com/css?family=Open+Sans|Roboto+Slab|Overpass+Mono"
-        rel="stylesheet"
-      />
-    </Head>
-    <main>{children}</main>
-    <style jsx>{`
-      main {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-      }
-    `}</style>
-  </React.Fragment>
-);
-
-const Header = ({ children }) => (
-  <header>
-    <h1>{children}</h1>
-    <style jsx>{`
-      header {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-
-        height: 72px;
-        font-family: 'Open Sans';
-      }
-    `}</style>
-  </header>
-);
 
 const IndexPage = ({ latest, selected, store }) => (
   <Page title="events timeline | heq devtool">

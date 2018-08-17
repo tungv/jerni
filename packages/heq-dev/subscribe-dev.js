@@ -26,8 +26,25 @@ module.exports = async function subscribeDev(filepath, opts) {
 
   const stream = await store.subscribe();
 
-  const subscription = stream.observe(out => {
-    console.log(require('util').inspect(out.output, { depth: 4 }));
+  const subscription = stream.observe(({ output }) => {
+    // console.log(output);
+    console.log(
+      require('util').inspect(
+        {
+          events: output.events,
+          models: output.models.map(modelChange => ({
+            model: {
+              name: modelChange.model.name,
+              version: modelChange.model.version,
+            },
+            added: modelChange.added,
+            modified: modelChange.modified,
+            removed: modelChange.removed,
+          })),
+        },
+        { depth: null }
+      )
+    );
   });
   // process.exit(0);
 };
