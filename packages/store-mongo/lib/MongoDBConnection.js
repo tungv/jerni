@@ -155,8 +155,7 @@ module.exports = class MongoDBConnection extends Connection {
               }
             );
             return {
-              events,
-              model: model.collectionName,
+              model,
               added: 0,
               modified: 0,
               removed: 0,
@@ -180,15 +179,19 @@ module.exports = class MongoDBConnection extends Connection {
           );
 
           return {
-            events,
-            model: model.collectionName,
+            model,
             added: modelOpsResult.nUpserted,
             modified: modelOpsResult.nModified,
             removed: modelOpsResult.nRemoved,
           };
         });
 
-        return Promise.all(allPromises).then(resolve);
+        return Promise.all(allPromises).then(changesByModels => {
+          resolve({
+            events,
+            models: changesByModels,
+          });
+        });
       });
 
     return kefirStreamOfBatchedEvents
