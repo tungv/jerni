@@ -15,6 +15,12 @@ const enhancers = compact([
 const makeStore = (initialState, options) => {
   const store = createStore(rootReducer, initialState, compose(...enhancers));
 
+  if (typeof window !== 'undefined') {
+    const socket = io();
+    socket.on('redux event', event => {
+      store.dispatch(event);
+    });
+  }
   if (module.hot) {
     module.hot.accept('./rootReducer', () => {
       const newReducer = require('./rootReducer').default;

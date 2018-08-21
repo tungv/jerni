@@ -1,7 +1,12 @@
+import { connect } from 'react-redux';
 import React from 'react';
 
 import PulseBlock from './PulseBlock';
 import TimelineSpine from './TimelineSpine';
+
+const connectSubScriptionTimeline = connect(state => ({
+  stream: state.pulses,
+}));
 
 const SubscriptionTimeline = ({ stream }) => (
   <main>
@@ -52,4 +57,4 @@ const CurrentBlock = () => (
   </section>
 );
 
-export default SubscriptionTimeline;
+export default connectSubScriptionTimeline(SubscriptionTimeline);

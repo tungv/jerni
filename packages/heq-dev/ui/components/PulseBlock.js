@@ -143,7 +143,7 @@ const ChangeBox = ({ collectionName, added, modified, removed }) => (
     {added + modified + removed === 0 && <span>nothing happened!</span>}
     {added > 0 && (
       <span>
-        <ouput>{added}</ouput> item{added === 1 ? ' has' : 's have'} been
+        <output>{added}</output> item{added === 1 ? ' has' : 's have'} been
         inserted to <strong>{collectionName}</strong>
       </span>
     )}

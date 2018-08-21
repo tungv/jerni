@@ -11,6 +11,16 @@ export default [
         },
         id: 8,
       },
+      {
+        type: 'PERSON_DEREGISTERED',
+        payload: { id: '1' },
+        meta: {
+          occurredAt: 1534391573509,
+          client: 'heq-dev',
+          clientVersion: 'alpha',
+        },
+        id: 9,
+      },
     ],
     models: [
       {

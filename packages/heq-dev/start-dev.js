@@ -1,6 +1,18 @@
 const withUI = require('./withUI');
 const withDevAPI = require('./withDevAPI');
 
+const makeOrReuseQueue = async opts => {
+  if (opts.queue) return opts.queue;
+
+  const adapter = require('@heq/server-lokijs');
+
+  const queue = await adapter({
+    ns: opts.namespace,
+  });
+
+  return queue;
+};
+
 module.exports = async opts => {
   const factory = require('heq-server');
   const ip = require('ip');
@@ -8,11 +20,7 @@ module.exports = async opts => {
 
   const { port: PUBLIC_PORT } = opts;
 
-  const adapter = require('@heq/server-lokijs');
-
-  const queue = await adapter({
-    ns: opts.namespace,
-  });
+  const queue = await makeOrReuseQueue(opts);
 
   const service = await factory({ queue });
   const devService = await withDevAPI(service, queue);
