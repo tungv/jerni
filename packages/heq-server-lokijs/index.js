@@ -84,7 +84,9 @@ const adapter = ({ ns = 'local' }) => {
     // noop
   };
 
-  return { commit, subscribe, query, destroy, getLatest };
+  const getEvent = async id => delokize((await events).get(id));
+
+  return { commit, subscribe, query, destroy, getLatest, getEvent };
 };
 
 module.exports = adapter;
