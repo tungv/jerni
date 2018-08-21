@@ -51,6 +51,7 @@ const adapter = ({ ns = 'local' }) => {
 
   const commit = async event => {
     latest = (await events).insert({ ...event, meta: { ...event.meta } });
+    db.saveDatabase();
     emitter.emit('data', latest);
     event.id = latest.$loki;
 
