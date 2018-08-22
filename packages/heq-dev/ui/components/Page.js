@@ -1,7 +1,7 @@
-import React from 'react';
-import Head from 'next/head';
+import React from "react";
+import Head from "next/head";
 
-const Page = ({ children, title = 'heq devtool' }) => (
+const Page = ({ children, title = "heq devtool" }) => (
   <React.Fragment>
     <Head>
       <title>{title}</title>
@@ -11,6 +11,13 @@ const Page = ({ children, title = 'heq devtool' }) => (
       />
     </Head>
     <main>{children}</main>
+    <style jsx global>{`
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+      }
+    `}</style>
     <style jsx>{`
       main {
         display: flex;

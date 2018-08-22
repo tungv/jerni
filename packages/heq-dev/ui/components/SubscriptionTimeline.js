@@ -1,26 +1,15 @@
 import { connect } from "react-redux";
 import React from "react";
 
-import { socketEmit } from "../state/socket-io-middleware";
-import PrimaryButton from "./PrimaryButton";
 import PulseBlock from "./PulseBlock";
 import TimelineSpine from "./TimelineSpine";
 
-const connectSubScriptionTimeline = connect(
-  state => ({
-    stream: state.pulses
-  }),
-  {
-    onRefreshButtonClick: () =>
-      socketEmit({
-        type: "RELOAD"
-      })
-  }
-);
+const connectSubScriptionTimeline = connect(state => ({
+  stream: state.pulses
+}));
 
 const SubscriptionTimeline = ({ stream, onRefreshButtonClick }) => (
   <main>
-    <PrimaryButton onClick={onRefreshButtonClick}>Reload</PrimaryButton>
     <CurrentBlock />
     {stream.map(pulse => (
       <PulseBlock

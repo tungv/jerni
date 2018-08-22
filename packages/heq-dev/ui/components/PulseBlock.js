@@ -1,3 +1,4 @@
+import { transparentize } from "polished";
 import React from "react";
 import classnames from "classnames";
 
@@ -117,8 +118,8 @@ const EventsGroup = ({ events, collapsed = false }) => (
 const ModelsChangeGroup = ({ models }) =>
   models.map(({ model, added, modified, removed }) => (
     <ChangeBox
-      key={`${model.name} (v${model.version})`}
-      collectionName={`${model.name} (v${model.version})`}
+      key={`${model.name} (v${model.version}) [${model.source}]`}
+      collectionName={`${model.name} (v${model.version}) [${model.source}]`}
       added={added}
       modified={modified}
       removed={removed}
@@ -127,21 +128,23 @@ const ModelsChangeGroup = ({ models }) =>
 
 const ChangeBox = ({ collectionName, added, modified, removed }) => (
   <div>
-    {added + modified + removed === 0 && <span>nothing happened!</span>}
+    {added + modified + removed === 0 && (
+      <span className="empty">nothing happened!</span>
+    )}
     {added > 0 && (
-      <span>
+      <span className="added">
         <output>{added}</output> item{added === 1 ? " has" : "s have"} been
         inserted to <strong>{collectionName}</strong>
       </span>
     )}
     {modified > 0 && (
-      <span>
+      <span className="modified">
         <output>{modified}</output> item{modified === 1 ? " has" : "s have"}{" "}
         been modified in <strong>{collectionName}</strong>
       </span>
     )}
     {removed > 0 && (
-      <span>
+      <span className="removed">
         <output>{removed}</output> item{removed === 1 ? " has" : "s have"} been
         removed from <strong>{collectionName}</strong>
       </span>
@@ -160,6 +163,20 @@ const ChangeBox = ({ collectionName, added, modified, removed }) => (
       }
       strong {
         text-decoration: underline;
+      }
+
+      .empty {
+        color: rgba(0, 0, 0, 0.57);
+      }
+
+      .added output {
+        color: ${transparentize(1 / 7, "blue")};
+      }
+      .modified output {
+        color: ${transparentize(1 / 7, "purple")};
+      }
+      .removed output {
+        color: ${transparentize(1 / 7, "red")};
       }
     `}</style>
   </div>

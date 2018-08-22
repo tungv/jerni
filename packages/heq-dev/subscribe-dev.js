@@ -92,7 +92,13 @@ module.exports = async function subscribeDev(filepath, opts) {
       if (isReloading) return;
 
       isReloading = true;
+      io.emit("redux event", {
+        type: "SERVER/RELOADING"
+      });
       await measureTime("reloaded", reload);
+      io.emit("redux event", {
+        type: "SERVER/RELOADED"
+      });
       isReloading = false;
     });
   });

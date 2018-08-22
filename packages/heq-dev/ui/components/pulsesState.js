@@ -9,8 +9,8 @@ const mergePulses = (prev, current) => {
     return [
       {
         ...prev,
-        events: [...prev.events, ...current.events],
-      },
+        events: [...prev.events, ...current.events]
+      }
     ];
   }
 
@@ -18,7 +18,7 @@ const mergePulses = (prev, current) => {
 };
 
 const pulses = (state = [], { type, payload }) => {
-  if (type === 'PULSES_INTIALIZED') {
+  if (type === "PULSES_INTIALIZED") {
     return payload.reduce((pulses, current) => {
       const lastPulse = pulses[0];
       const everythingButLast = pulses.slice(1);
@@ -28,7 +28,7 @@ const pulses = (state = [], { type, payload }) => {
     }, state);
   }
 
-  if (type === 'SERVER/PULSE_ARRIVED') {
+  if (type === "SERVER/PULSE_ARRIVED") {
     const lastPulse = state[0];
     const everythingButLast = state.slice(1);
 
@@ -38,6 +38,13 @@ const pulses = (state = [], { type, payload }) => {
   return state;
 };
 
+const isReloading = (state = false, { type }) => {
+  if (type === "SERVER/RELOADING") return true;
+  if (type === "SERVER/RELOADED") return false;
+  return state;
+};
+
 export default {
   pulses,
+  isReloading
 };
