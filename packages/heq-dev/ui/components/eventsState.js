@@ -27,7 +27,7 @@ const removingEventIds = (state = [], { type, payload }) => {
     return state.filter(id => id !== payload);
   }
 
-  if (type === "REMOVING_LIST_CLEARED") {
+  if (type === "REMOVING_LIST_CLEARED" || type === "PULSES_INITIALIZED") {
     return [];
   }
 

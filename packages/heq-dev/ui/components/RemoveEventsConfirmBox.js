@@ -14,8 +14,8 @@ const connectToRedux = connect(
   {
     sendRemove: idArray =>
       socketEmit({
-        type: "SERVER:EVENTS_REMOVED",
-        payload: idArray
+        type: "RELOAD",
+        payload: { id_not_in: idArray }
       }),
 
     onCancelButtonClick: clearRemovingList
