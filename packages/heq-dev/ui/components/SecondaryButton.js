@@ -1,5 +1,5 @@
-import { transparentize } from 'polished';
-import React from 'react';
+import { transparentize } from "polished";
+import React from "react";
 
 const SecondaryButton = ({ children, ...others }) => (
   <button {...others}>
@@ -11,10 +11,10 @@ const SecondaryButton = ({ children, ...others }) => (
         border: 2px solid #dcedc8;
         border-radius: 12px;
         color: rgba(0, 0, 0, 0.87);
-        background: ${transparentize(5 / 7, '#dcedc8')};
+        background: ${transparentize(2 / 7, "#dcedc8")};
         outline: none;
 
-        font-family: 'Open Sans';
+        font-family: "Open Sans";
 
         font-size: 18px;
         padding: 10px 22px;
@@ -24,12 +24,12 @@ const SecondaryButton = ({ children, ...others }) => (
       }
 
       button:hover {
-        background: ${transparentize(3 / 7, '#dcedc8')};
+        background: ${transparentize(3 / 7, "#dcedc8")};
         transition: background 100ms ease-in-out;
       }
 
       button:active {
-        background: ${transparentize(1 / 7, '#dcedc8')};
+        background: ${transparentize(1 / 7, "#dcedc8")};
       }
     `}</style>
   </button>

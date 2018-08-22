@@ -2,6 +2,7 @@ import { connect } from "react-redux";
 import React from "react";
 
 import PulseBlock from "./PulseBlock";
+import RemoveEventsConfirmBox from "./RemoveEventsConfirmBox";
 import TimelineSpine from "./TimelineSpine";
 
 const connectSubScriptionTimeline = connect(state => ({
@@ -18,6 +19,7 @@ const SubscriptionTimeline = ({ stream, onRefreshButtonClick }) => (
         models={pulse.models}
       />
     ))}
+    <RemoveEventsConfirmBox />
     <style jsx>{`
       main {
         display: flex;

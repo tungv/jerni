@@ -1,9 +1,15 @@
+import { connect } from "react-redux";
 import { transparentize } from "polished";
 import React from "react";
 import classnames from "classnames";
 
+import { removingEventCount } from "./eventsState";
 import TimelineEventBox from "./TimelineEventBox";
 import TimelineSpine from "./TimelineSpine";
+
+const connectBlockToRedux = connect((state, props) => ({
+  removingCount: removingEventCount(state, props.events.map(event => event.id))
+}));
 
 class PulseBlock extends React.Component {
   state = { collapsed: true };
@@ -14,7 +20,7 @@ class PulseBlock extends React.Component {
     this.setState({ collapsed: true });
   };
   render() {
-    const { events, models } = this.props;
+    const { events, models, removingCount } = this.props;
     const { collapsed } = this.state;
 
     return (
@@ -22,9 +28,14 @@ class PulseBlock extends React.Component {
         <div className="left">
           {events.length > 1 && (
             <header>
-              {events.length} events (#{events[0].id} &mdash; #{
-                events[events.length - 1].id
-              })
+              <span>
+                {events.length} events (#{events[0].id} &mdash; #{
+                  events[events.length - 1].id
+                })
+              </span>
+              {removingCount > 0 && (
+                <span className="removing">{removingCount} marked</span>
+              )}
               <span className="spacer" />
               {collapsed && <span onClick={this.expand}>expand</span>}
               {!collapsed && <span onClick={this.collapse}>collapse</span>}
@@ -51,6 +62,11 @@ class PulseBlock extends React.Component {
           header {
             display: flex;
             flex-direction: row;
+          }
+
+          header span.removing {
+            padding-left: 6px;
+            color: rgba(0, 0, 0, 0.56);
           }
 
           header .spacer {
@@ -183,4 +199,4 @@ const ChangeBox = ({ collectionName, added, modified, removed }) => (
   </div>
 );
 
-export default PulseBlock;
+export default connectBlockToRedux(PulseBlock);

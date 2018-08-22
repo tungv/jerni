@@ -1,10 +1,46 @@
+import { connect } from "react-redux";
 import React from "react";
 import classnames from "classnames";
 
-const TimelineEventBox = ({ id, payload, type, meta, selected }) => (
-  <div className={classnames("event", { selected })}>
+import {
+  isEventRemovingSelector,
+  markAsRemoving,
+  unmarkAsRemoving
+} from "./eventsState";
+import MaterialIcon from "./MaterialIcon";
+
+const connectEventBoxToRedux = connect(
+  (state, props) => ({
+    removed: isEventRemovingSelector(state, props.id)
+  }),
+  (dispatch, props) => ({
+    onRemoveButtonClick: () => dispatch(markAsRemoving(props.id)),
+    onRestoreButtonClick: () => dispatch(unmarkAsRemoving(props.id))
+  })
+);
+
+const TimelineEventBox = ({
+  id,
+  payload,
+  type,
+  meta,
+  removed,
+  onRemoveButtonClick,
+  onRestoreButtonClick
+}) => (
+  <div className={classnames("event", { removed })}>
     <header>
       <code>{type}</code>
+      {!removed && (
+        <span className="action" onClick={onRemoveButtonClick}>
+          <MaterialIcon>remove_circle</MaterialIcon>
+        </span>
+      )}
+      {removed && (
+        <span className="action" onClick={onRestoreButtonClick}>
+          <MaterialIcon>add_circle</MaterialIcon>
+        </span>
+      )}
       <span className="spacer" />
       <code>id: {id}</code>
     </header>
@@ -20,14 +56,15 @@ const TimelineEventBox = ({ id, payload, type, meta, selected }) => (
         border-radius: 4px;
         margin: 6px 0;
         padding: 12px;
+        user-select: none;
       }
 
-      .selected {
-        background: #0091ea;
+      .removed {
+        background: #bdbdbd;
         color: rgba(255, 255, 255, 0.86);
       }
 
-      .selected .payload {
+      .removed .payload {
         color: rgba(255, 255, 255, 0.57);
       }
 
@@ -35,6 +72,16 @@ const TimelineEventBox = ({ id, payload, type, meta, selected }) => (
         display: flex;
         flex-direction: row;
         align-items: center;
+      }
+
+      .action {
+        display: none;
+        padding: 0 12px;
+        cursor: pointer;
+      }
+
+      .event:hover .action {
+        display: block;
       }
 
       .spacer {
@@ -63,4 +110,4 @@ const TimelineEventBox = ({ id, payload, type, meta, selected }) => (
     `}</style>
   </div>
 );
-export default TimelineEventBox;
+export default connectEventBoxToRedux(TimelineEventBox);
