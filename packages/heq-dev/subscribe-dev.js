@@ -72,7 +72,7 @@ module.exports = async function subscribeDev(filepath, opts) {
     Pulses.clear();
     db.saveDatabase();
 
-    const pulses$ = kefir.sequentially(1, pulses.map(pulse => pulse.events));
+    const pulses$ = kefir.sequentially(10, pulses.map(pulse => pulse.events));
 
     const newPulses = await store.replay(pulses$);
     newPulses.forEach(rawPulse => {
