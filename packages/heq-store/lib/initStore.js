@@ -39,7 +39,7 @@ module.exports = function initStore({ writeTo, readFrom }) {
     return racer.wait(event.id);
   };
 
-  const subscribe = async () => {
+  const getDefaultEventStream = async () => {
     const latestEventIdArray = readFrom.map(source => source.latestEventId);
 
     const oldestVersion = Math.min(...latestEventIdArray);
@@ -49,6 +49,12 @@ module.exports = function initStore({ writeTo, readFrom }) {
       subscribeURL: `${currentWriteTo}/subscribe`,
       lastSeenId: oldestVersion
     });
+
+    return incomingEvents$;
+  };
+
+  const subscribe = async nullableStream => {
+    const incomingEvents$ = nullableStream || (await getDefaultEventStream());
 
     const output$PromiseArray = readFrom.map(source => {
       return source.receive(incomingEvents$).then(stream =>
