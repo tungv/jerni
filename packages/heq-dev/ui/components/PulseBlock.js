@@ -1,7 +1,7 @@
-import React from 'react';
-import classnames from 'classnames';
+import React from "react";
+import classnames from "classnames";
 
-import TimelineSpine from './TimelineSpine';
+import TimelineSpine from "./TimelineSpine";
 
 class PulseBlock extends React.Component {
   state = { collapsed: true };
@@ -41,7 +41,7 @@ class PulseBlock extends React.Component {
           section {
             width: 100%;
             position: relative;
-            font-family: 'Roboto Slab';
+            font-family: "Roboto Slab";
             display: flex;
             flex-direction: row;
           }
@@ -75,16 +75,25 @@ class PulseBlock extends React.Component {
 }
 
 const EventsGroup = ({ events, collapsed = false }) => (
-  <div className={classnames('events-group', { collapsed })}>
-    {events.map(event => (
-      <div key={event.id}>
+  <section className={classnames({ collapsed })}>
+    {events.map((event, index) => (
+      <div
+        key={event.id}
+        style={{ "--start": index, "--total": events.length }}
+      >
         <EventBox {...event} />
       </div>
     ))}
     <style jsx>{`
       div {
         position: relative;
-        transition: all 300ms ease-out;
+        transition: 300ms ease-in-out;
+        transition-property: margin-top, transform, opacity, box-shadow;
+        transition-delay: calc(var(--start) * 450ms / (var(--total))),
+          calc(var(--start) * 450ms / (var(--total))),
+          calc(var(--start) * 550ms / (var(--total))),
+          calc(var(--start) * 550ms / (var(--total)));
+        z-index: calc(var(--total) - var(--start));
       }
 
       .collapsed div {
@@ -92,39 +101,17 @@ const EventsGroup = ({ events, collapsed = false }) => (
         border-radius: 4px;
       }
 
-      .events-group > div:nth-child(2) {
-        transition-delay: 100ms;
-        z-index: 3;
-      }
-      .events-group > div:nth-child(3) {
-        z-index: 2;
-        transition-delay: 200ms;
-      }
-      .events-group > div:nth-child(n + 4) {
-        z-index: 1;
-        transition-delay: 300ms;
+      .collapsed div {
+        opacity: calc(1 - var(--start) * 0.25);
+        margin-top: calc(-78px - var(--start) * 1px);
+        transform: scale(calc(1 - var(--start) * 0.05));
       }
 
-      div > div:nth-child(1) {
-        z-index: 4;
-      }
-      div.collapsed > div:nth-child(2) {
-        opacity: 0.75;
-        transform: scale(0.95);
-        margin-top: -78px;
-      }
-      div.collapsed > div:nth-child(3) {
-        opacity: 0.5625;
-        transform: scale(0.9025);
-        margin-top: -78px;
-      }
-      div.collapsed > div:nth-child(n + 4) {
-        opacity: 0.4;
-        transform: scale(0.857375);
-        margin-top: -90px;
+      .collapsed div:first-child {
+        margin-top: 0;
       }
     `}</style>
-  </div>
+  </section>
 );
 
 const ModelsChangeGroup = ({ models }) =>
@@ -143,19 +130,19 @@ const ChangeBox = ({ collectionName, added, modified, removed }) => (
     {added + modified + removed === 0 && <span>nothing happened!</span>}
     {added > 0 && (
       <span>
-        <output>{added}</output> item{added === 1 ? ' has' : 's have'} been
+        <output>{added}</output> item{added === 1 ? " has" : "s have"} been
         inserted to <strong>{collectionName}</strong>
       </span>
     )}
     {modified > 0 && (
       <span>
-        <output>{modified}</output> item{modified === 1 ? ' has' : 's have'}{' '}
+        <output>{modified}</output> item{modified === 1 ? " has" : "s have"}{" "}
         been modified in <strong>{collectionName}</strong>
       </span>
     )}
     {removed > 0 && (
       <span>
-        <output>{removed}</output> item{removed === 1 ? ' has' : 's have'} been
+        <output>{removed}</output> item{removed === 1 ? " has" : "s have"} been
         removed from <strong>{collectionName}</strong>
       </span>
     )}
@@ -169,7 +156,7 @@ const ChangeBox = ({ collectionName, added, modified, removed }) => (
       }
       output {
         font-weight: bold;
-        font-family: 'Overpass Mono', monospace;
+        font-family: "Overpass Mono", monospace;
       }
       strong {
         text-decoration: underline;
@@ -179,7 +166,7 @@ const ChangeBox = ({ collectionName, added, modified, removed }) => (
 );
 
 const EventBox = ({ id, payload, type, meta, selected }) => (
-  <div className={classnames('event', { selected })}>
+  <div className={classnames("event", { selected })}>
     <header>
       <code>{type}</code>
       <span className="spacer" />
@@ -221,7 +208,7 @@ const EventBox = ({ id, payload, type, meta, selected }) => (
       }
 
       code {
-        font-family: 'Overpass Mono', monospace;
+        font-family: "Overpass Mono", monospace;
         font-size: 18px;
         white-space: nowrap;
       }
