@@ -1,15 +1,26 @@
-import { connect } from 'react-redux';
-import React from 'react';
+import { connect } from "react-redux";
+import React from "react";
 
-import PulseBlock from './PulseBlock';
-import TimelineSpine from './TimelineSpine';
+import { socketEmit } from "../state/socket-io-middleware";
+import PrimaryButton from "./PrimaryButton";
+import PulseBlock from "./PulseBlock";
+import TimelineSpine from "./TimelineSpine";
 
-const connectSubScriptionTimeline = connect(state => ({
-  stream: state.pulses,
-}));
+const connectSubScriptionTimeline = connect(
+  state => ({
+    stream: state.pulses
+  }),
+  {
+    onRefreshButtonClick: () =>
+      socketEmit({
+        type: "RELOAD"
+      })
+  }
+);
 
-const SubscriptionTimeline = ({ stream }) => (
+const SubscriptionTimeline = ({ stream, onRefreshButtonClick }) => (
   <main>
+    <PrimaryButton onClick={onRefreshButtonClick}>Reload</PrimaryButton>
     <CurrentBlock />
     {stream.map(pulse => (
       <PulseBlock
@@ -36,7 +47,7 @@ const CurrentBlock = () => (
       section {
         width: 100%;
         position: relative;
-        font-family: 'Roboto Slab';
+        font-family: "Roboto Slab";
         display: flex;
         flex-direction: row;
       }

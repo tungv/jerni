@@ -1,26 +1,27 @@
-const mapEvents = require('heq-store/lib/mapEvents');
-const { Model } = require('@heq/store-mongo');
+const mapEvents = require("heq-store/lib/mapEvents");
+const { Model } = require("@heq/store-mongo");
 
 module.exports = new Model({
-  name: 'people',
-  version: '1.0.0',
+  name: "people",
+  version: "1.0.0",
   transform: mapEvents({
-    PERSON_REGISTERED: event => ({
-      insertOne: {
-        id: event.payload.id,
-        full_name: event.payload.name,
-        born_at: event.payload.born_at,
-        children: [],
+    PERSON_REGISTERED: event =>
+      console.log("hello") || {
+        insertOne: {
+          id: event.payload.id,
+          full_name: event.payload.name,
+          born_at: event.payload.born_at,
+          children: []
+        }
       },
-    }),
 
     CHILDREN_BORN: ({ payload: { children, parents }, meta }) => [
       {
         insertMany: children.map(child => ({
           id: child.id,
           full_name: child.name,
-          born_at: meta.occurred_at,
-        })),
+          born_at: meta.occurred_at
+        }))
       },
       {
         updateMany: {
@@ -28,12 +29,12 @@ module.exports = new Model({
           changes: {
             $push: {
               children: {
-                $each: children.map(child => child.id),
-              },
-            },
-          },
-        },
-      },
-    ],
-  }),
+                $each: children.map(child => child.id)
+              }
+            }
+          }
+        }
+      }
+    ]
+  })
 });

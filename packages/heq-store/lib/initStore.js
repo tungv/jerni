@@ -1,7 +1,7 @@
-const commitEventToHeqServer = require('./commit');
-const makeRacer = require('./racer');
-const getEventsStream = require('./subscribe');
-const kefir = require('kefir');
+const commitEventToHeqServer = require("./commit");
+const makeRacer = require("./racer");
+const getEventsStream = require("./subscribe");
+const kefir = require("kefir");
 
 module.exports = function initStore({ writeTo, readFrom }) {
   const SOURCE_BY_MODELS = new Map();
@@ -49,14 +49,14 @@ module.exports = function initStore({ writeTo, readFrom }) {
     const incomingEvents$ = await getEventsStream({
       queryURL: `${currentWriteTo}/query`,
       subscribeURL: `${currentWriteTo}/subscribe`,
-      lastSeenId: oldestVersion,
+      lastSeenId: oldestVersion
     });
 
     const output$PromiseArray = readFrom.map(source => {
       return source.receive(incomingEvents$).then(stream =>
         stream.map(output => ({
           source,
-          output,
+          output
         }))
       );
     });
@@ -75,5 +75,43 @@ module.exports = function initStore({ writeTo, readFrom }) {
     replaceWriteTo: nextWriteTo => {
       currentWriteTo = nextWriteTo;
     },
+
+    replay: async history$ => {
+      /*
+      PREPARE OUTSIDE OF THIS METHOD
+      1. stop jerni-server subscription
+
+      DONE IN THIS METHOD
+      2. clear every source
+      3. start subscribing from history source
+      4. stop subscribing from history source
+      5. start subscribing from jerni-server source
+      */
+
+      console.time("remove all mongodb data");
+      await Promise.all(readFrom.map(src => src.clean()));
+      console.timeEnd("remove all mongodb data");
+
+      const output$PromiseArray = readFrom.map(source => {
+        return source.receive(history$).then(stream =>
+          stream.map(output => ({
+            source,
+            output
+          }))
+        );
+      });
+
+      const output$Array = await Promise.all(output$PromiseArray);
+
+      const allStreams = kefir.merge(output$Array);
+
+      console.time("streaming history");
+      return new Promise(resolve => {
+        allStreams.onEnd(() => {
+          console.timeEnd("streaming history");
+          resolve();
+        });
+      });
+    }
   };
 };

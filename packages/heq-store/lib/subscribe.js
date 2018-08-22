@@ -1,19 +1,19 @@
-const got = require('got');
+const got = require("got");
 
-const kefir = require('kefir');
+const kefir = require("kefir");
 
-const getChunks = require('./getChunks');
+const getChunks = require("./getChunks");
 
 module.exports = async function subscribe({
   queryURL,
   subscribeURL,
   lastSeenId,
-  includes = [],
+  includes = []
 }) {
   const { body: unreadEvents } = await got(
     `${queryURL}?lastEventId=${lastSeenId}`,
     {
-      json: true,
+      json: true
     }
   );
 
@@ -35,17 +35,17 @@ module.exports = async function subscribe({
       .stream(emitter => {
         const resp$ = got.stream(`${subscribeURL}?lastEventId=${realtimeFrom}`);
 
-        resp$.on('data', buffer => {
+        resp$.on("data", buffer => {
           const data = String(buffer);
           emitter.emit(data);
         });
 
-        resp$.on('end', () => {
+        resp$.on("end", () => {
           emitter.end();
         });
 
         return () => {
-          resp$.close();
+          resp$.destroy();
         };
       })
       .thru(getChunks)
@@ -59,7 +59,7 @@ module.exports = async function subscribe({
 
 const handleMsg = filterEvents => messages$ =>
   messages$
-    .filter(msg => msg.event === 'INCMSG')
+    .filter(msg => msg.event === "INCMSG")
     .map(msg => safeParseArray(msg.data).filter(filterEvents))
     .filter(x => x.length);
 
