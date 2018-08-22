@@ -75,13 +75,13 @@ const TimelineEventBox = ({
       }
 
       .action {
-        display: none;
+        opacity: 0;
         padding: 0 12px;
         cursor: pointer;
       }
 
       .event:hover .action {
-        display: block;
+        opacity: 1;
       }
 
       .spacer {
