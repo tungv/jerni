@@ -18,14 +18,14 @@ const mergePulses = (prev, current) => {
 };
 
 const pulses = (state = [], { type, payload }) => {
-  if (type === "PULSES_INTIALIZED") {
+  if (type === "PULSES_INITIALIZED") {
     return payload.reduce((pulses, current) => {
       const lastPulse = pulses[0];
       const everythingButLast = pulses.slice(1);
       const mergedOrPrependPulses = mergePulses(lastPulse, current);
 
       return [...mergedOrPrependPulses, ...everythingButLast];
-    }, state);
+    }, []);
   }
 
   if (type === "SERVER/PULSE_ARRIVED") {

@@ -18,7 +18,7 @@ SubscriptionPage.getInitialProps = async ({ store, req }) => {
   const pulses = await getJSON(`${base}/dev/pulses`);
 
   store.dispatch({
-    type: "PULSES_INTIALIZED",
+    type: "PULSES_INITIALIZED",
     payload: pulses
   });
 
