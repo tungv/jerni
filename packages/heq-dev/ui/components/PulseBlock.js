@@ -12,16 +12,21 @@ const connectBlockToRedux = connect((state, props) => ({
 }));
 
 class PulseBlock extends React.Component {
-  state = { collapsed: true };
+  state = { collapsed: true, max: 20 };
   expand = () => {
     this.setState({ collapsed: false });
   };
   collapse = () => {
-    this.setState({ collapsed: true });
+    this.setState({ collapsed: true, max: 20 });
   };
+
+  loadMore = () => {
+    this.setState(state => ({ max: state.max + 20 }));
+  };
+
   render() {
     const { events, models, removingCount } = this.props;
-    const { collapsed } = this.state;
+    const { collapsed, max } = this.state;
 
     return (
       <section>
@@ -44,6 +49,9 @@ class PulseBlock extends React.Component {
           <EventsGroup
             events={[...events].reverse()}
             collapsed={events.length > 1 && collapsed}
+            max={max}
+            loadMore={this.loadMore}
+            collapse={this.collapse}
           />
         </div>
         <TimelineSpine />
@@ -92,26 +100,56 @@ class PulseBlock extends React.Component {
   }
 }
 
-const EventsGroup = ({ events, collapsed = false }) => (
-  <section className={classnames({ collapsed })}>
-    {events.map((event, index) => (
+const EventsGroup = ({ events, collapsed, max, loadMore, collapse }) => (
+  <section id={events[0].id} className={classnames({ collapsed })}>
+    {events.slice(0, max).map((event, index) => (
       <div
-        key={event.id}
-        style={{ "--start": index, "--total": events.length }}
+        key={index}
+        style={{
+          "--start": index,
+          "--total": Math.min(events.length, 20)
+        }}
       >
         <TimelineEventBox {...event} />
       </div>
     ))}
+    {!collapsed && (
+      <p>
+        {events.length > max && <a onClick={loadMore}>more</a>}{" "}
+        {events.length > 20 && (
+          <a onClick={collapse} href={`#${events[0].id}`}>
+            collapse
+          </a>
+        )}
+      </p>
+    )}
     <style jsx>{`
+      section {
+        padding: 12px 0;
+        min-height: 84px;
+      }
       div {
         position: relative;
         transition: 300ms ease-in-out;
         transition-property: margin-top, transform, opacity, box-shadow;
         transition-delay: calc(var(--start) * 450ms / (var(--total))),
           calc(var(--start) * 450ms / (var(--total))),
-          calc(var(--start) * 550ms / (var(--total))),
-          calc(var(--start) * 550ms / (var(--total)));
+          calc(var(--start) * 350ms / (var(--total))),
+          calc(var(--start) * 350ms / (var(--total)));
         z-index: calc(var(--total) - var(--start));
+      }
+      p a {
+        text-decoration: none;
+        cursor: pointer;
+        user-select: none;
+        color: rgba(0, 0, 0, 0.87);
+        margin-left: 12px;
+      }
+
+      p {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
       }
 
       .collapsed div {
@@ -119,10 +157,17 @@ const EventsGroup = ({ events, collapsed = false }) => (
         border-radius: 4px;
       }
 
-      .collapsed div {
-        opacity: calc(1 - var(--start) * 0.25);
+      .collapsed div:nth-child(-n + 19) {
+        /* opacity: calc(1 - var(--start) * 0.25); */
+        opacity: 1;
         margin-top: calc(-78px - var(--start) * 1px);
         transform: scale(calc(1 - var(--start) * 0.05));
+      }
+
+      .collapsed div:nth-child(n + 20) {
+        opacity: 1;
+        margin-top: calc(-80px - (var(--start) - 19) * 0.5px);
+        transform: scale(0.01);
       }
 
       .collapsed div:first-child {
