@@ -86,7 +86,16 @@ const adapter = ({ ns = 'local' }) => {
 
   const getEvent = async id => delokize((await events).get(id));
 
-  return { commit, subscribe, query, destroy, getLatest, getEvent };
+  const api = { commit, subscribe, query, destroy, getLatest, getEvent };
+
+  api.DEV__swap = async newEvents => {
+    const Events = await events;
+    Events.clear();
+    newEvents.forEach(evt => Events.insert(evt));
+    db.saveDatabase();
+  };
+
+  return api;
 };
 
 module.exports = adapter;
