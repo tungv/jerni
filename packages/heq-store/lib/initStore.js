@@ -76,46 +76,11 @@ module.exports = function initStore({ writeTo, readFrom }) {
     waitFor,
     subscribe,
 
-    replaceWriteTo: nextWriteTo => {
+    DEV__replaceWriteTo: nextWriteTo => {
       currentWriteTo = nextWriteTo;
     },
 
-    replay: async history$ => {
-      /*
-      PREPARE OUTSIDE OF THIS METHOD
-      1. stop jerni-server subscription
-
-      DONE IN THIS METHOD
-      2. clear every source
-      3. start subscribing from history source
-      4. stop subscribing from history source
-      5. start subscribing from jerni-server source
-      */
-
-      console.time("remove all mongodb data");
-      await Promise.all(readFrom.map(src => src.clean()));
-      console.timeEnd("remove all mongodb data");
-
-      const output$PromiseArray = readFrom.map(source => {
-        return source.receive(history$).then(stream =>
-          stream.map(output => ({
-            source,
-            output
-          }))
-        );
-      });
-
-      const output$Array = await Promise.all(output$PromiseArray);
-
-      const allStreams = kefir.merge(output$Array).thru(toArray);
-
-      console.time("streaming history");
-
-      const array = await allStreams.toPromise();
-      console.timeEnd("streaming history");
-
-      return array;
-    }
+    DEV__cleanAll: () => Promise.all(readFrom.map(src => src.clean()))
   };
 };
 

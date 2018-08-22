@@ -1,8 +1,10 @@
-const path = require("path");
-const startDevServer = require("./start-dev");
 const socketIO = require("socket.io");
-const getCollection = require("./utils/getCollection");
+
 const kefir = require("kefir");
+const path = require("path");
+
+const getCollection = require("./utils/getCollection");
+const startDevServer = require("./start-dev");
 
 const measureTime = async (msg, block) => {
   try {
@@ -39,16 +41,16 @@ module.exports = async function subscribeDev(filepath, opts) {
 
     const { port } = server.address();
 
-    store.replaceWriteTo(`http://localhost:${port}`);
+    store.DEV__replaceWriteTo(`http://localhost:${port}`);
 
     return socketIO(server);
   });
 
   const { coll: Pulses, db } = await getCollection("jerni-dev.db", "pulses");
 
-  const doSubscribe = async () => {
-    const stream = await store.subscribe();
-    subscription = stream.observe(rawPulse => {
+  const startRealtime = async incoming$ => {
+    const outgoing$ = await store.subscribe(incoming$);
+    subscription = outgoing$.observe(rawPulse => {
       const pulse = normalizePulse(rawPulse);
 
       Pulses.insert(makePersistablePulse(pulse));
@@ -58,28 +60,38 @@ module.exports = async function subscribeDev(filepath, opts) {
     });
   };
 
-  await measureTime("subscription made", doSubscribe);
+  await measureTime("subscription made", startRealtime);
 
   const reload = async () => {
     // stop jerni-server subscription
     subscription.unsubscribe();
 
-    // TODO: pause /commit endpoint
+    await measureTime("clean all sources", store.DEV__cleanAll);
 
-    const events = await queue.query({ from: 0 });
-    const pulses = await getPulsesWithFullEvents(Pulses.find(), queue);
+    const history$ = await measureTime(
+      "constructing history stream",
+      async () => {
+        const events = await queue.query({ from: 0 });
+        const pulses = await getPulsesWithFullEvents(Pulses.find(), queue);
 
-    Pulses.clear();
-    db.saveDatabase();
+        Pulses.clear();
+        db.saveDatabase();
 
-    const pulses$ = kefir.sequentially(10, pulses.map(pulse => pulse.events));
+        return kefir.sequentially(10, pulses.map(pulse => pulse.events));
+      }
+    );
 
-    const newPulses = await store.replay(pulses$);
+    const newPulses = await measureTime("replay history", async () => {
+      const stream = await store.subscribe(history$);
+
+      return stream.thru(toArray).toPromise();
+    });
+
     newPulses.forEach(rawPulse => {
       Pulses.insert(makePersistablePulse(normalizePulse(rawPulse)));
     });
     db.saveDatabase();
-    await doSubscribe();
+    await startRealtime();
   };
 
   let isReloading = false;
@@ -140,3 +152,5 @@ const makePersistablePulse = pulse => {
 
   return Object.assign({}, pulse, { events });
 };
+
+const toArray = stream$ => stream$.scan((prev, next) => prev.concat(next), []);
