@@ -62,13 +62,13 @@ module.exports = async function subscribeDev(filepath, opts) {
 
   await measureTime("subscription made", startRealtime);
 
-  const reload = async () => {
+  const reload = async filterEvent => {
     // stop jerni-server subscription
     subscription.unsubscribe();
 
     await measureTime("clean all sources", store.DEV__cleanAll);
 
-    const history$ = await measureTime(
+    const [history$, events] = await measureTime(
       "constructing history stream",
       async () => {
         const events = await queue.query({ from: 0 });
@@ -77,7 +77,23 @@ module.exports = async function subscribeDev(filepath, opts) {
         Pulses.clear();
         db.saveDatabase();
 
-        return kefir.sequentially(10, pulses.map(pulse => pulse.events));
+        // I know what I'm doing with let
+        let id = 0;
+        const newEvents = [];
+
+        const filteredPulses = pulses
+          .map(pulse =>
+            pulse.events.filter(filterEvent).map(event => {
+              event.id = ++id;
+              newEvents.push(event);
+              return event;
+            })
+          )
+          .filter(events => events.length > 0);
+
+        await queue.DEV__swap(newEvents);
+
+        return [kefir.sequentially(5, filteredPulses), newEvents];
       }
     );
 
@@ -87,10 +103,22 @@ module.exports = async function subscribeDev(filepath, opts) {
       return stream.thru(toArray).toPromise();
     });
 
-    newPulses.forEach(rawPulse => {
-      Pulses.insert(makePersistablePulse(normalizePulse(rawPulse)));
+    const normalizedPulses = newPulses.map(normalizePulse);
+
+    normalizedPulses.forEach(pulse => {
+      Pulses.insert(makePersistablePulse(pulse));
     });
     db.saveDatabase();
+
+    normalizedPulses.forEach(p => {
+      p.events = p.events.reverse();
+    });
+
+    io.emit("redux event", {
+      type: "PULSES_INITIALIZED",
+      payload: normalizedPulses
+    });
+
     await startRealtime();
   };
 
@@ -104,13 +132,16 @@ module.exports = async function subscribeDev(filepath, opts) {
       if (isReloading) return;
 
       isReloading = true;
-      io.emit("redux event", {
-        type: "SERVER/RELOADING"
-      });
-      await measureTime("reloaded", reload);
-      io.emit("redux event", {
-        type: "SERVER/RELOADED"
-      });
+      io.emit("redux event", { type: "SERVER/RELOADING" });
+
+      const filter =
+        "payload" in event
+          ? evt => !event.payload.id_not_in.includes(evt.id)
+          : identity;
+
+      await measureTime("reloaded", () => reload(filter));
+
+      io.emit("redux event", { type: "SERVER/RELOADED" });
       isReloading = false;
     });
   });
@@ -154,3 +185,4 @@ const makePersistablePulse = pulse => {
 };
 
 const toArray = stream$ => stream$.scan((prev, next) => prev.concat(next), []);
+const identity = x => x;
