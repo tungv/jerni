@@ -67,7 +67,7 @@ const RemoveEventConfirmBox = ({
 
       div {
         margin: auto;
-        background: black;
+        background: rgba(0, 0, 0, 0.87);
         color: rgba(255, 255, 255, 0.87);
         font-family: "Open Sans";
         border-radius: 100px;
