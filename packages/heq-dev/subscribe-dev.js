@@ -4,91 +4,98 @@ const socketIO = require("socket.io");
 const getCollection = require("./utils/getCollection");
 const kefir = require("kefir");
 
-module.exports = async function subscribeDev(filepath, opts) {
-  console.log("loading store");
-  console.time("store loaded");
+const measureTime = async (msg, block) => {
+  try {
+    console.time(msg);
+    return await block();
+  } finally {
+    console.timeEnd(msg);
+  }
+};
+
+const importPathWithInterop = async filepath => {
   const mod = await require(path.resolve(process.cwd(), filepath));
-  const defExport = mod.default || mod;
-  const store = await defExport;
+  return mod.default || mod;
+};
 
-  const adapter = require("@heq/server-lokijs");
-  const ns = "local-dev";
-  const queue = await adapter({
-    ns
+module.exports = async function subscribeDev(filepath, opts) {
+  const NAMESPACE = "local-dev";
+  let subscription;
+
+  // preparing store, and lokijs queue
+  const { store, queue } = await measureTime("store loaded", async () => {
+    const store = await importPathWithInterop(filepath);
+    const adapter = require("@heq/server-lokijs");
+    const queue = await adapter({ ns: NAMESPACE });
+    return { store, queue };
   });
 
-  console.timeEnd("store loaded");
+  // create server, rewrite store's `subscribe from` to local server
+  const io = await measureTime("server started", async () => {
+    const server = await startDevServer({
+      port: opts.port,
+      queue
+    });
 
-  console.log("starting server");
+    const { port } = server.address();
 
-  console.time("server started");
-  const server = await startDevServer({
-    port: opts.port,
-    queue
+    store.replaceWriteTo(`http://localhost:${port}`);
+
+    return socketIO(server);
   });
-
-  const io = socketIO(server);
-
-  console.timeEnd("server started");
-
-  const { port } = server.address();
-  console.log({ port });
-
-  store.replaceWriteTo(`http://localhost:${port}`);
 
   const { coll: Pulses, db } = await getCollection("jerni-dev.db", "pulses");
 
-  let subscription;
   const doSubscribe = async () => {
     const stream = await store.subscribe();
-    subscription = stream.observe(({ output }) => {
-      console.log("pulse arrived");
-      const pulse = {
-        events: output.events,
-        models: output.models.map(modelChange => ({
-          model: {
-            name: modelChange.model.name,
-            version: modelChange.model.version
-          },
-          added: modelChange.added,
-          modified: modelChange.modified,
-          removed: modelChange.removed
-        }))
-      };
+    subscription = stream.observe(rawPulse => {
+      const pulse = normalizePulse(rawPulse);
 
-      const eventIdArray = pulse.events.map(e => e.id);
-      Pulses.insert({ ...pulse, events: eventIdArray });
+      Pulses.insert(makePersistablePulse(pulse));
       db.saveDatabase();
+
       io.emit("redux event", { type: "SERVER/PULSE_ARRIVED", payload: pulse });
     });
   };
 
-  doSubscribe();
+  await measureTime("subscription made", doSubscribe);
 
+  const reload = async () => {
+    // stop jerni-server subscription
+    subscription.unsubscribe();
+
+    // TODO: pause /commit endpoint
+
+    const events = await queue.query({ from: 0 });
+    const pulses = await getPulsesWithFullEvents(Pulses.find(), queue);
+
+    Pulses.clear();
+    db.saveDatabase();
+
+    const pulses$ = kefir.sequentially(1, pulses.map(pulse => pulse.events));
+
+    const newPulses = await store.replay(pulses$);
+    newPulses.forEach(rawPulse => {
+      Pulses.insert(makePersistablePulse(normalizePulse(rawPulse)));
+    });
+    db.saveDatabase();
+    await doSubscribe();
+  };
+
+  let isReloading = false;
   io.on("connection", socket => {
     socket.on("client action", async event => {
       if (event.type !== "RELOAD") {
         return;
       }
 
-      // stop jerni-server subscription
-      subscription.unsubscribe();
-      const events = await queue.query({ from: 0 });
+      if (isReloading) return;
 
-      const pulses = await getPulsesWithFullEvents(Pulses.find(), queue);
-
-      console.log(pulses);
-
-      Pulses.clear();
-      db.saveDatabase();
-
-      const pulses$ = kefir.sequentially(1, pulses.map(pulse => pulse.events));
-
-      await store.replay(pulses$);
-      doSubscribe();
+      isReloading = true;
+      await measureTime("reloaded", reload);
+      isReloading = false;
     });
   });
-  // process.exit(0);
 };
 
 async function getPulsesWithFullEvents(pulses, queue) {
@@ -103,3 +110,27 @@ async function getPulsesWithFullEvents(pulses, queue) {
     })
   );
 }
+
+const normalizePulse = ({ output, source }) => {
+  const pulse = {
+    events: output.events,
+    models: output.models.map(modelChange => ({
+      model: {
+        source: source.name,
+        name: modelChange.model.name,
+        version: modelChange.model.version
+      },
+      added: modelChange.added,
+      modified: modelChange.modified,
+      removed: modelChange.removed
+    }))
+  };
+
+  return pulse;
+};
+
+const makePersistablePulse = pulse => {
+  const events = pulse.events.map(e => e.id);
+
+  return Object.assign({}, pulse, { events });
+};

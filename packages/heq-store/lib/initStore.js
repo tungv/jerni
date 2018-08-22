@@ -44,8 +44,6 @@ module.exports = function initStore({ writeTo, readFrom }) {
 
     const oldestVersion = Math.min(...latestEventIdArray);
 
-    console.log({ oldestVersion });
-
     const incomingEvents$ = await getEventsStream({
       queryURL: `${currentWriteTo}/query`,
       subscribeURL: `${currentWriteTo}/subscribe`,
@@ -103,15 +101,16 @@ module.exports = function initStore({ writeTo, readFrom }) {
 
       const output$Array = await Promise.all(output$PromiseArray);
 
-      const allStreams = kefir.merge(output$Array);
+      const allStreams = kefir.merge(output$Array).thru(toArray);
 
       console.time("streaming history");
-      return new Promise(resolve => {
-        allStreams.onEnd(() => {
-          console.timeEnd("streaming history");
-          resolve();
-        });
-      });
+
+      const array = await allStreams.toPromise();
+      console.timeEnd("streaming history");
+
+      return array;
     }
   };
 };
+
+const toArray = stream$ => stream$.scan((prev, next) => prev.concat(next), []);
