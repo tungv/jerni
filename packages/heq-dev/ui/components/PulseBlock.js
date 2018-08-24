@@ -158,8 +158,7 @@ const EventsGroup = ({ events, collapsed, max, loadMore, collapse }) => (
       }
 
       .collapsed div:nth-child(-n + 19) {
-        /* opacity: calc(1 - var(--start) * 0.25); */
-        opacity: 1;
+        opacity: calc(1 - var(--start) * 0.25);
         margin-top: calc(-78px - var(--start) * 1px);
         transform: scale(calc(1 - var(--start) * 0.05));
       }
