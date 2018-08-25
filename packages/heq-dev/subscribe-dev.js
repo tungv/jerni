@@ -68,7 +68,7 @@ module.exports = async function subscribeDev(filepath, opts) {
 
     await measureTime("clean all sources", store.DEV__cleanAll);
 
-    const [history$, events] = await measureTime(
+    const history$ = await measureTime(
       "constructing history stream",
       async () => {
         const events = await queue.query({ from: 0 });
@@ -81,19 +81,20 @@ module.exports = async function subscribeDev(filepath, opts) {
         let id = 0;
         const newEvents = [];
 
-        const filteredPulses = pulses
-          .map(pulse =>
-            pulse.events.filter(filterEvent).map(event => {
-              event.id = ++id;
-              newEvents.push(event);
-              return event;
-            })
-          )
-          .filter(events => events.length > 0);
+        pulses.forEach(pulse => {
+          pulse.events.forEach(event => {
+            const shouldKeep = filterEvent(event);
+            if (!shouldKeep) {
+              event.type = `[MARKED_AS_DELETE]___${event.type}`;
+            }
+
+            newEvents.push(event);
+          });
+        });
 
         await queue.DEV__swap(newEvents);
 
-        return [kefir.sequentially(5, filteredPulses), newEvents];
+        return kefir.sequentially(5, pulses.map(p => p.events));
       }
     );
 
@@ -109,10 +110,6 @@ module.exports = async function subscribeDev(filepath, opts) {
       Pulses.insert(makePersistablePulse(pulse));
     });
     db.saveDatabase();
-
-    normalizedPulses.forEach(p => {
-      p.events = p.events.reverse();
-    });
 
     io.emit("redux event", {
       type: "PULSES_INITIALIZED",
