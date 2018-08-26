@@ -8,6 +8,7 @@
     "heq-store": "^0.0.2"
   },
   "devDependencies": {
-    "heq-dev": "^1.2.2"
-  }
+    "jerni-dev": "latest"
+  },
+  "private": true
 }

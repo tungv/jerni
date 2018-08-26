@@ -10,5 +10,6 @@
   },
   "now": {
     "alias": "events.tung.ninja"
-  }
+  },
+  "private": true
 }
