@@ -1,13 +1,13 @@
 {
   "name": "@heq/store-mongo",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "index.js",
   "repository": "https://github.com/tungv/heq",
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
   "dependencies": {
     "@tungv/mongo-oplog": "3.0.0",
-    "heq-store": "^0.0.2",
+    "heq-store": "^0.1.0",
     "kefir": "^3.8.3",
     "mongo-heartbeat": "^1.1.0",
     "mongodb": "^3.1.1",

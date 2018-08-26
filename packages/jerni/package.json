@@ -1,6 +1,6 @@
 {
   "name": "jerni",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Jerni is your friend when you need a journal log",
   "main": "index.js",
   "scripts": {

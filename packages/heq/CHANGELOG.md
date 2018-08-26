@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="2.0.7"></a>
+## [2.0.7](https://github.com/tungv/heq/compare/heq@2.0.6...heq@2.0.7) (2018-08-26)
+
+
+
+
+**Note:** Version bump only for package heq
+
 <a name="2.0.6"></a>
 ## [2.0.6](https://github.com/tungv/heq/compare/heq@2.0.5...heq@2.0.6) (2018-07-30)
 

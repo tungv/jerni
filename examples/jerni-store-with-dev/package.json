@@ -1,11 +1,11 @@
 {
   "name": "heq-store-with-dev",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "@heq/store-mongo": "^0.1.1",
-    "heq-store": "^0.0.2"
+    "@heq/store-mongo": "^0.1.2",
+    "heq-store": "^0.1.0"
   },
   "devDependencies": {
     "jerni-dev": "latest"

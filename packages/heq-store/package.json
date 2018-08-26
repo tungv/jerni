@@ -1,13 +1,13 @@
 {
   "name": "heq-store",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "client lib for heq-server",
   "main": "index.js",
   "repository": "https://github.com/tungv/heq",
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
   "devDependencies": {
-    "@heq/server-lokijs": "^1.1.0",
+    "@heq/server-lokijs": "^1.2.0",
     "ava": "^0.25.0",
     "brighten": "^0.0.1",
     "heq-server": "^2.1.0",
