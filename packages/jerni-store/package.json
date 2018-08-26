@@ -1,6 +1,6 @@
 {
-  "name": "heq-store",
-  "version": "0.1.0",
+  "name": "jerni-store",
+  "version": "0.1.0-rc.0",
   "description": "client lib for heq-server",
   "main": "index.js",
   "repository": "https://github.com/tungv/heq",
