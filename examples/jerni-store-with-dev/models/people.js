@@ -1,4 +1,4 @@
-const mapEvents = require("heq-store/lib/mapEvents");
+const mapEvents = require("jerni-store/lib/mapEvents");
 const { Model } = require("@heq/store-mongo");
 
 module.exports = new Model({
