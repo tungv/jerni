@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 <a name="0.1.0"></a>
+# 0.1.0 (2018-08-26)
+
+
+
+
+**Note:** Version bump only for package jerni-store
+
+<a name="0.1.0"></a>
 # [0.1.0](https://github.com/tungv/heq/compare/heq-store@0.0.2...heq-store@0.1.0) (2018-08-26)
 
 
