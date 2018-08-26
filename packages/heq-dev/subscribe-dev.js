@@ -84,8 +84,10 @@ module.exports = async function subscribeDev(filepath, opts) {
         pulses.forEach(pulse => {
           pulse.events.forEach(event => {
             const shouldKeep = filterEvent(event);
-            if (!shouldKeep) {
-              event.type = `[MARKED_AS_DELETE]___${event.type}`;
+            if (shouldKeep === 1) {
+              activateEvent(event);
+            } else if (shouldKeep === -1) {
+              deactivateEvent(event);
             }
 
             newEvents.push(event);
@@ -121,8 +123,12 @@ module.exports = async function subscribeDev(filepath, opts) {
 
   let isReloading = false;
   io.on("connection", socket => {
-    socket.on("client action", async event => {
-      if (event.type !== "RELOAD") {
+    socket.on("client action", async reduxEvent => {
+      if (
+        reduxEvent.type !== "RELOAD" &&
+        reduxEvent.type !== "EVENT_DEACTIVATED" &&
+        reduxEvent.type !== "EVENT_REACTIVATED"
+      ) {
         return;
       }
 
@@ -131,10 +137,15 @@ module.exports = async function subscribeDev(filepath, opts) {
       isReloading = true;
       io.emit("redux event", { type: "SERVER/RELOADING" });
 
-      const filter =
-        "payload" in event
-          ? evt => !event.payload.id_not_in.includes(evt.id)
-          : identity;
+      let filter = () => 0;
+      if (reduxEvent.type === "EVENT_DEACTIVATED") {
+        filter = evt =>
+          !isDeactivated(evt) && evt.id === reduxEvent.payload ? -1 : 0;
+      }
+      if (reduxEvent.type === "EVENT_REACTIVATED") {
+        filter = evt =>
+          isDeactivated(evt) && evt.id === reduxEvent.payload ? 1 : 0;
+      }
 
       await measureTime("reloaded", () => reload(filter));
 
@@ -183,3 +194,10 @@ const makePersistablePulse = pulse => {
 
 const toArray = stream$ => stream$.scan((prev, next) => prev.concat(next), []);
 const identity = x => x;
+const isDeactivated = evt => evt.type.startsWith("[MARKED_AS_DELETE]___");
+const deactivateEvent = event => {
+  event.type = `[MARKED_AS_DELETE]___${event.type}`;
+};
+const activateEvent = event => {
+  event.type = event.type.split("[MARKED_AS_DELETE]___").join("");
+};

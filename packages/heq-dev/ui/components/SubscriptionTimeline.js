@@ -10,53 +10,44 @@ const connectSubScriptionTimeline = connect(state => ({
 }));
 
 const SubscriptionTimeline = ({ stream, onRefreshButtonClick }) => (
-  <main>
-    <CurrentBlock />
-    {stream.map(pulse => (
-      <PulseBlock
-        key={pulse.events[0].id}
-        events={pulse.events}
-        models={pulse.models}
-      />
-    ))}
+  <React.Fragment>
+    <main>
+      <CurrentBlock />
+      {stream.map(pulse => (
+        <PulseBlock
+          key={pulse.events[0].id}
+          events={pulse.events}
+          models={pulse.models}
+        />
+      ))}
+      <style jsx>{`
+        main {
+          display: grid;
+          grid-template-columns: minmax(400px, 50%) 2px 1fr;
+          font-family: "Roboto Slab";
+        }
+      `}</style>
+    </main>
     <RemoveEventsConfirmBox />
-    <style jsx>{`
-      main {
-        display: flex;
-        flex-direction: column;
-      }
-    `}</style>
-  </main>
+  </React.Fragment>
 );
 
 const CurrentBlock = () => (
-  <section>
+  <React.Fragment>
     <div className="left" />
-    <TimelineSpine />
+    <TimelineSpine bar={false} />
     <div className="right">now</div>
     <style jsx>{`
-      section {
-        width: 100%;
-        position: relative;
-        font-family: "Roboto Slab";
-        display: flex;
-        flex-direction: row;
-      }
-
       div {
         box-sizing: border-box;
         padding: 6px 12px;
-      }
-
-      .left {
-        width: 480px;
       }
 
       .right {
         flex: 1;
       }
     `}</style>
-  </section>
+  </React.Fragment>
 );
 
 export default connectSubScriptionTimeline(SubscriptionTimeline);

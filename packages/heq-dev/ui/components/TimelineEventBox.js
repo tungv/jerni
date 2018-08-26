@@ -2,20 +2,34 @@ import { connect } from "react-redux";
 import React from "react";
 import classnames from "classnames";
 
-import {
-  isEventRemovingSelector,
-  markAsRemoving,
-  unmarkAsRemoving
-} from "./eventsState";
+import { isEventRemovingSelector } from "./eventsState";
+import { socketEmit } from "../state/socket-io-middleware";
 import MaterialIcon from "./MaterialIcon";
 
 const connectEventBoxToRedux = connect(
-  (state, props) => ({
-    removed: isEventRemovingSelector(state, props.id)
-  }),
+  (state, props) => {
+    if (props.type.startsWith("[MARKED_AS_DELETE]___"))
+      return { status: "removed" };
+    if (isEventRemovingSelector(state, props.id))
+      return { status: "removePending" };
+
+    return { status: "active" };
+  },
   (dispatch, props) => ({
-    onRemoveButtonClick: () => dispatch(markAsRemoving(props.id)),
-    onRestoreButtonClick: () => dispatch(unmarkAsRemoving(props.id))
+    onRemoveButtonClick: () =>
+      dispatch(
+        socketEmit({
+          type: "EVENT_DEACTIVATED",
+          payload: props.id
+        })
+      ),
+    onRestoreButtonClick: () =>
+      dispatch(
+        socketEmit({
+          type: "EVENT_REACTIVATED",
+          payload: props.id
+        })
+      )
   })
 );
 
@@ -24,21 +38,32 @@ const TimelineEventBox = ({
   payload,
   type,
   meta,
-  removed,
+  status,
   onRemoveButtonClick,
   onRestoreButtonClick
 }) => (
-  <div className={classnames("event", { removed })}>
+  <div className={classnames("event", status)}>
     <header>
-      <code>{type}</code>
-      {!removed && (
+      {status === "removed" ? (
+        <code>
+          <del>({type.split("[MARKED_AS_DELETE]___").join("")})</del>
+        </code>
+      ) : (
+        <code>{type}</code>
+      )}
+      {status === "removed" && (
+        <React.Fragment>
+          <span className="action" onClick={onRestoreButtonClick}>
+            <MaterialIcon>restore</MaterialIcon>
+          </span>
+          <span className="action">
+            <MaterialIcon>delete_forever</MaterialIcon>
+          </span>
+        </React.Fragment>
+      )}
+      {status === "active" && (
         <span className="action" onClick={onRemoveButtonClick}>
           <MaterialIcon>remove_circle</MaterialIcon>
-        </span>
-      )}
-      {removed && (
-        <span className="action" onClick={onRestoreButtonClick}>
-          <MaterialIcon>add_circle</MaterialIcon>
         </span>
       )}
       <span className="spacer" />
@@ -59,6 +84,15 @@ const TimelineEventBox = ({
         user-select: none;
       }
 
+      .removePending {
+        background: #bdbdbd;
+        color: rgba(255, 255, 255, 0.86);
+      }
+
+      .removePending .payload {
+        color: rgba(255, 255, 255, 0.57);
+      }
+
       .removed {
         background: #bdbdbd;
         color: rgba(255, 255, 255, 0.86);
@@ -76,7 +110,7 @@ const TimelineEventBox = ({
 
       .action {
         opacity: 0;
-        padding: 0 12px;
+        padding-left: 12px;
         cursor: pointer;
       }
 
@@ -94,6 +128,9 @@ const TimelineEventBox = ({
         font-family: "Overpass Mono", monospace;
         font-size: 18px;
         white-space: nowrap;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
       }
 
       main {

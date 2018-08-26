@@ -29,7 +29,7 @@ class PulseBlock extends React.Component {
     const { collapsed, max } = this.state;
 
     return (
-      <section>
+      <React.Fragment>
         <div className="left">
           {events.length > 1 && (
             <header>
@@ -59,14 +59,6 @@ class PulseBlock extends React.Component {
           <ModelsChangeGroup models={models} />
         </div>
         <style jsx>{`
-          section {
-            width: 100%;
-            position: relative;
-            font-family: "Roboto Slab";
-            display: flex;
-            flex-direction: row;
-          }
-
           header {
             display: flex;
             flex-direction: row;
@@ -87,7 +79,7 @@ class PulseBlock extends React.Component {
           }
 
           .left {
-            width: 480px;
+            /* max-width: 50%; */
             margin-top: -24px;
           }
 
@@ -95,7 +87,7 @@ class PulseBlock extends React.Component {
             flex: 1;
           }
         `}</style>
-      </section>
+      </React.Fragment>
     );
   }
 }

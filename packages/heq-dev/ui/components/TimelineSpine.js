@@ -1,11 +1,11 @@
-import React from 'react';
+import React from "react";
 
-const TimelineSpine = () => (
+const TimelineSpine = ({ bar = true }) => (
   <section>
     <div className="vertical">
       <span />
     </div>
-    <div className="horizontal" />
+    {bar && <div className="horizontal" />}
     <style jsx>{`
       section {
         display: flex;
@@ -19,10 +19,10 @@ const TimelineSpine = () => (
       }
       div.horizontal {
         position: absolute;
-        bottom: 0;
         width: 48px;
         height: 0;
-        border-top: 1px solid #0091ea;
+        transform: translateY(-1px);
+        border-bottom: 1px solid #0091ea;
         margin: 0;
         padding: 0;
       }
