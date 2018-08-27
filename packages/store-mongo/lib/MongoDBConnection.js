@@ -64,8 +64,9 @@ module.exports = class MongoDBConnection extends Connection {
     });
   }
 
-  get latestEventId() {
-    return this.connected.promise.then(() => this.lastReceivedEventId);
+  async getLastSeenId() {
+    await this.connected.promise;
+    return this.lastReceivedEventId;
   }
 
   async clean() {

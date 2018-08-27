@@ -41,7 +41,7 @@ module.exports = function initStore({ writeTo, readFrom }) {
 
   const getDefaultEventStream = async () => {
     const latestEventIdArray = await Promise.all(
-      readFrom.map(source => source.latestEventId)
+      readFrom.map(source => source.getLastSeenId())
     );
 
     const oldestVersion = Math.min(...latestEventIdArray);
@@ -82,7 +82,14 @@ module.exports = function initStore({ writeTo, readFrom }) {
       currentWriteTo = nextWriteTo;
     },
 
-    DEV__cleanAll: () => Promise.all(readFrom.map(src => src.clean()))
+    DEV__cleanAll: () => Promise.all(readFrom.map(src => src.clean())),
+
+    DEV__getNewestVersion: () => {
+      const latestEventIdArray = await Promise.all(
+        readFrom.map(source => source.getLastSeenId())
+      );
+      return Math.max(...latestEventIdArray);
+    }
   };
 };
 
