@@ -32,6 +32,25 @@ module.exports = async function subscribeDev(filepath, opts) {
     return { store, queue };
   });
 
+  const { id: latestServerVersion } = await queue.getLatest();
+  const lastestStoreVersion = await store.DEV__getNewestVersion();
+
+  if (lastestStoreVersion > latestServerVersion) {
+    console.error(`server is behind store!`, {
+      latestServerVersion,
+      lastestStoreVersion
+    });
+    process.exit(1);
+  }
+
+  if (lastestStoreVersion === lastestStoreVersion) {
+    console.log("store has caught up with server at #%d", lastestStoreVersion);
+  } else {
+    console.log(
+      `starting to subscribe from #${lastestStoreVersion}. Server is at ${lastestStoreVersion}`
+    );
+  }
+
   // create server, rewrite store's `subscribe from` to local server
   const io = await measureTime("server started", async () => {
     const server = await startDevServer({
@@ -67,22 +86,6 @@ module.exports = async function subscribeDev(filepath, opts) {
   };
 
   await measureTime("subscription made", startRealtime);
-
-  const { id: latestServerVersion } = await queue.getLatest();
-  const lastestStoreVersion = store.DEV__getNewestVersion();
-
-  if (lastestStoreVersion > latestServerVersion) {
-    console.error(`server is behind store!`, {
-      latestServerVersion,
-      lastestStoreVersion
-    });
-    process.exit(1);
-  } else {
-    console.log(`store is behind server!`, {
-      latestServerVersion,
-      lastestStoreVersion
-    });
-  }
 
   const reload = async filterEvent => {
     // stop jerni-server subscription
@@ -231,7 +234,6 @@ const normalizePulsesDatabase = Pulses => {
   const eventIds = {};
 
   pulses.forEach(pulse => {
-    console.log("pulse #%d", pulse.$loki);
     const events = pulse.events.filter(id => {
       if (eventIds[id]) {
         return false;
@@ -241,10 +243,7 @@ const normalizePulsesDatabase = Pulses => {
       return true;
     });
 
-    console.log("  events: ", events);
-
     if (events.length) {
-      console.log("  insert");
       Pulses.insert({
         events,
         models: pulse.models
