@@ -1,6 +1,6 @@
-const Loki = require('lokijs');
-const mitt = require('mitt');
-const kefir = require('kefir');
+const Loki = require("lokijs");
+const mitt = require("mitt");
+const kefir = require("kefir");
 
 const delokize = obj => {
   const { $loki, ...event } = { ...obj };
@@ -29,12 +29,12 @@ const defer = () => {
   return { promise, resolve, reject };
 };
 
-const adapter = ({ ns = 'local' }) => {
+const adapter = ({ ns = "local" }) => {
   const emitter = mitt();
   const { promise: events, resolve: done } = defer();
   let latest = null;
 
-  const db = new Loki('heq-events.db', {
+  const db = new Loki("heq-events.db", {
     autosave: true,
     autoload: true,
     autosaveInterval: 4000,
@@ -43,23 +43,25 @@ const adapter = ({ ns = 'local' }) => {
 
       if (coll == null) {
         coll = db.addCollection(ns);
+      } else {
+        latest = coll.get(coll.max("$loki"));
       }
 
       done(coll);
-    },
+    }
   });
 
   const commit = async event => {
     latest = (await events).insert({ ...event, meta: { ...event.meta } });
     db.saveDatabase();
-    emitter.emit('data', latest);
+    emitter.emit("data", latest);
     event.id = latest.$loki;
 
     return event;
   };
 
   const getLatest = async () => {
-    return latest ? delokize(latest) : { id: 0, type: '@@INIT' };
+    return latest ? delokize(latest) : { id: 0, type: "@@INIT" };
   };
 
   const query = async ({ from = -1, to }) => {
@@ -77,7 +79,7 @@ const adapter = ({ ns = 'local' }) => {
   };
 
   const subscribe = () => ({
-    events$: kefir.fromEvents(emitter, 'data').map(delokize),
+    events$: kefir.fromEvents(emitter, "data").map(delokize)
   });
 
   const destroy = () => {
