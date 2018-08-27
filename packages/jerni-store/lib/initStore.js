@@ -21,7 +21,7 @@ module.exports = function initStore({ writeTo, readFrom }) {
     });
   });
 
-  const read = model => {
+  const getReader = model => {
     const source = SOURCE_BY_MODELS.get(model);
 
     if (source) {
@@ -71,7 +71,7 @@ module.exports = function initStore({ writeTo, readFrom }) {
   };
 
   return {
-    read,
+    getReader,
     commit,
     waitFor,
     subscribe,
