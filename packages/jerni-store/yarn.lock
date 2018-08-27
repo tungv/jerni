@@ -44,9 +44,9 @@
   dependencies:
     arrify "^1.0.1"
 
-"@heq/server-lokijs@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@heq/server-lokijs/-/server-lokijs-1.1.0.tgz#1c67b40b83e9706bf92efd491f65bb0eec705ba5"
+"@heq/server-lokijs@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@heq/server-lokijs/-/server-lokijs-1.2.0.tgz#88a2d4b464a6c7328dbbf927d8747f78a3d73b50"
   dependencies:
     kefir "^3.8.3"
     lokijs "^1.5.5"
