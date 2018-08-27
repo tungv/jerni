@@ -61,6 +61,7 @@ const adapter = ({ ns = "local" }) => {
   };
 
   const getLatest = async () => {
+    await events;
     return latest ? delokize(latest) : { id: 0, type: "@@INIT" };
   };
 
