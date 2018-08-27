@@ -1,6 +1,6 @@
-const mitt = require('mitt');
+const mitt = require("mitt");
 
-const Connection = require('../lib/Connection');
+const Connection = require("../lib/Connection");
 
 exports.Connection = class DummyConnection extends Connection {
   constructor({ name, models, emitter = mitt() }) {
@@ -12,13 +12,13 @@ exports.Connection = class DummyConnection extends Connection {
     this.listeners = [];
     this.latestDummyId = 0;
 
-    emitter.on('event', event => {
+    emitter.on("event", event => {
       this.latestDummyId = event.id;
       this.listeners.forEach(listener => listener(event.id));
     });
   }
 
-  get latestEventId() {
+  async getLastSeenId() {
     return this.latestDummyId;
   }
 
@@ -40,7 +40,7 @@ exports.Connection = class DummyConnection extends Connection {
       .map(events => events.filter(e => e.id % 4 === 0))
       .filter(x => x.length)
       .map(events => ({
-        events,
+        events
       }));
   }
 };
