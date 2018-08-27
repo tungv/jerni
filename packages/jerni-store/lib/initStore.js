@@ -84,7 +84,7 @@ module.exports = function initStore({ writeTo, readFrom }) {
 
     DEV__cleanAll: () => Promise.all(readFrom.map(src => src.clean())),
 
-    DEV__getNewestVersion: () => {
+    DEV__getNewestVersion: async () => {
       const latestEventIdArray = await Promise.all(
         readFrom.map(source => source.getLastSeenId())
       );
