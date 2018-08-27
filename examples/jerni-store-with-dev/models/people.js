@@ -5,15 +5,14 @@ module.exports = new Model({
   name: "people",
   version: "1.0.0",
   transform: mapEvents({
-    PERSON_REGISTERED: event =>
-      console.log("hello") || {
-        insertOne: {
-          id: event.payload.id,
-          full_name: event.payload.name,
-          born_at: event.payload.born_at,
-          children: []
-        }
-      },
+    PERSON_REGISTERED: event => ({
+      insertOne: {
+        id: event.payload.id,
+        full_name: event.payload.name,
+        born_at: event.payload.born_at,
+        children: []
+      }
+    }),
 
     CHILDREN_BORN: ({ payload: { children, parents }, meta }) => [
       {
