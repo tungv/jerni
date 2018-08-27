@@ -48,6 +48,12 @@ module.exports = async function subscribeDev(filepath, opts) {
 
   const { coll: Pulses, db } = await getCollection("jerni-dev.db", "pulses");
 
+  // normalizing pulses
+  await measureTime("normalize jerni-dev.db", () => {
+    normalizePulsesDatabase(Pulses);
+    db.saveDatabase();
+  });
+
   const startRealtime = async incoming$ => {
     const outgoing$ = await store.subscribe(incoming$);
     subscription = outgoing$.observe(rawPulse => {
@@ -61,6 +67,22 @@ module.exports = async function subscribeDev(filepath, opts) {
   };
 
   await measureTime("subscription made", startRealtime);
+
+  const { id: latestServerVersion } = await queue.getLatest();
+  const lastestStoreVersion = store.DEV__getNewestVersion();
+
+  if (lastestStoreVersion > latestServerVersion) {
+    console.error(`server is behind store!`, {
+      latestServerVersion,
+      lastestStoreVersion
+    });
+    process.exit(1);
+  } else {
+    console.log(`store is behind server!`, {
+      latestServerVersion,
+      lastestStoreVersion
+    });
+  }
 
   const reload = async filterEvent => {
     // stop jerni-server subscription
@@ -200,4 +222,33 @@ const deactivateEvent = event => {
 };
 const activateEvent = event => {
   event.type = event.type.split("[MARKED_AS_DELETE]___").join("");
+};
+
+const normalizePulsesDatabase = Pulses => {
+  const pulses = Pulses.find({});
+  Pulses.clear();
+
+  const eventIds = {};
+
+  pulses.forEach(pulse => {
+    console.log("pulse #%d", pulse.$loki);
+    const events = pulse.events.filter(id => {
+      if (eventIds[id]) {
+        return false;
+      }
+
+      eventIds[id] = true;
+      return true;
+    });
+
+    console.log("  events: ", events);
+
+    if (events.length) {
+      console.log("  insert");
+      Pulses.insert({
+        events,
+        models: pulse.models
+      });
+    }
+  });
 };
