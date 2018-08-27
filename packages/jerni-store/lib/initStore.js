@@ -40,7 +40,9 @@ module.exports = function initStore({ writeTo, readFrom }) {
   };
 
   const getDefaultEventStream = async () => {
-    const latestEventIdArray = readFrom.map(source => source.latestEventId);
+    const latestEventIdArray = await Promise.all(
+      readFrom.map(source => source.latestEventId)
+    );
 
     const oldestVersion = Math.min(...latestEventIdArray);
 

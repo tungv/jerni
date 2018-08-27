@@ -1,15 +1,15 @@
-const MongoHeartbeat = require('mongo-heartbeat');
+const MongoHeartbeat = require("mongo-heartbeat");
 
-const Connection = require('heq-store/lib/Connection');
-const PLazy = require('p-lazy');
-const kefir = require('kefir');
+const Connection = require("heq-store/lib/Connection");
+const PLazy = require("p-lazy");
+const kefir = require("kefir");
 
-const MongoClient = require('mongodb').MongoClient;
-const makeDefer = require('./makeDefer');
-const watch = require('./watch');
-const transform = require('./transform');
+const MongoClient = require("mongodb").MongoClient;
+const makeDefer = require("./makeDefer");
+const watch = require("./watch");
+const transform = require("./transform");
 
-const SNAPSHOT_COLLECTION_NAME = '__snapshots_v1.0.0';
+const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 
 const flatten = arrayDeep => [].concat(...arrayDeep);
 
@@ -29,18 +29,20 @@ module.exports = class MongoDBConnection extends Connection {
     models,
     buffer = {
       time: 2,
-      count: 100,
-    },
+      count: 100
+    }
   }) {
     super({ name, models });
     this.buffer = buffer;
     this.listeners = [];
     this.connectionInfo = {
       url,
-      dbName,
+      dbName
     };
 
     this.connected = makeDefer();
+
+    let firstSuccessfulPackageReceived = false;
 
     this.actuallyConnect().then(async conn => {
       this.connection = conn;
@@ -51,16 +53,19 @@ module.exports = class MongoDBConnection extends Connection {
       const change$ = watch(conn.client, snapshotsCol, this.models);
 
       change$.observe(id => {
+        if (!firstSuccessfulPackageReceived) {
+          firstSuccessfulPackageReceived = true;
+          this.connected.resolve();
+        }
+
         this.lastReceivedEventId = id;
         this.listeners.forEach(fn => fn(id));
       });
-
-      this.connected.resolve();
     });
   }
 
   get latestEventId() {
-    return this.lastReceivedEventId;
+    return this.connected.promise.then(() => this.lastReceivedEventId);
   }
 
   async clean() {
@@ -73,7 +78,7 @@ module.exports = class MongoDBConnection extends Connection {
     });
 
     const condition = {
-      $or: this.models.map(m => ({ name: m.name, version: m.version })),
+      $or: this.models.map(m => ({ name: m.name, version: m.version }))
     };
 
     promises.push(
@@ -90,11 +95,11 @@ module.exports = class MongoDBConnection extends Connection {
       const hb = MongoHeartbeat(db, {
         interval: 5 * 60 * 1000,
         timeout: 30000,
-        tolerance: 3,
+        tolerance: 3
       });
 
-      hb.on('error', err => {
-        console.error('mongodb didnt respond the heartbeat message');
+      hb.on("error", err => {
+        console.error("mongodb didnt respond the heartbeat message");
         process.nextTick(function() {
           process.exit(1);
         });
@@ -145,20 +150,20 @@ module.exports = class MongoDBConnection extends Connection {
             await snapshotsCol.findOneAndUpdate(
               {
                 name: model.name,
-                version: model.version,
+                version: model.version
               },
               {
-                $set: { __v: events[events.length - 1].id },
+                $set: { __v: events[events.length - 1].id }
               },
               {
-                upsert: true,
+                upsert: true
               }
             );
             return {
               model,
               added: 0,
               modified: 0,
-              removed: 0,
+              removed: 0
             };
           }
 
@@ -168,13 +173,13 @@ module.exports = class MongoDBConnection extends Connection {
           await snapshotsCol.findOneAndUpdate(
             {
               name: model.name,
-              version: model.version,
+              version: model.version
             },
             {
-              $set: { __v: events[events.length - 1].id },
+              $set: { __v: events[events.length - 1].id }
             },
             {
-              upsert: true,
+              upsert: true
             }
           );
 
@@ -182,14 +187,14 @@ module.exports = class MongoDBConnection extends Connection {
             model,
             added: modelOpsResult.nUpserted,
             modified: modelOpsResult.nModified,
-            removed: modelOpsResult.nRemoved,
+            removed: modelOpsResult.nRemoved
           };
         });
 
         return Promise.all(allPromises).then(changesByModels => {
           resolve({
             events,
-            models: changesByModels,
+            models: changesByModels
           });
         });
       });
