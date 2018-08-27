@@ -73,8 +73,8 @@ module.exports = async function subscribeDev(filepath, opts) {
     db.saveDatabase();
   });
 
-  const startRealtime = async incoming$ => {
-    const outgoing$ = await store.subscribe(incoming$);
+  const startRealtime = async () => {
+    const outgoing$ = await store.subscribe();
     subscription = outgoing$.observe(rawPulse => {
       const pulse = normalizePulse(rawPulse);
 
