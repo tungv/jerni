@@ -12,13 +12,10 @@ async function main(filepath) {
 
   process.on("message", async msg => {
     if (msg.cmd === "simple call") {
-      console.log("worker:: executing %s", msg.methodName);
       const args = msg.args.map(
         arg => (arg && arg.$stream ? deserializeStream(process, arg) : arg)
       );
       const reply = await store[msg.methodName].apply(store, args);
-
-      console.log("worker:: executed %s", msg.methodName);
 
       if (reply && typeof reply.observe === "function") {
         process.send({
@@ -40,8 +37,6 @@ async function main(filepath) {
 
   const rootDir = pkgDir.sync(filepath);
   const toWatch = Object.keys(require.cache).filter(f => f.startsWith(rootDir));
-
-  console.log({ toWatch: toWatch.map(f => f.split(rootDir).join(".")) });
 }
 
 main(process.argv[2]);

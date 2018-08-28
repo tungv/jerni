@@ -23,6 +23,7 @@
     "date-fns": "^1.29.0",
     "heq-server": "^2.1.0",
     "isomorphic-fetch": "^2.2.1",
+    "listr": "^0.14.1",
     "lokijs": "^1.5.5",
     "micro": "^9.3.2",
     "microrouter": "^3.1.3",

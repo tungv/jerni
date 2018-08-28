@@ -16,13 +16,9 @@ module.exports = async function createProxy(filepath) {
     const id = ++counter;
     const defer = makeDefer();
     defers[id] = defer;
-    console.time(`master:: simpleCall ${methodName}`);
-    worker.send({ cmd: `simple call`, id, methodName, args });
-    return defer.promise.then(reply => {
-      console.timeEnd(`master:: simpleCall ${methodName}`);
 
-      return reply;
-    });
+    worker.send({ cmd: `simple call`, id, methodName, args });
+    return defer.promise;
   };
 
   worker.on("exit", () => {
