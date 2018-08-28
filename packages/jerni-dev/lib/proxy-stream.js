@@ -45,7 +45,7 @@ const deserializeStream = (receiver, token) => {
     receiver.on("message", handler);
 
     return () => {
-      receiver.off("message", handler);
+      receiver.removeListener("message", handler);
     };
   });
 };
