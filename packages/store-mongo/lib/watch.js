@@ -1,9 +1,9 @@
-const kefir = require('kefir');
-const MongoOplog = require('@tungv/mongo-oplog');
+const kefir = require("kefir");
+const MongoOplog = require("@tungv/mongo-oplog");
 
 const watchWithoutReplicaSet = (collection, models) => {
   const condition = {
-    $or: models.map(m => ({ name: m.name, version: m.version })),
+    $or: models.map(m => ({ name: m.name, version: m.version }))
   };
 
   let version = 0;
@@ -32,21 +32,21 @@ const watchWithoutReplicaSet = (collection, models) => {
 };
 
 const watchWithChangeStream = (client, namespace, models) => {
-  const oplog = MongoOplog(client.db('local'), { ns: namespace });
+  const oplog = MongoOplog(client.db("local"), { ns: namespace });
 
   const condition = {
-    $or: models.map(m => ({ name: m.name, version: m.version })),
+    $or: models.map(m => ({ name: m.name, version: m.version }))
   };
 
   let version = 0;
 
   return kefir.stream(async emitter => {
-    oplog.on('error', error => {
+    oplog.on("error", error => {
       emitter.error(error);
     });
 
     await oplog.tail();
-    oplog.on('update', doc => {
+    oplog.on("update", doc => {
       if (doc.o.$set.__v) {
         emitter.emit(doc.o.$set.__v);
       }
@@ -71,13 +71,17 @@ const once = fn => {
   };
 };
 
-const logRealtime = once(() => console.log('receive signal in realtime'));
-const logInterval = once(() => console.log('receive signal by polling'));
+const logRealtime = once(() =>
+  console.log("@jerni/store-mongo: receive signal in realtime")
+);
+const logInterval = once(() =>
+  console.log("@jerni/store-mongo: receive signal by polling every 100ms")
+);
 
 module.exports = (client, snapshotCol, models) => {
   return kefir.stream(async emitter => {
     const condition = {
-      $or: models.map(m => ({ name: m.name, version: m.version })),
+      $or: models.map(m => ({ name: m.name, version: m.version }))
     };
 
     const resp = await snapshotCol.find(condition).toArray();
