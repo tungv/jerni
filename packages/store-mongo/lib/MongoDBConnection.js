@@ -64,6 +64,15 @@ module.exports = class MongoDBConnection extends Connection {
     });
   }
 
+  toJSON() {
+    return {
+      name: this.name,
+      url: this.url,
+      dbName: this.dbName,
+      buffer: this.buffer
+    };
+  }
+
   async getLastSeenId() {
     await this.connected.promise;
     return this.lastReceivedEventId;
