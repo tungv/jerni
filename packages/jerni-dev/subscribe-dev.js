@@ -1,7 +1,9 @@
-const socketIO = require("socket.io");
 const Listr = require("listr");
-const kefir = require("kefir");
 const brighten = require("brighten");
+const kefir = require("kefir");
+const kleur = require("kleur");
+const socketIO = require("socket.io");
+
 const path = require("path");
 
 const createProxy = require("./lib/store-proxy");
@@ -9,6 +11,14 @@ const getCollection = require("./utils/getCollection");
 const startDevServer = require("./start-dev");
 
 const NAMESPACE = "local-dev";
+
+const startBanner = () => {
+  const banner = `${kleur.bgGreen.bold.white(
+    " jerni-dev "
+  )} ${kleur.green.bold.underline("subscribe")}`;
+  brighten();
+  console.log(banner);
+};
 
 const startRealtime = async (ctx, task) => {
   const { store, io, db, Pulses } = ctx;
@@ -26,7 +36,7 @@ const startRealtime = async (ctx, task) => {
   task.title = "listening for new events";
 };
 
-const tasks = new Listr([
+const initialTasks = new Listr([
   {
     title: "setup store and queue",
     task: async ctx => {
@@ -55,7 +65,11 @@ const tasks = new Listr([
                 "pulses"
               );
 
-              (ctx.Pulses = coll), (ctx.db = db);
+              normalizePulsesDatabase(coll);
+              db.saveDatabase();
+
+              ctx.Pulses = coll;
+              ctx.db = db;
             }
           }
         ],
@@ -64,14 +78,6 @@ const tasks = new Listr([
     }
   },
 
-  {
-    title: "normalizing database",
-    task: async ctx => {
-      const { Pulses, db } = ctx;
-      normalizePulsesDatabase(Pulses);
-      db.saveDatabase();
-    }
-  },
   {
     title: "compare versions",
     task: async (ctx, task) => {
@@ -103,7 +109,6 @@ const tasks = new Listr([
         queue
       });
 
-      brighten();
       const { port } = server.address();
       const serverUrl = `http://localhost:${port}`;
       task.title = `jerni-server started! POST to ${serverUrl}/commit to commit new events`;
@@ -119,118 +124,157 @@ const tasks = new Listr([
   }
 ]);
 
-const measureTime = async (msg, block) => {
-  try {
-    console.time(msg);
-    return await block();
-  } finally {
-    console.timeEnd(msg);
+const reloadTasks = new Listr([
+  {
+    title: "preparing",
+    task: (ctx, task) => {
+      const { reduxEvent } = ctx;
+      switch (reduxEvent.type) {
+        case "EVENT_DEACTIVATED":
+          ctx.filter = evt =>
+            !isDeactivated(evt) && evt.id === reduxEvent.payload ? -1 : 0;
+          break;
+
+        case "EVENT_REACTIVATED":
+          ctx.filter = evt =>
+            isDeactivated(evt) && evt.id === reduxEvent.payload ? 1 : 0;
+          break;
+
+        default:
+          ctx.filter = () => 0;
+      }
+
+      task.title = "prepared";
+    }
+  },
+  {
+    title: "cleaning destinations",
+    task: async (ctx, task) => {
+      const { store, subscription, filter } = ctx;
+      // stop jerni-server subscription
+      subscription.unsubscribe();
+      await store.DEV__cleanAll();
+      task.title = "destinations cleaned";
+    }
+  },
+  {
+    title: "constructing new journey",
+    task: async (ctx, task) => {
+      const { filter, queue, Pulses, db } = ctx;
+
+      const events = await queue.query({ from: 0 });
+      const pulses = await getPulsesWithFullEvents(Pulses.find(), queue);
+
+      // I know what I'm doing with let
+      let id = 0;
+      const newEvents = [];
+
+      pulses.forEach(pulse => {
+        pulse.events.forEach(event => {
+          const shouldKeep = filter(event);
+          if (shouldKeep === 1) {
+            activateEvent(event);
+          } else if (shouldKeep === -1) {
+            deactivateEvent(event);
+          }
+
+          newEvents.push(event);
+        });
+      });
+
+      await queue.DEV__swap(newEvents);
+
+      ctx.incoming$ = kefir.sequentially(5, pulses.map(p => p.events));
+      task.title = "new journey constructed";
+    }
+  },
+  {
+    title: "replay",
+    task: async (_, task) => {
+      return new Listr([
+        {
+          title: "replay",
+          task: async ctx => {
+            const { Pulses, store, incoming$ } = ctx;
+
+            const stream = await store.subscribe(incoming$);
+
+            ctx.newPulses = [];
+
+            return stream
+              .map(normalizePulse)
+              .map(pulse => {
+                ctx.newPulses.push(pulse);
+                const lastEvent = pulse.events[pulse.events.length - 1];
+                return `#${lastEvent.id} - ${lastEvent.type}`;
+              })
+              .toESObservable();
+          }
+        },
+        {
+          title: "finishing replay",
+          task: () => (task.title = "replayed")
+        }
+      ]);
+    }
+  },
+  {
+    title: "flushing",
+    task: (ctx, task) => {
+      const { db, io, newPulses, Pulses } = ctx;
+
+      Pulses.clear();
+      newPulses.forEach(pulse => Pulses.insert(makePersistablePulse(pulse)));
+      db.saveDatabase();
+
+      io.emit("redux event", {
+        type: "PULSES_INITIALIZED",
+        payload: newPulses.slice(0, 50)
+      });
+
+      task.title = "flushed";
+    }
+  },
+  {
+    title: "switch to realtime",
+    task: startRealtime
   }
-};
+]);
 
 module.exports = async function subscribeDev(filepath, opts) {
   try {
-    const ctx = await tasks.run({ filepath, opts });
+    startBanner();
+    const ctx = await initialTasks.run({ filepath, opts });
     console.log("\n");
+
+    let isReloading = false;
+    ctx.io.on("connection", socket => {
+      socket.on("client action", async reduxEvent => {
+        if (
+          reduxEvent.type !== "RELOAD" &&
+          reduxEvent.type !== "EVENT_DEACTIVATED" &&
+          reduxEvent.type !== "EVENT_REACTIVATED"
+        ) {
+          return;
+        }
+
+        if (isReloading) return;
+
+        isReloading = true;
+        ctx.io.emit("redux event", { type: "SERVER/RELOADING" });
+        brighten();
+        console.log(
+          `${kleur.bgGreen.bold(" jerni-dev ")} ${kleur.bold(reduxEvent.type)}`
+        );
+        await reloadTasks.run(Object.create({ ...ctx, reduxEvent }));
+
+        ctx.io.emit("redux event", { type: "SERVER/RELOADED" });
+        isReloading = false;
+      });
+    });
   } catch (ex) {
     process.exit(1);
   }
-
-  // const NAMESPACE = "local-dev";
-  // let subscription;
-  //
-  //
-  // const reload = async filterEvent => {
-  //   // stop jerni-server subscription
-  //   subscription.unsubscribe();
-  //
-  //   await measureTime("clean all sources", store.DEV__cleanAll);
-  //
-  //   const history$ = await measureTime(
-  //     "constructing history stream",
-  //     async () => {
-  //       const events = await queue.query({ from: 0 });
-  //       const pulses = await getPulsesWithFullEvents(Pulses.find(), queue);
-  //
-  //       Pulses.clear();
-  //       db.saveDatabase();
-  //
-  //       // I know what I'm doing with let
-  //       let id = 0;
-  //       const newEvents = [];
-  //
-  //       pulses.forEach(pulse => {
-  //         pulse.events.forEach(event => {
-  //           const shouldKeep = filterEvent(event);
-  //           if (shouldKeep === 1) {
-  //             activateEvent(event);
-  //           } else if (shouldKeep === -1) {
-  //             deactivateEvent(event);
-  //           }
-  //
-  //           newEvents.push(event);
-  //         });
-  //       });
-  //
-  //       await queue.DEV__swap(newEvents);
-  //
-  //       return kefir.sequentially(5, pulses.map(p => p.events));
-  //     }
-  //   );
-  //
-  //   const newPulses = await measureTime("replay history", async () => {
-  //     const stream = await store.subscribe(history$);
-  //
-  //     return stream.thru(toArray).toPromise();
-  //   });
-  //
-  //   const normalizedPulses = newPulses.map(normalizePulse);
-  //
-  //   normalizedPulses.forEach(pulse => {
-  //     Pulses.insert(makePersistablePulse(pulse));
-  //   });
-  //   db.saveDatabase();
-  //
-  //   io.emit("redux event", {
-  //     type: "PULSES_INITIALIZED",
-  //     payload: normalizedPulses
-  //   });
-  //
-  //   await startRealtime();
-  // };
-  //
-  // let isReloading = false;
-  // io.on("connection", socket => {
-  //   socket.on("client action", async reduxEvent => {
-  //     if (
-  //       reduxEvent.type !== "RELOAD" &&
-  //       reduxEvent.type !== "EVENT_DEACTIVATED" &&
-  //       reduxEvent.type !== "EVENT_REACTIVATED"
-  //     ) {
-  //       return;
-  //     }
-  //
-  //     if (isReloading) return;
-  //
-  //     isReloading = true;
-  //     io.emit("redux event", { type: "SERVER/RELOADING" });
-  //
-  //     let filter = () => 0;
-  //     if (reduxEvent.type === "EVENT_DEACTIVATED") {
-  //       filter = evt =>
-  //         !isDeactivated(evt) && evt.id === reduxEvent.payload ? -1 : 0;
-  //     }
-  //     if (reduxEvent.type === "EVENT_REACTIVATED") {
-  //       filter = evt =>
-  //         isDeactivated(evt) && evt.id === reduxEvent.payload ? 1 : 0;
-  //     }
-  //
-  //     await measureTime("reloaded", () => reload(filter));
-  //
-  //     io.emit("redux event", { type: "SERVER/RELOADED" });
-  //     isReloading = false;
-  //   });
-  // });
 };
 
 async function getPulsesWithFullEvents(pulses, queue) {
