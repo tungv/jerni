@@ -1,22 +1,22 @@
-const withUI = require('./withUI');
-const withDevAPI = require('./withDevAPI');
+const withUI = require("./withUI");
+const withDevAPI = require("./withDevAPI");
 
 const makeOrReuseQueue = async opts => {
   if (opts.queue) return opts.queue;
 
-  const adapter = require('@heq/server-lokijs');
+  const adapter = require("@heq/server-lokijs");
 
   const queue = await adapter({
-    ns: opts.namespace,
+    ns: opts.namespace
   });
 
   return queue;
 };
 
 module.exports = async opts => {
-  const factory = require('heq-server');
-  const ip = require('ip');
-  const micro = require('micro');
+  const factory = require("heq-server");
+  const ip = require("ip");
+  const micro = require("micro");
 
   const { port: PUBLIC_PORT } = opts;
 
@@ -27,13 +27,13 @@ module.exports = async opts => {
   const serviceWithUI = await withUI(devService);
   const server = micro(serviceWithUI);
 
-  process.on('SIGTERM', () => {
-    console.log('terminating...');
+  process.on("SIGTERM", () => {
+    console.log("terminating...");
     process.exit(0);
   });
 
-  process.on('SIGINT', () => {
-    console.log('interuptted! Goodbye');
+  process.on("SIGINT", () => {
+    console.log("interuptted! Goodbye");
     process.exit(0);
   });
 
@@ -45,15 +45,6 @@ module.exports = async opts => {
       }
 
       const ipAddress = ip.address();
-
-      console.log(`heq-server started!`);
-      console.log(`running locally on port ${PUBLIC_PORT}`);
-      console.log(
-        `using @heq/server-lokijs implementation (${opts.namespace})`
-      );
-      console.log(
-        `public API is listening on http://${ipAddress}:${PUBLIC_PORT}`
-      );
 
       resolve(server);
     });
