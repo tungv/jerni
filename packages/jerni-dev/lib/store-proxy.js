@@ -1,47 +1,59 @@
 const { fork } = require("child_process");
-const makeDefer = require("./makeDefer");
-const kefir = require("kefir");
 const path = require("path");
+
 const { serializeStream, deserializeStream } = require("./proxy-stream");
+const makeDefer = require("./makeDefer");
 
-module.exports = async function createProxy(filepath) {
-  const worker = fork(path.resolve(__dirname, "./subscriber-process.js"), [
-    filepath
-  ]);
+module.exports = function createProxy(filepath) {
+  return new Promise((resolve, reject) => {
+    const worker = fork(path.resolve(__dirname, "./subscriber-process.js"), [
+      filepath
+    ]);
 
-  let counter = 0;
-  const defers = {};
+    ["error", "exit", "close", "disconnect"].forEach(evt => {
+      worker.on(evt, (...args) => {
+        console.log("-----", evt, ...args);
+      });
+    });
 
-  const simpleCall = methodName => (...args) => {
-    const id = ++counter;
-    const defer = makeDefer();
-    defers[id] = defer;
+    let counter = 0;
+    const defers = {};
 
-    worker.send({ cmd: `simple call`, id, methodName, args });
-    return defer.promise;
-  };
+    const simpleCall = methodName => (...args) => {
+      const id = ++counter;
+      const defer = makeDefer();
+      defers[id] = defer;
 
-  worker.on("exit", () => {
-    console.log("exitted");
+      worker.send({ cmd: `simple call`, id, methodName, args });
+      return defer.promise;
+    };
+
+    worker.on("message", msg => {
+      if (msg.cmd === "ok") {
+        resolve({
+          DEV__getNewestVersion: simpleCall("DEV__getNewestVersion"),
+          DEV__replaceWriteTo: simpleCall("DEV__replaceWriteTo"),
+          DEV__cleanAll: simpleCall("DEV__cleanAll"),
+          subscribe: async incoming$ => {
+            const token = serializeStream(worker, ++counter, incoming$);
+            const outgoingToken = await simpleCall("subscribe")(token);
+
+            return deserializeStream(worker, outgoingToken);
+          }
+        });
+        return;
+      }
+      if (msg.cmd === "error") {
+        worker.kill();
+        const err = new Error(msg.message);
+        reject(err);
+        return;
+      }
+      if (msg.cmd === "simple call reply") {
+        const defer = defers[msg.id];
+        delete defers[msg.id];
+        defer.resolve(msg.reply);
+      }
+    });
   });
-
-  worker.on("message", msg => {
-    if (msg.cmd === "simple call reply") {
-      const defer = defers[msg.id];
-      delete defers[msg.id];
-      defer.resolve(msg.reply);
-    }
-  });
-
-  return {
-    DEV__getNewestVersion: simpleCall("DEV__getNewestVersion"),
-    DEV__replaceWriteTo: simpleCall("DEV__replaceWriteTo"),
-    DEV__cleanAll: simpleCall("DEV__cleanAll"),
-    subscribe: async incoming$ => {
-      const token = serializeStream(worker, ++counter, incoming$);
-      const outgoingToken = await simpleCall("subscribe")(token);
-
-      return deserializeStream(worker, outgoingToken);
-    }
-  };
 };

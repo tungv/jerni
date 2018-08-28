@@ -39,4 +39,12 @@ async function main(filepath) {
   const toWatch = Object.keys(require.cache).filter(f => f.startsWith(rootDir));
 }
 
-main(process.argv[2]);
+main(process.argv[2]).then(
+  () => {
+    process.send({ cmd: "ok" });
+  },
+  ex => {
+    process.send({ cmd: "error", name: ex.name, message: ex.message });
+    process.exit(1);
+  }
+);
