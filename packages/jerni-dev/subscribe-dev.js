@@ -3,6 +3,7 @@ const socketIO = require("socket.io");
 const kefir = require("kefir");
 const path = require("path");
 
+const createProxy = require("./lib/store-proxy");
 const getCollection = require("./utils/getCollection");
 const startDevServer = require("./start-dev");
 
@@ -15,18 +16,13 @@ const measureTime = async (msg, block) => {
   }
 };
 
-const importPathWithInterop = async filepath => {
-  const mod = await require(path.resolve(process.cwd(), filepath));
-  return mod.default || mod;
-};
-
 module.exports = async function subscribeDev(filepath, opts) {
   const NAMESPACE = "local-dev";
   let subscription;
 
   // preparing store, and lokijs queue
   const { store, queue } = await measureTime("store loaded", async () => {
-    const store = await importPathWithInterop(filepath);
+    const store = await createProxy(path.resolve(process.cwd(), filepath));
     const adapter = require("@heq/server-lokijs");
     const queue = await adapter({ ns: NAMESPACE });
     return { store, queue };
