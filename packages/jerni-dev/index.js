@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const sade = require("sade");
-const program = sade("heq-dev");
+const program = sade("jerni-dev");
 
 const { version } = require("./package.json");
 
