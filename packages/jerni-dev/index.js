@@ -16,6 +16,7 @@ program
   )
   .option("port", "http port to listen", Number.parseInt(HEQ_PORT, 10))
   .option("force", "try it best to start a server", false)
+  .option("open", "open web UI after initializing", false)
   .action((path, opts) => {
     if (opts.banner) {
       require("./banner");

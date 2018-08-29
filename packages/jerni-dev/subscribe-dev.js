@@ -10,6 +10,7 @@ const fs = require("fs");
 const createProxy = require("./lib/store-proxy");
 const getCollection = require("./utils/getCollection");
 const startDevServer = require("./start-dev");
+const open = require("./lib/open");
 
 const NAMESPACE = "local-dev";
 const DEV_DIR = path.resolve(process.cwd(), "./.jerni-dev");
@@ -127,13 +128,21 @@ const initialTasks = new Listr([
 
       const { port } = server.address();
       const serverUrl = `http://localhost:${port}`;
+      ctx.serverUrl = serverUrl;
+
       task.title = `jerni-server started! POST to ${serverUrl}/commit to commit new events`;
 
       fs.writeFileSync(path.resolve(DEV_DIR, "dev-server.txt"), serverUrl);
-
       store.DEV__replaceWriteTo(serverUrl);
 
       ctx.io = socketIO(server);
+    }
+  },
+  {
+    title: "open web UI",
+    skip: ctx => ctx.opts.open === false,
+    task: ctx => {
+      open(ctx.serverUrl);
     }
   },
   {
