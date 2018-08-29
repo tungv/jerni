@@ -2,7 +2,6 @@ import { connect } from "react-redux";
 import React from "react";
 
 import PulseBlock from "./PulseBlock";
-import RemoveEventsConfirmBox from "./RemoveEventsConfirmBox";
 import TimelineSpine from "./TimelineSpine";
 
 const connectSubScriptionTimeline = connect(state => ({
@@ -10,26 +9,23 @@ const connectSubScriptionTimeline = connect(state => ({
 }));
 
 const SubscriptionTimeline = ({ stream, onRefreshButtonClick }) => (
-  <React.Fragment>
-    <main>
-      <CurrentBlock />
-      {stream.map(pulse => (
-        <PulseBlock
-          key={pulse.events[0].id}
-          events={pulse.events}
-          models={pulse.models}
-        />
-      ))}
-      <style jsx>{`
-        main {
-          display: grid;
-          grid-template-columns: minmax(400px, 50%) 2px 1fr;
-          font-family: "Roboto Slab";
-        }
-      `}</style>
-    </main>
-    <RemoveEventsConfirmBox />
-  </React.Fragment>
+  <main>
+    <CurrentBlock />
+    {stream.map(pulse => (
+      <PulseBlock
+        key={pulse.events[0].id}
+        events={pulse.events}
+        models={pulse.models}
+      />
+    ))}
+    <style jsx>{`
+      main {
+        display: grid;
+        grid-template-columns: minmax(400px, 50%) 2px 1fr;
+        font-family: "Roboto Slab";
+      }
+    `}</style>
+  </main>
 );
 
 const CurrentBlock = () => (
