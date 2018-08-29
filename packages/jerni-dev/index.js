@@ -1,43 +1,27 @@
 #!/usr/bin/env node
-const sade = require('sade');
-const program = sade('heq-dev');
+const sade = require("sade");
+const program = sade("heq-dev");
 
-const { version } = require('./package.json');
+const { version } = require("./package.json");
 
-program.version(version).option('banner', 'BANNER FTW', false);
+program.version(version).option("banner", "BANNER FTW", false);
 
-const { HEQ_LOKIJS_NAMESPACE = 'local', HEQ_PORT = '8080' } = process.env;
-
-program.option('port', 'http port to listen', Number.parseInt(HEQ_PORT, 10));
+const { HEQ_PORT = "8080" } = process.env;
 
 program
   .command(
-    'start',
-    'start a heq-server instead using local database implementation',
+    "subscribe <path>",
+    "subscribe to a heq-store instance with an integrated heq-server",
     { default: true }
   )
-  .option('namespace', 'name', HEQ_LOKIJS_NAMESPACE)
-  .action(opts => {
-    if (opts.banner) {
-      require('./banner');
-    }
-    require('./start-dev')(opts).catch(err => {
-      console.error('cannot start server', err);
-      process.exit(1);
-    });
-  });
-
-program
-  .command(
-    'subscribe <path>',
-    'subscribe to a heq-store instance with an integrated heq-server'
-  )
+  .option("port", "http port to listen", Number.parseInt(HEQ_PORT, 10))
+  .option("force", "try it best to start a server", false)
   .action((path, opts) => {
     if (opts.banner) {
-      require('./banner');
+      require("./banner");
     }
 
-    require('./subscribe-dev')(path, opts);
+    require("./subscribe-dev")(path, opts);
   });
 
 program.parse(process.argv);
