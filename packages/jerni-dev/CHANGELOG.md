@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.2.0"></a>
+# [0.2.0](https://github.com/tungv/heq/compare/jerni-dev@0.1.1...jerni-dev@0.2.0) (2018-08-29)
+
+
+### Bug Fixes
+
+* **devtool:** clean up pulses DB before starting server ([5881797](https://github.com/tungv/heq/commit/5881797))
+* **devtool:** kill memleak ([5f72cd1](https://github.com/tungv/heq/commit/5f72cd1))
+* **devtool:** needs to use removeEventListener instead of off ([959d6b2](https://github.com/tungv/heq/commit/959d6b2))
+
+
+### Features
+
+* **devtool:** detect dependencies graph ([7b317fa](https://github.com/tungv/heq/commit/7b317fa))
+* **devtool:** implement makeDefer.js ([cdddb3c](https://github.com/tungv/heq/commit/cdddb3c))
+* **devtool:** move subscriber process to another process ([2a6a14d](https://github.com/tungv/heq/commit/2a6a14d))
+* **devtool:** serialize/deserialize kefir observable ([aa5b943](https://github.com/tungv/heq/commit/aa5b943))
+* **devtool:** subprocess sends ok or error before resolving proxy ([e1ab819](https://github.com/tungv/heq/commit/e1ab819))
+
+
+
+
 <a name="0.1.1"></a>
 ## [0.1.1](https://github.com/tungv/heq/compare/jerni-dev@0.1.0...jerni-dev@0.1.1) (2018-08-26)
 
