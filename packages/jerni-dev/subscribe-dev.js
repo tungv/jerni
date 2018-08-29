@@ -244,7 +244,7 @@ const reloadTasks = new Listr([
 module.exports = async function subscribeDev(filepath, opts) {
   try {
     startBanner();
-    const ctx = await initialTasks.run({ filepath, opts });
+    let ctx = await initialTasks.run({ filepath, opts });
     console.log("\n");
 
     let isReloading = false;
@@ -266,7 +266,7 @@ module.exports = async function subscribeDev(filepath, opts) {
         console.log(
           `${kleur.bgGreen.bold(" jerni-dev ")} ${kleur.bold(reduxEvent.type)}`
         );
-        await reloadTasks.run(Object.create({ ...ctx, reduxEvent }));
+        ctx = await reloadTasks.run({ ...ctx, reduxEvent });
 
         ctx.io.emit("redux event", { type: "SERVER/RELOADED" });
         isReloading = false;
