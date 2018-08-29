@@ -1,5 +1,5 @@
 const mapEvents = require("jerni-store/lib/mapEvents");
-const { Model } = require("@heq/store-mongo");
+const { Model } = require("@jerni/store-mongo");
 
 module.exports = new Model({
   name: "people",
