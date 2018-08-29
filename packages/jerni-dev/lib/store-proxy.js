@@ -1,59 +1,22 @@
-const { fork } = require("child_process");
-const path = require("path");
+const pkgDir = require("pkg-dir");
 
-const { serializeStream, deserializeStream } = require("./proxy-stream");
-const makeDefer = require("./makeDefer");
+const importPathWithInterop = async filepath => {
+  const mod = await require(filepath);
+  return mod.default || mod;
+};
 
-module.exports = function createProxy(filepath) {
-  return new Promise((resolve, reject) => {
-    const worker = fork(path.resolve(__dirname, "./subscriber-process.js"), [
-      filepath
-    ]);
+module.exports = async function createProxy(filepath) {
+  let store = await importPathWithInterop(filepath);
 
-    ["error", "exit", "close", "disconnect"].forEach(evt => {
-      worker.on(evt, (...args) => {
-        console.log("-----", evt, ...args);
-      });
-    });
+  const rootDir = pkgDir.sync(filepath);
+  const toWatch = Object.keys(require.cache).filter(f => f.startsWith(rootDir));
 
-    let counter = 0;
-    const defers = {};
-
-    const simpleCall = methodName => (...args) => {
-      const id = ++counter;
-      const defer = makeDefer();
-      defers[id] = defer;
-
-      worker.send({ cmd: `simple call`, id, methodName, args });
-      return defer.promise;
-    };
-
-    worker.on("message", msg => {
-      if (msg.cmd === "ok") {
-        resolve({
-          DEV__getNewestVersion: simpleCall("DEV__getNewestVersion"),
-          DEV__replaceWriteTo: simpleCall("DEV__replaceWriteTo"),
-          DEV__cleanAll: simpleCall("DEV__cleanAll"),
-          subscribe: async incoming$ => {
-            const token = serializeStream(worker, ++counter, incoming$);
-            const outgoingToken = await simpleCall("subscribe")(token);
-
-            return deserializeStream(worker, outgoingToken);
-          }
-        });
-        return;
+  return new Proxy(
+    {},
+    {
+      get(_, prop) {
+        return store[prop];
       }
-      if (msg.cmd === "error") {
-        worker.kill();
-        const err = new Error(msg.message);
-        reject(err);
-        return;
-      }
-      if (msg.cmd === "simple call reply") {
-        const defer = defers[msg.id];
-        delete defers[msg.id];
-        defer.resolve(msg.reply);
-      }
-    });
-  });
+    }
+  );
 };
