@@ -5,8 +5,10 @@
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
-    "dev": "NODE_ENV=heq_development node index",
+    "dev:web": "NODE_ENV=heq_development node --trace-warnings index",
+    "dev:cli": "node --trace-warnings index",
     "test": "ava",
+    "dev:clean": "rm *.db && mongo examples --eval \"db.dropDatabase()\"",
     "prepare": "next build"
   },
   "author": "Tung Vu <me@tungv.com>",
