@@ -3,13 +3,13 @@ const makeRacer = require("./racer");
 const getEventsStream = require("./subscribe");
 const kefir = require("kefir");
 
-module.exports = function initStore({ writeTo, readFrom }) {
+module.exports = function initStore({ writeTo, stores }) {
   const SOURCE_BY_MODELS = new Map();
-  const racer = makeRacer(readFrom.map(() => 0));
+  const racer = makeRacer(stores.map(() => 0));
 
   let currentWriteTo = writeTo;
 
-  readFrom.forEach((readSource, index) => {
+  stores.forEach((readSource, index) => {
     // register every models in each read source to SOURCE_BY_MODELS map
     // so we can retrieve them later in `#read(model)`
     readSource.registerModels(SOURCE_BY_MODELS);
@@ -41,7 +41,7 @@ module.exports = function initStore({ writeTo, readFrom }) {
 
   const getDefaultEventStream = async () => {
     const latestEventIdArray = await Promise.all(
-      readFrom.map(source => source.getLastSeenId())
+      stores.map(source => source.getLastSeenId())
     );
 
     const oldestVersion = Math.min(...latestEventIdArray);
@@ -58,7 +58,7 @@ module.exports = function initStore({ writeTo, readFrom }) {
   const subscribe = async nullableStream => {
     const incomingEvents$ = nullableStream || (await getDefaultEventStream());
 
-    const output$PromiseArray = readFrom.map(source => {
+    const output$PromiseArray = stores.map(source => {
       return source.receive(incomingEvents$).then(stream =>
         stream.map(output => ({
           source,
@@ -82,11 +82,11 @@ module.exports = function initStore({ writeTo, readFrom }) {
       currentWriteTo = nextWriteTo;
     },
 
-    DEV__cleanAll: () => Promise.all(readFrom.map(src => src.clean())),
+    DEV__cleanAll: () => Promise.all(stores.map(src => src.clean())),
 
     DEV__getNewestVersion: async () => {
       const latestEventIdArray = await Promise.all(
-        readFrom.map(source => source.getLastSeenId())
+        stores.map(source => source.getLastSeenId())
       );
       return Math.max(...latestEventIdArray);
     }

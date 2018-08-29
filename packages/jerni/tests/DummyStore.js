@@ -1,8 +1,8 @@
 const mitt = require("mitt");
 
-const Connection = require("../lib/Connection");
+const Store = require("../lib/Store");
 
-exports.Connection = class DummyConnection extends Connection {
+exports.Store = class DummyStore extends Store {
   constructor({ name, models, emitter = mitt() }) {
     super({ name, models });
 

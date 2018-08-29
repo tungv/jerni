@@ -1,4 +1,4 @@
-const kefir = require('kefir');
+const kefir = require("kefir");
 
 class Connection {
   constructor({ name, models = [] } = {}) {

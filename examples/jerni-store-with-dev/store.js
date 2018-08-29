@@ -12,7 +12,7 @@ const mongoSource = new Connection({
 
 const store = initStore({
   writeTo: "https://events.tung.ninja",
-  readFrom: [mongoSource]
+  stores: [mongoSource]
 });
 
 module.exports = store;

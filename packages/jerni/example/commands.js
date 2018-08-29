@@ -1,6 +1,6 @@
-const nanoid = require('nanoid');
+const nanoid = require("nanoid");
 
-const people = require('../models/people');
+const people = require("../models/people");
 
 exports.registerNewPerson = async (store, { fullName, bornAt }) => {
   // generate a unique id. This is an example of side-effect. Side-effects should be carried out in
@@ -9,31 +9,31 @@ exports.registerNewPerson = async (store, { fullName, bornAt }) => {
 
   // commit to event server and wait until it's fully committed to heq-server
   const event = await store.commit({
-    type: 'PERSON_REGISTERED',
+    type: "PERSON_REGISTERED",
     payload: {
       id,
       full_name: fullName,
-      born_at: bornAt,
-    },
+      born_at: bornAt
+    }
   });
 
   // wait for read-side to fully persist
   await store.waitFor(event);
 
-  const PeopleCollection = store.read(people);
+  const PeopleCollection = await store.getDriver(people);
 
   return PeopleCollection.findOne({ id });
 };
 
 exports.registerNewBorn = async (store, { fatherId, motherId, children }) => {
   // validation
-  const PeopleCollection = store.read(people);
+  const PeopleCollection = await store.getDriver(people);
 
   const father = await PeopleCollection.findOne({ id: fatherId });
   const mother = await PeopleCollection.findOne({ id: motherId });
 
   if (!father || !mother) {
-    throw new Error('invalid parent IDs');
+    throw new Error("invalid parent IDs");
   }
 
   const payload = {
@@ -41,15 +41,15 @@ exports.registerNewBorn = async (store, { fatherId, motherId, children }) => {
     children: children.map(child =>
       Object.assign(
         {
-          id: nanoid(),
+          id: nanoid()
         },
         child
       )
-    ),
+    )
   };
 
   // send event and wait until it's fully commited to heq-server
-  const event = await store.commit({ type: 'CHILDREN_BORN', payload });
+  const event = await store.commit({ type: "CHILDREN_BORN", payload });
 
   // at this moment, read-side hasn't persisted yet.
   // since in this example, we don't want to wait for persistence to complete.
@@ -58,6 +58,6 @@ exports.registerNewBorn = async (store, { fatherId, motherId, children }) => {
 
   return {
     father: optimisticParents[0],
-    mother: optimisticParents[1],
+    mother: optimisticParents[1]
   };
 };

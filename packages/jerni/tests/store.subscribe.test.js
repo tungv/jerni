@@ -1,12 +1,9 @@
 const brighten = require("brighten");
 const subscribe = require("../lib/subscribe");
-const initStore = require("../lib/initStore");
+const createJourney = require("../lib/createJourney");
 const test = require("ava");
 const makeServer = require("./makeServer");
-const {
-  Model: DummyModel,
-  Connection: DummyConnection
-} = require("./DummyConnection");
+const { Model: DummyModel, Store: DummyStore } = require("./DummyStore");
 
 test("should subscribe", async t => {
   brighten();
@@ -18,14 +15,14 @@ test("should subscribe", async t => {
   const driver = await queue.DEV__getDriver();
   driver.clear();
 
-  const dummyConnection = new DummyConnection({
+  const dummyConnection = new DummyStore({
     name: "conn_0",
     models: []
   });
 
-  const store = initStore({
+  const store = createJourney({
     writeTo: "http://localhost:19090",
-    readFrom: [dummyConnection]
+    stores: [dummyConnection]
   });
 
   for (let i = 0; i < 10; ++i) {
@@ -74,14 +71,14 @@ test("should subscribe with filter", async t => {
   const driver = await queue.DEV__getDriver();
   driver.clear();
 
-  const dummyConnection = new DummyConnection({
+  const dummyConnection = new DummyStore({
     name: "conn_0",
     models: []
   });
 
-  const store = initStore({
+  const store = createJourney({
     writeTo: "http://localhost:19091",
-    readFrom: [dummyConnection]
+    stores: [dummyConnection]
   });
 
   for (let i = 0; i < 10; ++i) {
@@ -146,14 +143,14 @@ test("await store.subscribe()", async t => {
   const model1 = new DummyModel({ name: "internal_1" });
   const model2 = new DummyModel({ name: "internal_2" });
 
-  const dummyConnection = new DummyConnection({
+  const dummyConnection = new DummyStore({
     name: "conn_0",
     models: [model1, model2]
   });
 
-  const store = initStore({
+  const store = createJourney({
     writeTo: "http://localhost:19092",
-    readFrom: [dummyConnection]
+    stores: [dummyConnection]
   });
 
   for (let i = 0; i < 10; ++i) {

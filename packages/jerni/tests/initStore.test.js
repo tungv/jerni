@@ -1,45 +1,43 @@
 const mitt = require("mitt");
 const test = require("ava");
 
-const {
-  Model: DummyModel,
-  Connection: DummyConnection
-} = require("./DummyConnection");
+const { Model: DummyModel, Store: DummyStore } = require("./DummyStore");
+
 const { version, name } = require("../package.json");
-const initStore = require("../lib/initStore");
+const createJourney = require("../lib/createJourney");
 const makeServer = require("./makeServer");
 
-test("initStore to return a store", t => {
-  const dummyConnection = new DummyConnection({});
+test("createJourney to return a journey", t => {
+  const dummyStore = new DummyStore({});
 
-  const store = initStore({
+  const journey = createJourney({
     writeTo: "http://localhost:8080",
-    readFrom: [dummyConnection]
+    stores: [dummyStore]
   });
 
-  t.true(typeof store.getReader === "function");
-  t.true(typeof store.commit === "function");
-  t.true(typeof store.waitFor === "function");
+  t.true(typeof journey.getReader === "function");
+  t.true(typeof journey.commit === "function");
+  t.true(typeof journey.waitFor === "function");
 });
 
-test("store should be able to commit event", async t => {
+test("journey should be able to commit event", async t => {
   const { queue, server } = await makeServer({
     ns: "test_commit",
     port: 18080
   });
 
-  const dummyConnection = new DummyConnection({
+  const dummyStore = new DummyStore({
     name: "conn_0",
     models: []
   });
 
-  const store = initStore({
+  const journey = createJourney({
     writeTo: "http://localhost:18080",
-    readFrom: [dummyConnection]
+    stores: [dummyStore]
   });
 
   const now = Date.now();
-  const event = await store.commit({
+  const event = await journey.commit({
     type: "TEST",
     payload: { key: "value" },
     meta: { some: "meta" }
@@ -57,28 +55,28 @@ test("store should be able to commit event", async t => {
   server.close();
 });
 
-test("store should return specific driver instance", async t => {
+test("journey should return specific driver instance", async t => {
   const model1 = new DummyModel({ name: "internal_1" });
   const model2 = new DummyModel({ name: "internal_2" });
   const model3 = new DummyModel({ name: "internal_3" });
   const model4 = new DummyModel({ name: "internal_4" });
-  const conn = new DummyConnection({
+  const conn = new DummyStore({
     name: "conn_1",
     models: [model1, model2, model3, model4]
   });
 
-  const store = initStore({
+  const journey = createJourney({
     writeTo: "http://localhost:8080",
-    readFrom: [conn]
+    stores: [conn]
   });
 
-  t.is(store.getReader(model1), "internal_1@conn_1");
-  t.is(store.getReader(model2), "internal_2@conn_1");
-  t.is(store.getReader(model3), "internal_3@conn_1");
-  t.is(store.getReader(model4), "internal_4@conn_1");
+  t.is(journey.getReader(model1), "internal_1@conn_1");
+  t.is(journey.getReader(model2), "internal_2@conn_1");
+  t.is(journey.getReader(model3), "internal_3@conn_1");
+  t.is(journey.getReader(model4), "internal_4@conn_1");
 });
 
-test("store should waitFor all models", async t => {
+test("journey should waitFor all models", async t => {
   const emitter1 = mitt();
   const emitter2 = mitt();
 
@@ -87,25 +85,25 @@ test("store should waitFor all models", async t => {
   const model3 = new DummyModel({ name: "internal_3" });
   const model4 = new DummyModel({ name: "internal_4" });
 
-  const conn1 = new DummyConnection({
+  const conn1 = new DummyStore({
     name: "conn_1",
     models: [model1, model2],
     emitter: emitter1
   });
-  const conn2 = new DummyConnection({
+  const conn2 = new DummyStore({
     name: "conn_2",
     models: [model3, model4],
     emitter: emitter2
   });
 
-  const store = initStore({
+  const journey = createJourney({
     writeTo: "http://localhost:8080",
-    readFrom: [conn1, conn2]
+    stores: [conn1, conn2]
   });
 
   const startWaiting = Date.now();
   let duration = 0;
-  const waitPromise = store
+  const waitPromise = journey
     .waitFor({ id: 5 })
     .then(() => (duration = Date.now() - startWaiting));
 
