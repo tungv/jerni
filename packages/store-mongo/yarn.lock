@@ -1265,13 +1265,6 @@ has-yarn@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/has-yarn/-/has-yarn-1.0.0.tgz#89e25db604b725c8f5976fff0addc921b828a5a7"
 
-heq-store@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/heq-store/-/heq-store-0.1.0.tgz#dafe46e615de39eafdff18dcf7a5a5b0ea352c57"
-  dependencies:
-    got "^9.0.0"
-    read-pkg-up "^4.0.0"
-
 home-or-tmp@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/home-or-tmp/-/home-or-tmp-2.0.0.tgz#e36c3f2d2cae7d746a857e38d18d5f32a7882db8"
@@ -1538,6 +1531,15 @@ isobject@^2.0.0:
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-2.1.0.tgz#f065561096a3f1da2ef46272f815c840d87e0c89"
   dependencies:
     isarray "1.0.0"
+
+jerni@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/jerni/-/jerni-0.1.1.tgz#65b844e3d052e42e964ee21e854e215475bee86a"
+  dependencies:
+    arrify "^1.0.1"
+    got "^9.0.0"
+    kefir "^3.8.3"
+    read-pkg-up "^4.0.0"
 
 js-string-escape@^1.0.1:
   version "1.0.1"

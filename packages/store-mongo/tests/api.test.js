@@ -1,10 +1,10 @@
 const is = require("@sindresorhus/is");
 const test = require("ava");
 
-const Connection = require("../lib/MongoDBConnection");
+const Store = require("../Store");
 
-test("Connection should implement base class", t => {
-  const { prototype } = Connection;
+test("Store should implement base class", t => {
+  const { prototype } = Store;
 
   t.true(is.function(prototype.getDriver));
   t.true(is.function(prototype.subscribe));

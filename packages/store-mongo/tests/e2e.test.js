@@ -1,8 +1,8 @@
 const kefir = require("kefir");
 const test = require("ava");
 
-const Model = require("../lib/MongoDBReadModel");
-const Connection = require("../lib/MongoDBConnection");
+const Model = require("../Model");
+const Store = require("../Store");
 
 const { MONGODB = "mongodb://localhost:27017" } = process.env;
 
@@ -82,7 +82,7 @@ test.cb("e2e", t => {
       ].filter(x => x)
   });
 
-  const conn = new Connection({
+  const conn = new Store({
     url: MONGODB,
     dbName: "test_e2e",
     models: [model]

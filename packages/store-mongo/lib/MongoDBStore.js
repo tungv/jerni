@@ -1,6 +1,6 @@
 const MongoHeartbeat = require("mongo-heartbeat");
 
-const Connection = require("heq-store/lib/Connection");
+const Store = require("jerni/lib/Store");
 const PLazy = require("p-lazy");
 const kefir = require("kefir");
 
@@ -21,7 +21,7 @@ const connect = async url => {
   return client;
 };
 
-module.exports = class MongoDBConnection extends Connection {
+module.exports = class MongoDBStore extends Store {
   constructor({
     name,
     url,

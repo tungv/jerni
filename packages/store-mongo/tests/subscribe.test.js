@@ -1,8 +1,8 @@
 const kefir = require("kefir");
 const test = require("ava");
 
-const Model = require("../lib/MongoDBReadModel");
-const Connection = require("../lib/MongoDBConnection");
+const Model = require("../Model");
+const Store = require("../Store");
 
 const makeStream = array => kefir.sequentially(10, array);
 const { MONGODB = "mongodb://localhost:27017" } = process.env;
@@ -27,7 +27,7 @@ test.cb("subscribe", t => {
     transform: event => [{ insertOne: { x: 1 } }]
   });
 
-  const conn = new Connection({
+  const conn = new Store({
     url: MONGODB,
     dbName: "test_transform",
     models: [model1, model2]
