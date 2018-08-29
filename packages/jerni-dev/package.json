@@ -7,7 +7,6 @@
   "scripts": {
     "dev:web": "NODE_ENV=heq_development node --trace-warnings index",
     "dev:cli": "node --trace-warnings index",
-    "test": "ava",
     "dev:clean": "rm *.db && mongo examples --eval \"db.dropDatabase()\"",
     "prepare": "next build"
   },
