@@ -1,7 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`config config: subscribe should throw if subscribe is not defined 1`] = `[Error: INVALID_CONFIG: path=\`subscribe\`]`;
-
-exports[`config config: subscribe should throw if subscribe.serverUrl is not defined 1`] = `[Error: INVALID_CONFIG: path=\`subscribe.serverUrl\`]`;
-
-exports[`config config: subscribe should throw if subscribe.serverUrl is unreachable 1`] = `[Error: INVALID_ENDPOINT: \`http://localhost:1338\` - reason: Error: connect ECONNREFUSED 127.0.0.1:1338]`;
