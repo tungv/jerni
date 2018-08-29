@@ -98,6 +98,8 @@ const adapter = ({ ns = "local" }) => {
     db.saveDatabase();
   };
 
+  api.DEV__getDriver = () => events;
+
   return api;
 };
 
