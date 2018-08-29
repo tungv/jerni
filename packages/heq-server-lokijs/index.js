@@ -29,12 +29,12 @@ const defer = () => {
   return { promise, resolve, reject };
 };
 
-const adapter = ({ ns = "local" }) => {
+const adapter = ({ ns = "local", filepath = "heq-events.db" }) => {
   const emitter = mitt();
   const { promise: events, resolve: done } = defer();
   let latest = null;
 
-  const db = new Loki("heq-events.db", {
+  const db = new Loki(filepath, {
     autosave: true,
     autoload: true,
     autosaveInterval: 4000,
