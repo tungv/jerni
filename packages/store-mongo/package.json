@@ -26,9 +26,9 @@
   },
   "scripts": {
     "test": "ava",
-    "prebundle": "yarn test && yarn pack ",
-    "bundle": "tar -xvf jerni-store-mongo-v0.1.4.tgz && node -p \"require('./package')\" && node -p \"require('./package/Model')\" && node -p \"require('./package/Store')\"",
-    "postbundle": "rm -r package jerni-store-mongo-v0.1.4.tgz",
+    "prebundle": "yarn test && yarn pack -f store-mongo.tgz",
+    "bundle": "tar -xvf store-mongo.tgz && node -p \"require('./package')\" && node -p \"require('./package/Model')\" && node -p \"require('./package/Store')\"",
+    "postbundle": "rm -r package store-mongo.tgz",
     "prepare": "yarn bundle"
   }
 }
