@@ -1,7 +1,8 @@
 const { sendError } = require("micro");
-
+const path = require("path");
 const { router, get } = require("microrouter");
 const getCollection = require("./utils/getCollection");
+const DEV_DIR = path.resolve(process.cwd(), "./.jerni-dev");
 
 module.exports = async function(next, queue) {
   return router(
@@ -21,7 +22,10 @@ module.exports = async function(next, queue) {
       return event;
     }),
     get("/dev/pulses", async () => {
-      const { coll: Pulses } = await getCollection("jerni-dev.db", "pulses");
+      const { coll: Pulses } = await getCollection(
+        path.resolve(DEV_DIR, "pulses.json"),
+        "pulses"
+      );
       const pulses = Pulses.find();
 
       return Promise.all(

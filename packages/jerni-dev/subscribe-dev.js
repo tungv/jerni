@@ -5,12 +5,18 @@ const kleur = require("kleur");
 const socketIO = require("socket.io");
 
 const path = require("path");
+const fs = require("fs");
 
 const createProxy = require("./lib/store-proxy");
 const getCollection = require("./utils/getCollection");
 const startDevServer = require("./start-dev");
 
 const NAMESPACE = "local-dev";
+const DEV_DIR = path.resolve(process.cwd(), "./.jerni-dev");
+
+process.on("exit", () => {
+  fs.unlinkSync(path.resolve(DEV_DIR, "dev-server.txt"));
+});
 
 const startBanner = () => {
   const banner = `${kleur.bgGreen.bold.white(
@@ -53,15 +59,21 @@ const initialTasks = new Listr([
           {
             title: "load queue",
             task: async ctx => {
+              if (!fs.existsSync(DEV_DIR)) {
+                fs.mkdirSync(DEV_DIR);
+              }
               const adapter = require("@heq/server-lokijs");
-              ctx.queue = await adapter({ ns: NAMESPACE });
+              ctx.queue = await adapter({
+                ns: NAMESPACE,
+                filepath: path.resolve(DEV_DIR, "events.json")
+              });
             }
           },
           {
             title: "load database",
             task: async ctx => {
               const { coll, db } = await getCollection(
-                "jerni-dev.db",
+                path.resolve(DEV_DIR, "pulses.json"),
                 "pulses"
               );
 
@@ -81,16 +93,20 @@ const initialTasks = new Listr([
   {
     title: "compare versions",
     task: async (ctx, task) => {
-      const { queue, store } = ctx;
+      const { queue, store, opts } = ctx;
       const { id: latestServerVersion } = await queue.getLatest();
       const lastestStoreVersion = await store.DEV__getNewestVersion();
 
       if (lastestStoreVersion > latestServerVersion) {
         task.title = `server is behind store!`;
 
-        throw new Error(
-          `Server ID = ${latestServerVersion}. Store Id = ${lastestStoreVersion}`
-        );
+        if (opts.force) {
+          await store.DEV__cleanAll();
+        } else {
+          throw new Error(
+            `Server ID = ${latestServerVersion}. Store Id = ${lastestStoreVersion}`
+          );
+        }
       }
 
       if (lastestStoreVersion === lastestStoreVersion) {
@@ -113,7 +129,9 @@ const initialTasks = new Listr([
       const serverUrl = `http://localhost:${port}`;
       task.title = `jerni-server started! POST to ${serverUrl}/commit to commit new events`;
 
-      store.DEV__replaceWriteTo(`http://localhost:${port}`);
+      fs.writeFileSync(path.resolve(DEV_DIR, "dev-server.txt"), serverUrl);
+
+      store.DEV__replaceWriteTo(serverUrl);
 
       ctx.io = socketIO(server);
     }
