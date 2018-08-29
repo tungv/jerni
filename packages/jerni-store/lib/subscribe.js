@@ -34,6 +34,11 @@ module.exports = async function subscribe({
     const realtime$ = kefir
       .stream(emitter => {
         const resp$ = got.stream(`${subscribeURL}?lastEventId=${realtimeFrom}`);
+        let req;
+
+        resp$.on("request", r => {
+          req = r;
+        });
 
         resp$.on("data", buffer => {
           const data = String(buffer);
@@ -45,7 +50,8 @@ module.exports = async function subscribe({
         });
 
         return () => {
-          resp$.destroy();
+          req.abort();
+          resp$.end();
         };
       })
       .thru(getChunks)
