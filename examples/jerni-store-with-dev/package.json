@@ -3,9 +3,12 @@
   "version": "1.0.4",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "dev": "jerni-dev journey.js"
+  },
   "dependencies": {
-    "@heq/store-mongo": "^0.1.4",
-    "jerni-store": "^0.1.0"
+    "@jerni/store-mongo": "^0.2.1",
+    "jerni": "^0.1.1"
   },
   "devDependencies": {
     "jerni-dev": "^0.2.1"

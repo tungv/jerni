@@ -1,4 +1,4 @@
-const createJourney = require("jerni-store");
+const createJourney = require("jerni");
 const { Store } = require("@jerni/store-mongo");
 const people = require("./models/people");
 
