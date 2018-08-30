@@ -66,7 +66,6 @@ async function main(filepath) {
 
 main(process.argv[2]).then(
   () => {
-    console.log("new worker is ready");
     process.send({ cmd: "ok" });
   },
   ex => {
