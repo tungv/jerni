@@ -141,7 +141,7 @@ const initialTasks = new Listr([
   },
   {
     title: "open web UI",
-    skip: ctx => ctx.opts.open === false,
+    enabled: ctx => ctx.opts.open === true,
     task: ctx => {
       open(ctx.serverUrl);
     }
