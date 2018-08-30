@@ -53,7 +53,8 @@ const initialTasks = new Listr([
             title: "load store",
             task: async ctx => {
               ctx.store = await createProxy(
-                path.resolve(process.cwd(), ctx.filepath)
+                path.resolve(process.cwd(), ctx.filepath),
+                ctx.onChange
               );
             }
           },
@@ -271,10 +272,27 @@ const reloadTasks = new Listr([
 module.exports = async function subscribeDev(filepath, opts) {
   try {
     startBanner();
-    let ctx = await initialTasks.run({ filepath, opts });
+    let ctx = await initialTasks.run({
+      filepath,
+      opts,
+      onChange: () => {
+        reload({ type: "RELOAD" });
+      }
+    });
     console.log("\n");
 
     let isReloading = false;
+
+    const reload = async reduxEvent => {
+      isReloading = true;
+      ctx.io.emit("redux event", { type: "SERVER/RELOADING" });
+
+      ctx = await reloadTasks.run({ ...ctx, reduxEvent });
+
+      ctx.io.emit("redux event", { type: "SERVER/RELOADED" });
+      isReloading = false;
+    };
+
     ctx.io.on("connection", socket => {
       socket.on("client action", async reduxEvent => {
         if (
@@ -287,16 +305,11 @@ module.exports = async function subscribeDev(filepath, opts) {
 
         if (isReloading) return;
 
-        isReloading = true;
-        ctx.io.emit("redux event", { type: "SERVER/RELOADING" });
         brighten();
         console.log(
           `${kleur.bgGreen.bold(" jerni-dev ")} ${kleur.bold(reduxEvent.type)}`
         );
-        ctx = await reloadTasks.run({ ...ctx, reduxEvent });
-
-        ctx.io.emit("redux event", { type: "SERVER/RELOADED" });
-        isReloading = false;
+        await reload(reduxEvent);
       });
     });
   } catch (ex) {

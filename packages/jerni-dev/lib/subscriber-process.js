@@ -1,5 +1,9 @@
 const { serializeStream, deserializeStream } = require("./proxy-stream");
 const pkgDir = require("pkg-dir");
+const kleur = require("kleur");
+const brighten = require("brighten");
+const { watch } = require("chokidar");
+const path = require("path");
 
 const importPathWithInterop = async filepath => {
   const mod = await require(filepath);
@@ -37,10 +41,32 @@ async function main(filepath) {
 
   const rootDir = pkgDir.sync(filepath);
   const toWatch = Object.keys(require.cache).filter(f => f.startsWith(rootDir));
+
+  const watcher = watch(toWatch, {
+    ignored: [
+      /\.git|node_modules|\.nyc_output|\.sass-cache|coverage|\.cache/,
+      /\.swp$/
+    ]
+  });
+
+  watcher.on("change", filePath => {
+    const location = path.relative(process.cwd(), filePath);
+    brighten();
+    console.log(
+      `\n${kleur.bgYellow.bold(" File changed ")} ${kleur.underline(
+        location
+      )} - Replaying...`
+    );
+
+    process.send({
+      cmd: "reload"
+    });
+  });
 }
 
 main(process.argv[2]).then(
   () => {
+    console.log("new worker is ready");
     process.send({ cmd: "ok" });
   },
   ex => {
