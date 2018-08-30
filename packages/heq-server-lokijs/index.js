@@ -3,6 +3,9 @@ const mitt = require("mitt");
 const kefir = require("kefir");
 
 const delokize = obj => {
+  if (obj == null) {
+    return obj;
+  }
   const { $loki, ...event } = { ...obj };
   event.meta = { ...obj.meta };
 
