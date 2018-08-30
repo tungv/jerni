@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/tungv/jerni/compare/jerni-dev@0.2.1...jerni-dev@0.3.0) (2018-08-30)
+
+
+### Features
+
+* **devtool:** add `--open` options ([a9252ca](https://github.com/tungv/jerni/commit/a9252ca))
+* **devtool:** hot code reload ([82c9d61](https://github.com/tungv/jerni/commit/82c9d61))
+* **devtool:** move all dev related files to `.jerni-dev` dir ([831b61e](https://github.com/tungv/jerni/commit/831b61e))
+
+
+
+
 <a name="0.2.1"></a>
 ## [0.2.1](https://github.com/tungv/jerni/compare/jerni-dev@0.2.0...jerni-dev@0.2.1) (2018-08-29)
 

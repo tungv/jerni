@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.3.0"></a>
+# [1.3.0](https://github.com/tungv/heq/compare/@heq/server-lokijs@1.2.1...@heq/server-lokijs@1.3.0) (2018-08-30)
+
+
+### Bug Fixes
+
+* **server-loki:** delokize will not throw if obj is nullish ([759f9fc](https://github.com/tungv/heq/commit/759f9fc))
+
+
+### Features
+
+* **server-loki:** make filepath configurable ([79928f7](https://github.com/tungv/heq/commit/79928f7))
+
+
+
+
 <a name="1.2.1"></a>
 ## [1.2.1](https://github.com/tungv/heq/compare/@heq/server-lokijs@1.2.0...@heq/server-lokijs@1.2.1) (2018-08-29)
 
