@@ -15,8 +15,12 @@ const open = require("./lib/open");
 const NAMESPACE = "local-dev";
 const DEV_DIR = path.resolve(process.cwd(), "./.jerni-dev");
 
+let started = false;
+
 process.on("exit", () => {
-  fs.unlinkSync(path.resolve(DEV_DIR, "dev-server.txt"));
+  if (started) {
+    fs.unlinkSync(path.resolve(DEV_DIR, "dev-server.txt"));
+  }
 });
 
 const startBanner = () => {
@@ -134,6 +138,7 @@ const initialTasks = new Listr([
       task.title = `jerni-server started! POST to ${serverUrl}/commit to commit new events`;
 
       fs.writeFileSync(path.resolve(DEV_DIR, "dev-server.txt"), serverUrl);
+      started = true;
       store.DEV__replaceWriteTo(serverUrl);
 
       ctx.io = socketIO(server);
