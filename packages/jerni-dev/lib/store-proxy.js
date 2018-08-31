@@ -1,8 +1,11 @@
 const { fork } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 
 const { serializeStream, deserializeStream } = require("./proxy-stream");
 const makeDefer = require("./makeDefer");
+
+const DEV_DIR = path.resolve(process.cwd(), "./.jerni-dev");
 
 module.exports = function createProxy(filepath, onChange) {
   const createWorker = () => {
@@ -64,6 +67,10 @@ module.exports = function createProxy(filepath, onChange) {
         worker.removeListener("message", onMessage);
         worker.kill();
         worker = createWorker();
+        const devServerUrl = String(
+          fs.readFileSync(path.resolve(DEV_DIR, "dev-server.txt"))
+        );
+        proxy.DEV__replaceWriteTo(devServerUrl);
         worker.on("message", onMessage);
         onChange();
         return;
