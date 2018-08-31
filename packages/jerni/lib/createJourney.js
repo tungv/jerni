@@ -1,7 +1,8 @@
-const commitEventToHeqServer = require("./commit");
-const makeRacer = require("./racer");
-const getEventsStream = require("./subscribe");
 const kefir = require("kefir");
+
+const commitEventToHeqServer = require("./commit");
+const getEventsStream = require("./subscribe");
+const makeRacer = require("./racer");
 
 module.exports = function initStore({ writeTo, stores }) {
   const SOURCE_BY_MODELS = new Map();
@@ -77,6 +78,19 @@ module.exports = function initStore({ writeTo, stores }) {
     commit,
     waitFor,
     subscribe,
+
+    versions: async () => {
+      const latestEventIdArray = await Promise.all(
+        stores.map(source => source.getLastSeenId())
+      );
+
+      const vx = stores.reduce(
+        (array, store, index) =>
+          array.concat([[store.name, latestEventIdArray[index]]]),
+        []
+      );
+      return vx;
+    },
 
     DEV__replaceWriteTo: nextWriteTo => {
       currentWriteTo = nextWriteTo;
