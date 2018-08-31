@@ -37,6 +37,7 @@ module.exports = function createProxy(filepath, onChange) {
     };
 
     const proxy = {
+      versions: simpleCall("versions"),
       DEV__getNewestVersion: simpleCall("DEV__getNewestVersion"),
       DEV__replaceWriteTo: simpleCall("DEV__replaceWriteTo"),
       DEV__cleanAll: simpleCall("DEV__cleanAll"),
@@ -45,6 +46,9 @@ module.exports = function createProxy(filepath, onChange) {
         const outgoingToken = await simpleCall("subscribe")(token);
 
         return deserializeStream(worker, outgoingToken);
+      },
+      destroy: () => {
+        worker.kill();
       }
     };
 

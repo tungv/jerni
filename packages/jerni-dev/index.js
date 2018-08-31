@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 const sade = require("sade");
-const program = sade("jerni-dev");
+
+const path = require("path");
 
 const { version } = require("./package.json");
+
+const program = sade("jerni-dev");
 
 program.version(version).option("banner", "BANNER FTW", false);
 
@@ -10,8 +13,8 @@ const { HEQ_PORT = "8080" } = process.env;
 
 program
   .command(
-    "subscribe <path>",
-    "subscribe to a heq-store instance with an integrated heq-server",
+    "start <path>",
+    "start to a heq-store instance with an integrated heq-server",
     { default: true }
   )
   .option("port", "http port to listen", Number.parseInt(HEQ_PORT, 10))
@@ -24,5 +27,13 @@ program
 
     require("./subscribe-dev")(path, opts);
   });
+
+program.command("clean <journey>", "clean").action(filepath => {
+  require("./clean")(filepath);
+});
+
+program
+  .command("inspect <journey>")
+  .action(filepath => require("./inspectCmd")(filepath));
 
 program.parse(process.argv);
