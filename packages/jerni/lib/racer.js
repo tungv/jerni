@@ -23,6 +23,15 @@ const makeRacer = initialArray => {
         yes.forEach(([id, defer]) => defer.resolve());
       }
     },
+    max() {
+      return Math.max(...initialArray);
+    },
+    min() {
+      return Math.min(...initialArray);
+    },
+    versions(index) {
+      return initialArray[index];
+    }
   };
 };
 
