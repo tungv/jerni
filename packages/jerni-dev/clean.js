@@ -1,5 +1,5 @@
 const rimraf = require("rimraf");
-const createProxy = require("./lib/store-proxy");
+const createProxy = require("./lib/createProxy");
 const path = require("path");
 
 module.exports = async filepath => {

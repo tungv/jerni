@@ -6,7 +6,7 @@ const path = require("path");
 const last = require("./utils/last");
 const loadDatabase = require("./tasks/loadDatabase");
 const loadQueue = require("./tasks/load-queue");
-const createProxy = require("./lib/store-proxy");
+const createProxy = require("./lib/createProxy");
 
 module.exports = async filepath => {
   brighten();

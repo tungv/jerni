@@ -13,11 +13,11 @@ module.exports = function createProxy(filepath, onChange) {
       filepath
     ]);
 
-    ["error", "exit", "close", "disconnect"].forEach(evt => {
-      worker.on(evt, (...args) => {
-        console.log("-----", evt, ...args);
-      });
-    });
+    // ["error", "exit", "close", "disconnect"].forEach(evt => {
+    //   worker.on(evt, (...args) => {
+    //     console.log("-----", evt, ...args);
+    //   });
+    // });
 
     return worker;
   };
