@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "dev": "jerni-dev start journey.js",
-    "clean": "jerni-dev clean journey.js"
+    "clean": "jerni-dev clean journey.js",
+    "toggle-error": "mv models/people.js models/people.js.bk && mv models/people_error.js models/people.js && mv models/people.js.bk models/people_error.js"
   },
   "dependencies": {
     "@jerni/store-mongo": "^0.2.2",
