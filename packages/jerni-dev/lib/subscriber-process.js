@@ -50,18 +50,16 @@ async function main(filepath) {
   });
 
   watcher.on("change", filePath => {
-    setImmediate(() => {
-      const location = path.relative(process.cwd(), filePath);
-      brighten();
-      console.log(
-        `\n${kleur.bgYellow.bold(" File changed ")} ${kleur.underline(
-          location
-        )} - Replaying...`
-      );
+    const location = path.relative(process.cwd(), filePath);
+    brighten();
+    console.log(
+      `\n${kleur.bgYellow.bold(" File changed ")} ${kleur.underline(
+        location
+      )} - Replaying...`
+    );
 
-      process.send({
-        cmd: "reload"
-      });
+    process.send({
+      cmd: "reload"
     });
   });
 }
