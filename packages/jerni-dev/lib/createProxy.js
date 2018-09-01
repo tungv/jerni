@@ -66,17 +66,25 @@ module.exports = function createProxy(filepath, onChange) {
       }
     });
 
+    let reloading = false;
+
     const onMessage = msg => {
-      if (msg.cmd === "reload") {
+      if (msg.cmd === "reload" && !reloading) {
+        reloading = true;
         worker.removeListener("message", onMessage);
-        worker.kill();
-        worker = createWorker();
+        const newWorker = createWorker();
         const devServerUrl = String(
           fs.readFileSync(path.resolve(DEV_DIR, "dev-server.txt"))
         );
+        newWorker.on("message", onMessage);
+
+        worker.kill();
+        worker = newWorker;
+
         proxy.DEV__replaceWriteTo(devServerUrl);
-        worker.on("message", onMessage);
-        onChange();
+        onChange().then(() => {
+          reloading = false;
+        });
         return;
       }
       if (msg.cmd === "simple call reply") {
