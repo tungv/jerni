@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/tungv/jerni/compare/jerni-dev@0.3.0...jerni-dev@0.4.0) (2018-09-01)
+
+
+### Bug Fixes
+
+* **devtool:** avoid running parallel reloads ([ba67d0a](https://github.com/tungv/jerni/commit/ba67d0a))
+* **devtool:** debounce 300ms before hot reloading ([36c990c](https://github.com/tungv/jerni/commit/36c990c))
+* **devtool:** do not attempt to delete non-existent dev-server.txt ([a20fb73](https://github.com/tungv/jerni/commit/a20fb73))
+* **devtool:** do not prematurely terminate subscriber on change event ([fea5595](https://github.com/tungv/jerni/commit/fea5595))
+* **devtool:** do not slice first 50 pulses ([dfc7368](https://github.com/tungv/jerni/commit/dfc7368))
+* **devtool:** get latest event id from pulses instead of queue ([1327250](https://github.com/tungv/jerni/commit/1327250))
+* **devtool:** only insert pulses for new events ([780117a](https://github.com/tungv/jerni/commit/780117a))
+* **devtool:** reloaded store will immediately swap to dev server ([8e57ccb](https://github.com/tungv/jerni/commit/8e57ccb))
+* **devtool:** unsubscribe/end stream when process is killed ([e6960b5](https://github.com/tungv/jerni/commit/e6960b5))
+
+
+### Features
+
+* **devtool:** add `inspect` and `clean` command ([bd0333f](https://github.com/tungv/jerni/commit/bd0333f))
+* **devtool:** error handling if new journey cannot be loaded ([65efb8f](https://github.com/tungv/jerni/commit/65efb8f))
+* **devtool:** nicely format error produce while (re)initializing ([88dc7db](https://github.com/tungv/jerni/commit/88dc7db))
+
+
+
+
 <a name="0.3.0"></a>
 # [0.3.0](https://github.com/tungv/jerni/compare/jerni-dev@0.2.1...jerni-dev@0.3.0) (2018-08-30)
 

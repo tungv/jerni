@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.2.0"></a>
+# [0.2.0](https://github.com/tungv/jerni/compare/jerni@0.1.2...jerni@0.2.0) (2018-09-01)
+
+
+### Features
+
+* **jerni:** add `versions()` to Journey ([602b8e7](https://github.com/tungv/jerni/commit/602b8e7))
+* **jerni:** add max, min, versions API to racer ([4fc3249](https://github.com/tungv/jerni/commit/4fc3249))
+
+
+
+
 <a name="0.1.2"></a>
 ## [0.1.2](https://github.com/tungv/jerni/compare/jerni@0.1.1...jerni@0.1.2) (2018-08-30)
 
