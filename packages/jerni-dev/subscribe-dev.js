@@ -8,6 +8,7 @@ const kefir = require("kefir");
 const path = require("path");
 
 const createProxy = require("./lib/createProxy");
+const last = require("./utils/last");
 const loadDatabase = require("./tasks/loadDatabase");
 const loadQueue = require("./tasks/load-queue");
 const open = require("./lib/open");
@@ -36,11 +37,14 @@ const startRealtime = async (ctx, task) => {
   const { store, io, db, Pulses, queue } = ctx;
 
   const outgoing$ = await store.subscribe();
-  ctx.subscription = outgoing$.observe(async rawPulse => {
+  ctx.subscription = outgoing$.observe(rawPulse => {
     const pulse = normalizePulse(rawPulse);
-    const latestEvent = await queue.getLatest();
+    const latestPulse = Pulses.count()
+      ? Pulses.get(Pulses.max("$loki"))
+      : { events: [0] };
+    const latestEvent = last(latestPulse.events);
 
-    const newerEvents = pulse.events.filter(event => event.id > latestEvent.id);
+    const newerEvents = pulse.events.filter(event => event.id > latestEvent);
 
     if (newerEvents.length === 0) {
       return;
@@ -261,9 +265,7 @@ module.exports = async function subscribeDev(filepath, opts) {
     let ctx = await initialTasks.run({
       filepath,
       opts,
-      onChange: () => {
-        reload({ type: "RELOAD" });
-      }
+      onChange: () => reload({ type: "RELOAD" })
     });
     console.log("\n");
 
