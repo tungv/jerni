@@ -215,32 +215,21 @@ const reloadTasks = new Listr([
   },
   {
     title: "replay",
-    task: async (_, task) => {
-      return new Listr([
-        {
-          title: "replay",
-          task: async ctx => {
-            const { Pulses, store, incoming$ } = ctx;
+    task: async ctx => {
+      const { Pulses, store, incoming$ } = ctx;
 
-            const stream = await store.subscribe(incoming$);
+      const stream = await store.subscribe(incoming$);
 
-            ctx.newPulses = [];
+      ctx.newPulses = [];
 
-            return stream
-              .map(normalizePulse)
-              .map(pulse => {
-                ctx.newPulses.push(pulse);
-                const lastEvent = pulse.events[pulse.events.length - 1];
-                return `#${lastEvent.id} - ${lastEvent.type}`;
-              })
-              .toESObservable();
-          }
-        },
-        {
-          title: "finishing replay",
-          task: () => (task.title = "replayed")
-        }
-      ]);
+      return stream
+        .map(normalizePulse)
+        .map(pulse => {
+          ctx.newPulses.push(pulse);
+          const lastEvent = pulse.events[pulse.events.length - 1];
+          return `#${lastEvent.id} - ${lastEvent.type}`;
+        })
+        .toESObservable();
     }
   },
   {
