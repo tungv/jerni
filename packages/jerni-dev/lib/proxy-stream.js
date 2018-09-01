@@ -24,6 +24,10 @@ const serializeStream = (sender, id, incoming$) => {
     }
   );
 
+  sender.on("disconnect", () => {
+    sub.unsubscribe();
+  });
+
   return token;
 };
 
@@ -43,6 +47,10 @@ const deserializeStream = (receiver, token) => {
     };
 
     receiver.on("message", handler);
+
+    receiver.on("disconnect", () => {
+      emitter.end();
+    });
 
     return () => {
       receiver.removeListener("message", handler);
