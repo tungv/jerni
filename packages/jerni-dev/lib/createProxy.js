@@ -2,16 +2,30 @@ const { fork } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
+const { getDevFile } = require("../tasks/constants");
 const { serializeStream, deserializeStream } = require("./proxy-stream");
 const makeDefer = require("./makeDefer");
 
-const DEV_DIR = path.resolve(process.cwd(), "./.jerni-dev");
-
-module.exports = function createProxy(filepath, onChange) {
-  const createWorker = () => {
+const createWorker = filepath => {
+  return new Promise((resolve, reject) => {
     const worker = fork(path.resolve(__dirname, "./subscriber-process.js"), [
       filepath
     ]);
+
+    const onMessage = msg => {
+      if (msg.cmd === "ok") {
+        resolve(worker);
+        worker.removeListener("message", onMessage);
+      } else if (msg.cmd === "error") {
+        worker.kill();
+        const err = new Error(msg.message);
+        reject(err);
+
+        worker.removeListener("message", onMessage);
+      }
+    };
+
+    worker.on("message", onMessage);
 
     // ["error", "exit", "close", "disconnect"].forEach(evt => {
     //   worker.on(evt, (...args) => {
@@ -20,80 +34,77 @@ module.exports = function createProxy(filepath, onChange) {
     // });
 
     return worker;
+  });
+};
+
+module.exports = async function createProxy(filepath, onChange) {
+  let worker = await createWorker(filepath);
+
+  let counter = 0;
+  const defers = {};
+
+  const simpleCall = methodName => (...args) => {
+    const id = ++counter;
+    const defer = makeDefer();
+    defers[id] = defer;
+
+    worker.send({ cmd: `simple call`, id, methodName, args });
+    return defer.promise;
   };
-  return new Promise((resolve, reject) => {
-    let worker = createWorker();
 
-    let counter = 0;
-    const defers = {};
+  const proxy = {
+    versions: simpleCall("versions"),
+    DEV__getNewestVersion: simpleCall("DEV__getNewestVersion"),
+    DEV__replaceWriteTo: simpleCall("DEV__replaceWriteTo"),
+    DEV__cleanAll: simpleCall("DEV__cleanAll"),
+    subscribe: async incoming$ => {
+      const token = serializeStream(worker, ++counter, incoming$);
+      const outgoingToken = await simpleCall("subscribe")(token);
 
-    const simpleCall = methodName => (...args) => {
-      const id = ++counter;
-      const defer = makeDefer();
-      defers[id] = defer;
+      return deserializeStream(worker, outgoingToken);
+    },
+    destroy: () => {
+      worker.kill();
+    }
+  };
 
-      worker.send({ cmd: `simple call`, id, methodName, args });
-      return defer.promise;
-    };
+  let reloading = false;
 
-    const proxy = {
-      versions: simpleCall("versions"),
-      DEV__getNewestVersion: simpleCall("DEV__getNewestVersion"),
-      DEV__replaceWriteTo: simpleCall("DEV__replaceWriteTo"),
-      DEV__cleanAll: simpleCall("DEV__cleanAll"),
-      subscribe: async incoming$ => {
-        const token = serializeStream(worker, ++counter, incoming$);
-        const outgoingToken = await simpleCall("subscribe")(token);
+  const onMessage = async msg => {
+    if (msg.cmd === "reload" && !reloading) {
+      reloading = true;
+      worker.removeListener("message", onMessage);
 
-        return deserializeStream(worker, outgoingToken);
-      },
-      destroy: () => {
-        worker.kill();
-      }
-    };
-
-    // initial
-    worker.once("message", msg => {
-      if (msg.cmd === "ok") {
-        resolve(proxy);
-        return;
-      }
-      if (msg.cmd === "error") {
-        worker.kill();
-        const err = new Error(msg.message);
-        reject(err);
-        return;
-      }
-    });
-
-    let reloading = false;
-
-    const onMessage = msg => {
-      if (msg.cmd === "reload" && !reloading) {
-        reloading = true;
-        worker.removeListener("message", onMessage);
-        const newWorker = createWorker();
+      try {
+        const newWorker = await createWorker(filepath);
         const devServerUrl = String(
-          fs.readFileSync(path.resolve(DEV_DIR, "dev-server.txt"))
+          fs.readFileSync(getDevFile("dev-server.txt"))
         );
-        newWorker.on("message", onMessage);
 
         worker.kill();
         worker = newWorker;
-
+        newWorker.on("message", onMessage);
         proxy.DEV__replaceWriteTo(devServerUrl);
-        onChange().then(() => {
-          reloading = false;
-        });
-        return;
+        await onChange();
+      } catch (ex) {
+        worker.on("message", onMessage);
+        console.error("cannot create new worker. Keep previous version");
+        console.error(ex);
+      } finally {
+        reloading = false;
       }
-      if (msg.cmd === "simple call reply") {
-        const defer = defers[msg.id];
-        delete defers[msg.id];
-        defer.resolve(msg.reply);
-      }
-    };
 
-    worker.on("message", onMessage);
-  });
+      return;
+    }
+
+    if (msg.cmd === "simple call reply") {
+      const defer = defers[msg.id];
+      delete defers[msg.id];
+      defer.resolve(msg.reply);
+    }
+  };
+
+  worker.on("message", onMessage);
+
+  return proxy;
 };
