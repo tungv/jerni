@@ -1,16 +1,17 @@
 const Listr = require("listr");
 const brighten = require("brighten");
-const kefir = require("kefir");
 const kleur = require("kleur");
 const socketIO = require("socket.io");
 
-const path = require("path");
 const fs = require("fs");
+const kefir = require("kefir");
+const path = require("path");
 
-const createProxy = require("./lib/store-proxy");
-const getCollection = require("./utils/getCollection");
-const startDevServer = require("./start-dev");
+const createProxy = require("./lib/createProxy");
+const loadDatabase = require("./tasks/loadDatabase");
+const loadQueue = require("./tasks/load-queue");
 const open = require("./lib/open");
+const startDevServer = require("./start-dev");
 
 const NAMESPACE = "local-dev";
 const DEV_DIR = path.resolve(process.cwd(), "./.jerni-dev");
@@ -65,29 +66,13 @@ const initialTasks = new Listr([
           {
             title: "load queue",
             task: async ctx => {
-              if (!fs.existsSync(DEV_DIR)) {
-                fs.mkdirSync(DEV_DIR);
-              }
-              const adapter = require("@heq/server-lokijs");
-              ctx.queue = await adapter({
-                ns: NAMESPACE,
-                filepath: path.resolve(DEV_DIR, "events.json")
-              });
+              ctx.queue = await loadQueue();
             }
           },
           {
             title: "load database",
             task: async ctx => {
-              const { coll, db } = await getCollection(
-                path.resolve(DEV_DIR, "pulses.json"),
-                "pulses"
-              );
-
-              normalizePulsesDatabase(coll);
-              db.saveDatabase();
-
-              ctx.Pulses = coll;
-              ctx.db = db;
+              Object.assign(ctx, await loadDatabase());
             }
           }
         ],
@@ -198,8 +183,6 @@ const reloadTasks = new Listr([
       const events = await queue.query({ from: 0 });
       const pulses = await getPulsesWithFullEvents(Pulses.find(), queue);
 
-      // I know what I'm doing with let
-      let id = 0;
       const newEvents = [];
 
       pulses.forEach(pulse => {
@@ -367,29 +350,4 @@ const deactivateEvent = event => {
 };
 const activateEvent = event => {
   event.type = event.type.split("[MARKED_AS_DELETE]___").join("");
-};
-
-const normalizePulsesDatabase = Pulses => {
-  const pulses = Pulses.find({});
-  Pulses.clear();
-
-  const eventIds = {};
-
-  pulses.forEach(pulse => {
-    const events = pulse.events.filter(id => {
-      if (eventIds[id]) {
-        return false;
-      }
-
-      eventIds[id] = true;
-      return true;
-    });
-
-    if (events.length) {
-      Pulses.insert({
-        events,
-        models: pulse.models
-      });
-    }
-  });
 };
