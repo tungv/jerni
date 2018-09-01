@@ -254,7 +254,7 @@ const reloadTasks = new Listr([
 
       io.emit("redux event", {
         type: "PULSES_INITIALIZED",
-        payload: newPulses.slice(0, 50)
+        payload: newPulses
       });
 
       task.title = "flushed";
