@@ -33,11 +33,20 @@ const startBanner = () => {
 };
 
 const startRealtime = async (ctx, task) => {
-  const { store, io, db, Pulses } = ctx;
+  const { store, io, db, Pulses, queue } = ctx;
 
   const outgoing$ = await store.subscribe();
-  ctx.subscription = outgoing$.observe(rawPulse => {
+  ctx.subscription = outgoing$.observe(async rawPulse => {
     const pulse = normalizePulse(rawPulse);
+    const latestEvent = await queue.getLatest();
+
+    const newerEvents = pulse.events.filter(event => event.id > latestEvent.id);
+
+    if (newerEvents.length === 0) {
+      return;
+    }
+
+    pulse.events = newerEvents;
 
     Pulses.insert(makePersistablePulse(pulse));
     db.saveDatabase();
