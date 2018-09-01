@@ -4,7 +4,8 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "jerni-dev journey.js"
+    "dev": "jerni-dev start journey.js",
+    "clean": "jerni-dev clean journey.js"
   },
   "dependencies": {
     "@jerni/store-mongo": "^0.2.2",
