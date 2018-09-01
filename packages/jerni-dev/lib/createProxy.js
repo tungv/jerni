@@ -1,7 +1,10 @@
+const kleur = require("kleur");
+
 const { fork } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 
+const { formatError } = require("./wrapError");
 const { getDevFile } = require("../tasks/constants");
 const { serializeStream, deserializeStream } = require("./proxy-stream");
 const makeDefer = require("./makeDefer");
@@ -18,8 +21,8 @@ const createWorker = filepath => {
         worker.removeListener("message", onMessage);
       } else if (msg.cmd === "error") {
         worker.kill();
-        const err = new Error(msg.message);
-        reject(err);
+
+        reject(new Error(formatError(msg)));
 
         worker.removeListener("message", onMessage);
       }
@@ -88,8 +91,12 @@ module.exports = async function createProxy(filepath, onChange) {
         await onChange();
       } catch (ex) {
         worker.on("message", onMessage);
-        console.error("cannot create new worker. Keep previous version");
-        console.error(ex);
+        console.error(
+          `${kleur.yellow(
+            "WARNING"
+          )}: cannot create new worker. Keep previous version\n`
+        );
+        console.error("  " + ex.message.split("\n").join("\n  "));
       } finally {
         reloading = false;
       }

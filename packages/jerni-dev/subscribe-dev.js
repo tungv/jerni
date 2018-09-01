@@ -33,6 +33,18 @@ const startBanner = () => {
   console.log(banner);
 };
 
+const emergencyExit = (title, error) => {
+  brighten();
+
+  const msg = `${kleur.bold.bgRed(
+    " FATAL "
+  )} ${title}\n\n  ${error.message.split("\n").join("\n  ")}\n\n`;
+
+  console.error(msg);
+
+  process.exit(1);
+};
+
 const startRealtime = async (ctx, task) => {
   const { store, io, db, Pulses, queue } = ctx;
 
@@ -70,10 +82,14 @@ const initialTasks = new Listr([
           {
             title: "load store",
             task: async ctx => {
-              ctx.store = await createProxy(
-                path.resolve(process.cwd(), ctx.filepath),
-                ctx.onChange
-              );
+              try {
+                ctx.store = await createProxy(
+                  path.resolve(process.cwd(), ctx.filepath),
+                  ctx.onChange
+                );
+              } catch (ex) {
+                emergencyExit("cannot load journey file", ex);
+              }
             }
           },
           {

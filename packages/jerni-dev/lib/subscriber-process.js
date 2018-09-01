@@ -1,16 +1,21 @@
 const { watch } = require("chokidar");
 const brighten = require("brighten");
+const debounce = require("debounce");
 const kleur = require("kleur");
 const pkgDir = require("pkg-dir");
-const debounce = require("debounce");
 
 const path = require("path");
 
 const { serializeStream, deserializeStream } = require("./proxy-stream");
+const { wrapError } = require("./wrapError");
 
 const importPathWithInterop = async filepath => {
-  const mod = await require(filepath);
-  return mod.default || mod;
+  try {
+    const mod = await require(filepath);
+    return mod.default || mod;
+  } catch (ex) {
+    throw wrapError(ex);
+  }
 };
 
 async function main(filepath) {
@@ -75,7 +80,12 @@ main(process.argv[2]).then(
     process.send({ cmd: "ok" });
   },
   ex => {
-    process.send({ cmd: "error", name: ex.name, message: ex.message });
+    process.send({
+      cmd: "error",
+      name: ex.name,
+      message: ex.message,
+      location: ex.location
+    });
     process.exit(1);
   }
 );
