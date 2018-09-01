@@ -1,9 +1,12 @@
-const { serializeStream, deserializeStream } = require("./proxy-stream");
-const pkgDir = require("pkg-dir");
-const kleur = require("kleur");
-const brighten = require("brighten");
 const { watch } = require("chokidar");
+const brighten = require("brighten");
+const kleur = require("kleur");
+const pkgDir = require("pkg-dir");
+const debounce = require("debounce");
+
 const path = require("path");
+
+const { serializeStream, deserializeStream } = require("./proxy-stream");
 
 const importPathWithInterop = async filepath => {
   const mod = await require(filepath);
@@ -49,19 +52,22 @@ async function main(filepath) {
     ]
   });
 
-  watcher.on("change", filePath => {
-    const location = path.relative(process.cwd(), filePath);
-    brighten();
-    console.log(
-      `\n${kleur.bgYellow.bold(" File changed ")} ${kleur.underline(
-        location
-      )} - Replaying...`
-    );
+  watcher.on(
+    "change",
+    debounce(filePath => {
+      const location = path.relative(process.cwd(), filePath);
+      brighten();
+      console.log(
+        `\n${kleur.bgYellow.bold(" File changed ")} ${kleur.underline(
+          location
+        )} - Replaying...`
+      );
 
-    process.send({
-      cmd: "reload"
-    });
-  });
+      process.send({
+        cmd: "reload"
+      });
+    }, 300)
+  );
 }
 
 main(process.argv[2]).then(
