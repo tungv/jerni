@@ -47,5 +47,8 @@
     "rimraf": "^2.6.2",
     "sade": "^1.4.1",
     "socket.io": "^2.1.1"
+  },
+  "peerDependencies": {
+    "jerni": "^0.2.0"
   }
 }
