@@ -598,12 +598,18 @@
     lokijs "^1.5.5"
     mitt "^1.1.3"
 
-"@jerni/store-mongo@^0.2.3":
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/@jerni/store-mongo/-/store-mongo-0.2.3.tgz#62a0c10c0f19d9e63cf17377c559fc2e47f182df"
+"@jerni/base@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@jerni/base/-/base-0.0.2.tgz#04355d7d731831a0a3c9fb89b4258dc3434c43b5"
   dependencies:
+    kefir "^3.8.3"
+
+"@jerni/store-mongo@^0.2.7":
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/@jerni/store-mongo/-/store-mongo-0.2.7.tgz#c015648e341d673bbbe1a094eac8ee1fb524dc6c"
+  dependencies:
+    "@jerni/base" "^0.0.2"
     "@tungv/mongo-oplog" "3.0.0"
-    jerni "^0.2.0"
     kefir "^3.8.3"
     mongo-heartbeat "^1.1.0"
     mongodb "^3.1.1"
@@ -2360,7 +2366,7 @@ globby@^6.1.0:
     pify "^2.0.0"
     pinkie-promise "^2.0.0"
 
-got@^9.0.0:
+got@^9.0.0, got@^9.2.0:
   version "9.2.0"
   resolved "https://registry.yarnpkg.com/got/-/got-9.2.0.tgz#f6aa4e26c984a3175f1073c421e2e40640f8295c"
   dependencies:
@@ -2856,9 +2862,9 @@ isomorphic-fetch@^2.1.1, isomorphic-fetch@^2.2.1:
     node-fetch "^1.0.1"
     whatwg-fetch ">=0.10.0"
 
-jerni-dev@^0.4.0:
-  version "0.4.0"
-  resolved "https://registry.yarnpkg.com/jerni-dev/-/jerni-dev-0.4.0.tgz#d0ad151c0272b32a9304cf1946eba8f48ebeb246"
+jerni-dev@^0.4.3:
+  version "0.4.3"
+  resolved "https://registry.yarnpkg.com/jerni-dev/-/jerni-dev-0.4.3.tgz#15bc7133cec32174dd72a3b16cace075f5c56a0e"
   dependencies:
     "@heq/server-lokijs" "^1.3.0"
     boxen "^1.3.0"
@@ -2868,6 +2874,7 @@ jerni-dev@^0.4.0:
     cross-spawn "^6.0.5"
     date-fns "^1.29.0"
     debounce "^1.2.0"
+    got "^9.2.0"
     heq-server "^2.1.0"
     isomorphic-fetch "^2.2.1"
     kleur "^2.0.1"
@@ -2891,9 +2898,9 @@ jerni-dev@^0.4.0:
     sade "^1.4.1"
     socket.io "^2.1.1"
 
-jerni@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/jerni/-/jerni-0.2.0.tgz#d46855cd600c77f664f953888c6f03a18622a42b"
+jerni@^0.3.3:
+  version "0.3.3"
+  resolved "https://registry.yarnpkg.com/jerni/-/jerni-0.3.3.tgz#7ee74bcf941f070f4d53bc392352cdbe90081a06"
   dependencies:
     arrify "^1.0.1"
     got "^9.0.0"

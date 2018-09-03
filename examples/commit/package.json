@@ -16,6 +16,7 @@
     "nanoid": "^1.2.2"
   },
   "scripts": {
+    "clean": "jerni-dev clean journey.js",
     "dev-api": "micro-dev index.js",
     "dev-jerni": "jerni-dev start journey.js"
   }
