@@ -3,5 +3,20 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "jerni-dev": "^0.4.0",
+    "micro-dev": "^3.0.0"
+  },
+  "dependencies": {
+    "@jerni/store-mongo": "^0.2.3",
+    "jerni": "^0.2.0",
+    "micro": "^9.3.3",
+    "microrouter": "^3.1.3",
+    "nanoid": "^1.2.2"
+  },
+  "scripts": {
+    "dev-api": "micro-dev index.js",
+    "dev-jerni": "jerni-dev start journey.js"
+  }
 }
