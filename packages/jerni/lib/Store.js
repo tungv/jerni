@@ -1,9 +1,10 @@
 const kefir = require("kefir");
 
 class Connection {
-  constructor({ name, models = [] } = {}) {
+  constructor({ name, models = [], url } = {}) {
     this.name = name;
     this.models = models;
+    this.url = url;
   }
 
   async getDriver() {

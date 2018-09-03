@@ -32,7 +32,7 @@ module.exports = class MongoDBStore extends Store {
       count: 100
     }
   }) {
-    super({ name, models });
+    super({ name, models, url });
     this.buffer = buffer;
     this.listeners = [];
     this.connectionInfo = {
