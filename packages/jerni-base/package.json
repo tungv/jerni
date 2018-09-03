@@ -1,0 +1,10 @@
+{
+  "name": "@jerni/base",
+  "version": "0.0.1",
+  "main": "index.js",
+  "author": "Tung Vu <me@tungv.com>",
+  "license": "MIT",
+  "dependencies": {
+    "kefir": "^3.8.3"
+  }
+}

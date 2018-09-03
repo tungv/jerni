@@ -1,6 +1,6 @@
 const mitt = require("mitt");
 
-const Store = require("../lib/Store");
+const Store = require("@jerni/base/Store");
 
 exports.Store = class DummyStore extends Store {
   constructor({ name, models, emitter = mitt() }) {
