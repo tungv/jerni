@@ -3,7 +3,7 @@
   "version": "0.4.0",
   "description": "CLI tool for develop clients of `heq-server` instances",
   "main": "index.js",
-  "bin": "index.js",
+  "bin": "cli.js",
   "scripts": {
     "dev:web": "NODE_ENV=heq_development node --trace-warnings index",
     "dev:cli": "node --trace-warnings index",
