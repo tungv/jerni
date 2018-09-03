@@ -4,7 +4,7 @@ const commitEventToHeqServer = require("./commit");
 const getEventsStream = require("./subscribe");
 const makeRacer = require("./racer");
 
-module.exports = function initStore({ writeTo, stores }) {
+module.exports = function createJourney({ writeTo, stores }) {
   const SOURCE_BY_MODELS = new Map();
   const racer = makeRacer(stores.map(() => 0));
 
