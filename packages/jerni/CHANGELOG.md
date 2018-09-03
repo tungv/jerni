@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/tungv/jerni/compare/jerni@0.2.0...jerni@0.3.0) (2018-09-03)
+
+
+### Features
+
+* **jerni:** add more explanations for common exceptions ([38c7139](https://github.com/tungv/jerni/commit/38c7139))
+
+
+
+
 <a name="0.2.0"></a>
 # [0.2.0](https://github.com/tungv/jerni/compare/jerni@0.1.2...jerni@0.2.0) (2018-09-01)
 
