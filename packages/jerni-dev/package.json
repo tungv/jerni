@@ -1,6 +1,6 @@
 {
   "name": "jerni-dev",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "CLI tool for develop clients of `heq-server` instances",
   "main": "index.js",
   "bin": "cli.js",
@@ -48,6 +48,5 @@
     "rimraf": "^2.6.2",
     "sade": "^1.4.1",
     "socket.io": "^2.1.1"
-  },
-  "peerDependencies": {}
+  }
 }

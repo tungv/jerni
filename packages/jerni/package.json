@@ -1,6 +1,6 @@
 {
   "name": "jerni",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Server-side Flux architecture framework",
   "main": "index.js",
   "repository": "https://github.com/tungv/jerni",
@@ -11,7 +11,7 @@
     "ava": "^0.25.0",
     "brighten": "^0.0.1",
     "heq-server": "^2.1.0",
-    "jerni-dev": "^0.4.2",
+    "jerni-dev": "^0.4.3",
     "micro": "^9.3.2"
   },
   "dependencies": {
