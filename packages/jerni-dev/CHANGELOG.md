@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.4.2"></a>
+## [0.4.2](https://github.com/tungv/jerni/compare/jerni-dev@0.4.1...jerni-dev@0.4.2) (2018-09-03)
+
+
+### Bug Fixes
+
+* **devtool:** slight update for explanations ([3b5abf9](https://github.com/tungv/jerni/commit/3b5abf9))
+
+
+
+
 <a name="0.4.1"></a>
 ## [0.4.1](https://github.com/tungv/jerni/compare/jerni-dev@0.4.0...jerni-dev@0.4.1) (2018-09-03)
 

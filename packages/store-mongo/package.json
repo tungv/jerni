@@ -1,6 +1,6 @@
 {
   "name": "@jerni/store-mongo",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "main": "index.js",
   "files": [
     "lib",
@@ -14,7 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "@tungv/mongo-oplog": "3.0.0",
-    "jerni": "^0.3.0",
+    "jerni": "^0.3.1",
     "kefir": "^3.8.3",
     "mongo-heartbeat": "^1.1.0",
     "mongodb": "^3.1.1",
