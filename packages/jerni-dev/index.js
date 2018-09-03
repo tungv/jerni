@@ -67,7 +67,7 @@ exports.getDevServerUrl = async providedServerUrl => {
 };
 
 exports.waitTooLongExplain = ({ stores, event }) => {
-  const EVENT_FMT = `#${event.id} - ${event.type}`;
+  const EVENT_FMT = kleur.bold.underline(`#${event.id} - ${event.type}`);
   console.log(`${ERROR} wait too long for event ${EVENT_FMT}\n`);
 
   const devServerUrl = getRunningServerUrl();
@@ -80,7 +80,7 @@ exports.waitTooLongExplain = ({ stores, event }) => {
     stores.forEach((store, index) => {
       const url = new URL(store.url);
       console.log(
-        `  ${kleur.dim(`${index + 1})`)} ${url.protocol}://${url.host}`
+        `  ${kleur.dim(`${index + 1})`)} ${url.protocol}//${url.host}`
       );
     });
     return;
@@ -110,7 +110,7 @@ exports.waitTooLongExplain = ({ stores, event }) => {
   );
   stores.forEach(store => {
     const url = new URL(store.url);
-    console.log(`     ${kleur.dim(`*`)} ${url.protocol}://${url.host}`);
+    console.log(`     ${kleur.dim(`*`)} ${url.protocol}//${url.host}`);
   });
 
   console.log("\n");
