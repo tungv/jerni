@@ -6,11 +6,11 @@ const accounts = require("./models/accounts");
 const journey = require("./journey");
 
 const service = router(
-  get("/users", async req => {
+  get("/accounts", async req => {
     const Accounts = await journey.getReader(accounts);
     return Accounts.find({}).toArray();
   }),
-  post("/users", async req => {
+  post("/accounts", async req => {
     const id = nanoid();
     const body = await json(req);
 
