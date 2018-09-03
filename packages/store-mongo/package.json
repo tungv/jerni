@@ -13,8 +13,8 @@
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
   "dependencies": {
+    "@jerni/base": "^0.0.1",
     "@tungv/mongo-oplog": "3.0.0",
-    "jerni": "^0.3.2",
     "kefir": "^3.8.3",
     "mongo-heartbeat": "^1.1.0",
     "mongodb": "^3.1.1",

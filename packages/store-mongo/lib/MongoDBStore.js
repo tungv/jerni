@@ -1,6 +1,6 @@
 const MongoHeartbeat = require("mongo-heartbeat");
 
-const Store = require("jerni/lib/Store");
+const Store = require("@jerni/base/Store");
 const PLazy = require("p-lazy");
 const kefir = require("kefir");
 
