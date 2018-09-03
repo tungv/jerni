@@ -4,6 +4,8 @@ const commitEventToHeqServer = require("./commit");
 const getEventsStream = require("./subscribe");
 const makeRacer = require("./racer");
 
+const dev = process.env.NODE_ENV !== "production";
+
 module.exports = function createJourney({ writeTo, stores }) {
   const SOURCE_BY_MODELS = new Map();
   const racer = makeRacer(stores.map(() => 0));
@@ -32,12 +34,41 @@ module.exports = function createJourney({ writeTo, stores }) {
     throw new Error(`trying to read an unregistered model`);
   };
 
-  const commit = event => {
-    return commitEventToHeqServer(`${currentWriteTo}/commit`, event);
+  const commit = async event => {
+    const serverUrl = dev
+      ? await require("./dev-aware").getDevServerUrl(currentWriteTo)
+      : currentWriteTo;
+
+    return commitEventToHeqServer(`${serverUrl}/commit`, event).then(evt => {
+      if (dev) {
+        evt.meta.sent_to = serverUrl;
+      }
+
+      return evt;
+    });
   };
 
   const waitFor = event => {
-    return racer.wait(event.id);
+    return new Promise((resolve, reject) => {
+      let resolved = false;
+      racer.wait(event.id).then(() => {
+        resolved = true;
+        resolve();
+      });
+
+      setTimeout(() => {
+        if (resolved) return;
+
+        if (dev) {
+          require("./dev-aware").waitTooLongExplain({ event, stores });
+        }
+
+        const err = new Error(
+          `Timeout: wait too long for #${event.id} - ${event.type}`
+        );
+        reject(err);
+      }, 1000);
+    });
   };
 
   const getDefaultEventStream = async () => {
