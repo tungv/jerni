@@ -7,6 +7,7 @@ const fs = require("fs");
 const kefir = require("kefir");
 const path = require("path");
 
+const { DEV_DIR } = require("./tasks/constants");
 const createProxy = require("./lib/createProxy");
 const last = require("./utils/last");
 const loadDatabase = require("./tasks/loadDatabase");
@@ -15,7 +16,6 @@ const open = require("./lib/open");
 const startDevServer = require("./start-dev");
 
 const NAMESPACE = "local-dev";
-const DEV_DIR = path.resolve(process.cwd(), "./.jerni-dev");
 
 let started = false;
 

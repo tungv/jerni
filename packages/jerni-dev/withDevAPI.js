@@ -1,8 +1,10 @@
-const { sendError } = require("micro");
-const path = require("path");
 const { router, get } = require("microrouter");
+const { sendError } = require("micro");
+
+const path = require("path");
+
+const { DEV_DIR } = require("./tasks/constants");
 const getCollection = require("./utils/getCollection");
-const DEV_DIR = path.resolve(process.cwd(), "./.jerni-dev");
 
 module.exports = async function(next, queue) {
   return router(
