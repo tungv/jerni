@@ -1,5 +1,5 @@
 const { json } = require("micro");
-const { router, get, post } = require("microrouter");
+const { router, get, post, del } = require("microrouter");
 const nanoid = require("nanoid");
 
 const accounts = require("./models/accounts");
@@ -26,6 +26,21 @@ const service = router(
     const Accounts = await journey.getReader(accounts);
 
     return Accounts.findOne({ id });
+  }),
+  del("/accounts/:id", async req => {
+    const Accounts = await journey.getReader(accounts);
+
+    const removingAccount = await Accounts.findOne({ id: req.params.id });
+    if (!removingAccount) {
+      throw createError(404, "account not found");
+    }
+
+    await journey.commit({
+      type: "ACCOUNT_CLOSED",
+      payload: { id: req.params.id }
+    });
+
+    return null;
   })
 );
 

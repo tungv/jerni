@@ -14,7 +14,7 @@ module.exports = new Model({
     }),
 
     ACCOUNT_CLOSED: event => ({
-      removeOne: {
+      deleteOne: {
         where: {
           id: event.payload.id
         }
