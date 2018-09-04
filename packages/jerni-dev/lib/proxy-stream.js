@@ -7,26 +7,47 @@ const serializeStream = (sender, id, incoming$) => {
     $stream: id
   };
 
+  const onData = data =>
+    sender.send({
+      id,
+      cmd: "incoming data",
+      data
+    });
+
+  const onEnd = () => {
+    sub.unsubscribe();
+  };
+  const onUnsubscribe = msg => {
+    if (msg.id !== id || msg.cmd !== "stream unsubscribe") {
+      return;
+    }
+
+    cleanSender();
+  };
+
+  const cleanSender = () => {
+    sender.removeListener("disconnect", onEnd);
+    sender.removeListener("message", onUnsubscribe);
+  };
+
+  const cleanReceiver = () => {
+    sender.send({
+      id,
+      cmd: "incoming end"
+    });
+  };
+
   const sub = incoming$.observe(
-    data => {
-      sender.send({
-        id,
-        cmd: "incoming data",
-        data
-      });
-    },
+    onData,
     err => {},
     () => {
-      sender.send({
-        id,
-        cmd: "incoming end"
-      });
+      cleanReceiver();
+      cleanSender();
     }
   );
 
-  sender.on("disconnect", () => {
-    sub.unsubscribe();
-  });
+  sender.on("message", onUnsubscribe);
+  sender.once("disconnect", onEnd);
 
   return token;
 };
@@ -46,14 +67,20 @@ const deserializeStream = (receiver, token) => {
       }
     };
 
-    receiver.on("message", handler);
-
-    receiver.on("disconnect", () => {
+    const onEnd = () => {
       emitter.end();
-    });
+    };
+
+    receiver.on("message", handler);
+    receiver.once("disconnect", onEnd);
 
     return () => {
+      receiver.send({
+        cmd: "stream unsubscribe",
+        id
+      });
       receiver.removeListener("message", handler);
+      receiver.removeListener("disconnect", onEnd);
     };
   });
 };
