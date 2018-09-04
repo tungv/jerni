@@ -21,8 +21,10 @@ $ yarn dev-jerni
 current APIs include:
 
 1.  `GET /accounts`
-2.  `POST /accounts { name: String }`
+2.  `POST /accounts { name: String! }`
 3.  `DELETE /accounts/:account_id`
+4.  `POST /deposits { receiver: String!, amount: Number! }`
+5.  `POST /transactions { sender: String!, receiver: String!, amount: Number! }`
 
 # Hot reload
 
