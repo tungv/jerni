@@ -7,7 +7,7 @@ const { version } = require("./package.json");
 
 const program = sade("jerni-dev");
 
-program.version(version).option("banner", "BANNER FTW", false);
+program.version(version);
 
 const { HEQ_PORT = "8080" } = process.env;
 
@@ -21,10 +21,6 @@ program
   .option("force", "try it best to start a server", false)
   .option("open", "open web UI after initializing", false)
   .action((path, opts) => {
-    if (opts.banner) {
-      require("./banner");
-    }
-
     require("./subscribe-dev")(path, opts);
   });
 
