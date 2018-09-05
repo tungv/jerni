@@ -72,16 +72,16 @@ module.exports = function createJourney({ writeTo, stores }) {
   };
 
   const getDefaultEventStream = async () => {
-    const latestEventIdArray = await Promise.all(
-      stores.map(source => source.getLastSeenId())
-    );
-
-    const oldestVersion = Math.min(...latestEventIdArray);
-
     const incomingEvents$ = await getEventsStream({
       queryURL: `${currentWriteTo}/query`,
       subscribeURL: `${currentWriteTo}/subscribe`,
-      lastSeenId: oldestVersion
+      lastSeenIdGetter: async () => {
+        const latestEventIdArray = await Promise.all(
+          stores.map(source => source.getLastSeenId())
+        );
+
+        return Math.min(...latestEventIdArray);
+      }
     });
 
     return incomingEvents$;
