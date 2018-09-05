@@ -640,9 +640,9 @@
     lokijs "^1.5.5"
     mitt "^1.1.3"
 
-"@jerni/base@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@jerni/base/-/base-0.0.1.tgz#e8bf2a4c93b1d369bd553aedd88d8bba94729463"
+"@jerni/base@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@jerni/base/-/base-0.0.2.tgz#04355d7d731831a0a3c9fb89b4258dc3434c43b5"
   dependencies:
     kefir "^3.8.3"
 
