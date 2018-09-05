@@ -6,10 +6,14 @@
     "heq": "^2.0.7"
   },
   "scripts": {
-    "start": "heq --redis-namespace=\"cloud\""
+    "start": "heq --redis-namespace=\"cloud\"",
+    "deploy": "now && now alias"
   },
   "now": {
-    "alias": "events.tung.ninja"
+    "alias": "events.jerni.app",
+    "env": {
+      "HEQ_REDIS_URL": "@redislabs"
+    }
   },
   "private": true
 }
