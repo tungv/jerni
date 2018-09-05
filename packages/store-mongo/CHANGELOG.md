@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.3.0"></a>
+# [0.3.0](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.2.7...@jerni/store-mongo@0.3.0) (2018-09-05)
+
+
+### Features
+
+* **store-mongo:** make store more reliable by allow infinite retries ([52c7925](https://github.com/tungv/jerni/commit/52c7925))
+* **store-mongo:** only subscribe when waitFor is called ([8c48561](https://github.com/tungv/jerni/commit/8c48561))
+
+
+
+
 <a name="0.2.7"></a>
 ## [0.2.7](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.2.6...@jerni/store-mongo@0.2.7) (2018-09-03)
 

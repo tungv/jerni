@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.2.0"></a>
+# [1.2.0](https://github.com/tungv/jerni/compare/@jerni/example-commit@1.1.3...@jerni/example-commit@1.2.0) (2018-09-05)
+
+
+### Bug Fixes
+
+* **example:** change /users to /accounts ([e853ef5](https://github.com/tungv/jerni/commit/e853ef5))
+* **example:** set writeTo = null in development ([7fce0b5](https://github.com/tungv/jerni/commit/7fce0b5))
+
+
+### Features
+
+* **example:** add balance changed api ([4af1ceb](https://github.com/tungv/jerni/commit/4af1ceb))
+* **example:** add close account endpoint ([29526f8](https://github.com/tungv/jerni/commit/29526f8))
+
+
+
+
 <a name="1.1.3"></a>
 ## [1.1.3](https://github.com/tungv/jerni/compare/@jerni/example-commit@1.1.2...@jerni/example-commit@1.1.3) (2018-09-03)
 

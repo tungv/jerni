@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.4.0"></a>
+# [0.4.0](https://github.com/tungv/jerni/compare/jerni@0.3.3...jerni@0.4.0) (2018-09-05)
+
+
+### Features
+
+* **jerni:** add start cli ([a67dc06](https://github.com/tungv/jerni/commit/a67dc06))
+* **jerni:** implement backoff ([ef43fa6](https://github.com/tungv/jerni/commit/ef43fa6))
+* **jerni:** make heq subscription more reliable ([9251e18](https://github.com/tungv/jerni/commit/9251e18))
+* **jerni:** start cli will intervally log arrived events ([b48c2ef](https://github.com/tungv/jerni/commit/b48c2ef))
+* **store-mongo:** only subscribe when waitFor is called ([8c48561](https://github.com/tungv/jerni/commit/8c48561))
+
+
+
+
 <a name="0.3.3"></a>
 ## [0.3.3](https://github.com/tungv/jerni/compare/jerni@0.3.2...jerni@0.3.3) (2018-09-03)
 

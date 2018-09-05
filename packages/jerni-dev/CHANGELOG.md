@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.4.4"></a>
+## [0.4.4](https://github.com/tungv/jerni/compare/jerni-dev@0.4.3...jerni-dev@0.4.4) (2018-09-05)
+
+
+### Bug Fixes
+
+* **devtool:** cleanup process on unsubscription ([4a88ed2](https://github.com/tungv/jerni/commit/4a88ed2))
+
+
+
+
 <a name="0.4.3"></a>
 ## [0.4.3](https://github.com/tungv/jerni/compare/jerni-dev@0.4.2...jerni-dev@0.4.3) (2018-09-03)
 
