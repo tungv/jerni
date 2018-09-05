@@ -104,7 +104,7 @@ module.exports = function createJourney({ writeTo, stores }) {
     return kefir.merge(output$Array);
   };
 
-  return {
+  const journey = {
     getReader,
     commit,
     waitFor,
@@ -121,21 +121,27 @@ module.exports = function createJourney({ writeTo, stores }) {
         []
       );
       return vx;
-    },
-
-    DEV__replaceWriteTo: nextWriteTo => {
-      currentWriteTo = nextWriteTo;
-    },
-
-    DEV__cleanAll: () => Promise.all(stores.map(src => src.clean())),
-
-    DEV__getNewestVersion: async () => {
-      const latestEventIdArray = await Promise.all(
-        stores.map(source => source.getLastSeenId())
-      );
-      return Math.max(...latestEventIdArray);
     }
   };
+
+  if (dev) {
+    Object.assign(journey, {
+      DEV__replaceWriteTo: nextWriteTo => {
+        currentWriteTo = nextWriteTo;
+      },
+
+      DEV__cleanAll: () => Promise.all(stores.map(src => src.clean())),
+
+      DEV__getNewestVersion: async () => {
+        const latestEventIdArray = await Promise.all(
+          stores.map(source => source.getLastSeenId())
+        );
+        return Math.max(...latestEventIdArray);
+      }
+    });
+  }
+
+  return journey;
 };
 
 const toArray = stream$ => stream$.scan((prev, next) => prev.concat(next), []);
