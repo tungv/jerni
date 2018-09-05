@@ -4,7 +4,7 @@ const createJourney = require("jerni");
 const accounts = require("./models/accounts");
 
 const writeTo =
-  process.env.NODE_ENV === "production" ? "https://events.tung.ninja" : null;
+  process.env.NODE_ENV === "production" ? "https://events.jerni.app" : null;
 
 module.exports = createJourney({
   writeTo,

@@ -1,6 +1,6 @@
 module.exports = {
   subscribe: {
-    serverUrl: 'https://events.tung.ninja',
+    serverUrl: 'https://events.jerni.app',
   },
   persist: {
     store: 'mongodb://localhost:27017/heq-example',

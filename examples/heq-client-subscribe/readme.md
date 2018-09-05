@@ -14,7 +14,7 @@ to an `heq-server` instance and dispatches database operations (INSERT, UPDATE, 
 a set of predefine rules. It's also designed to ensure those operations are idempotent using an
 optimistic locking mechanism.
 
-Given a remote `heq-server` instance running on `https://events.tung.ninja` and a local mongodb
+Given a remote `heq-server` instance running on `https://events.jerni.app` and a local mongodb
 running on `mongodb://localhost:27017/heq-example`, `heq-client` will receive unprocessed events from
 `heq-server` and dispatch mongodb operations to the aforementioned database.
 

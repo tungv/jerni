@@ -13,7 +13,7 @@ const mongoStore = new Store({
 });
 
 const journey = createJourney({
-  writeTo: "https://events.tung.ninja",
+  writeTo: "https://events.jerni.app",
   stores: [mongoStore]
 });
 
