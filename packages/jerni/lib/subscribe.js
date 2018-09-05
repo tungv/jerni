@@ -21,6 +21,7 @@ module.exports = async function subscribe({
 }) {
   const b = backoff({ seed: 10, max: 3000 });
   let lastSeenId = await lastSeenIdGetter();
+  logger.info("last seen id", lastSeenId);
   const { body: unreadEvents } = await got(
     `${queryURL}?lastEventId=${lastSeenId}`,
     {
