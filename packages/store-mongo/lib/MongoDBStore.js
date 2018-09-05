@@ -1,3 +1,12 @@
+const log4js = require("log4js");
+const logger = log4js.getLogger("@jerni/store-mongo");
+
+if (process.env.NODE_ENV === "production") {
+  logger.level = "info";
+} else {
+  logger.level = "debug";
+}
+
 const MongoHeartbeat = require("mongo-heartbeat");
 
 const Store = require("@jerni/base/Store");
@@ -16,7 +25,7 @@ const flatten = arrayDeep => [].concat(...arrayDeep);
 const connect = async url => {
   const client = await MongoClient.connect(
     url,
-    { useNewUrlParser: true }
+    { useNewUrlParser: true, reconnectTries: Number.MAX_VALUE }
   );
   return client;
 };
@@ -101,10 +110,40 @@ module.exports = class MongoDBStore extends Store {
   async actuallyConnect() {
     try {
       const client = await connect(this.connectionInfo.url);
+
+      if (process.env.NODE_ENV === "production") {
+        // minimal logging
+        client.on("close", () => {
+          logger.info("connection closed");
+        });
+        client.on("reconnect", () => {
+          logger.info("connection reconnected");
+        });
+      } else {
+        [
+          "connect",
+          "reconnect",
+          "serverOpening",
+          "serverClosed",
+          "serverDescriptionChanged",
+          "topologyOpening",
+          "topologyClosed",
+          "topologyDescriptionChanged",
+          "reconnectFailed",
+          "close",
+          "error",
+          "destroy"
+        ].forEach(evt =>
+          client.on(evt, () => {
+            logger.debug(evt);
+          })
+        );
+      }
+
       const db = client.db(this.connectionInfo.dbName);
       const hb = MongoHeartbeat(db, {
-        interval: 5 * 60 * 1000,
-        timeout: 30000,
+        interval: 60 * 1000,
+        timeout: 10000,
         tolerance: 3
       });
 
