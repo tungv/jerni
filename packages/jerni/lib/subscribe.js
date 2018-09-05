@@ -1,15 +1,26 @@
 const got = require("got");
-
 const kefir = require("kefir");
+const log4js = require("log4js");
 
+const backoff = require("./backoff");
 const getChunks = require("./getChunks");
+
+const logger = log4js.getLogger("@jerni");
+
+if (process.env.NODE_ENV === "production") {
+  logger.level = "info";
+} else {
+  logger.level = "debug";
+}
 
 module.exports = async function subscribe({
   queryURL,
   subscribeURL,
-  lastSeenId,
+  lastSeenIdGetter,
   includes = []
 }) {
+  const b = backoff({ seed: 10, max: 3000 });
+  let lastSeenId = await lastSeenIdGetter();
   const { body: unreadEvents } = await got(
     `${queryURL}?lastEventId=${lastSeenId}`,
     {
@@ -30,14 +41,38 @@ module.exports = async function subscribe({
   const unread$ = kefir.constant(unreadEvents.filter(filterEvents));
 
   setTimeout(() => pool.plug(unread$), 1);
-  unread$.onEnd(() => {
+
+  const connectRealtime = realtimeFrom => {
     const realtime$ = kefir
       .stream(emitter => {
+        logger.debug("attempting to subscribe from #%d", realtimeFrom);
         const resp$ = got.stream(`${subscribeURL}?lastEventId=${realtimeFrom}`);
+        const retry = once(waitTime => {
+          emitter.end();
+
+          pool.unplug(realtime$);
+
+          setTimeout(() => {
+            lastSeenIdGetter().then(connectRealtime);
+          }, waitTime);
+
+          logger.info(`retrying after ${waitTime}ms`);
+        });
+
+        resp$.once("error", err => {
+          logger.error("connection error");
+          retry(b.next());
+        });
+
         let req;
 
         resp$.on("request", r => {
           req = r;
+        });
+
+        resp$.once("data", () => {
+          logger.info("connected");
+          b.reset();
         });
 
         resp$.on("data", buffer => {
@@ -46,7 +81,8 @@ module.exports = async function subscribe({
         });
 
         resp$.on("end", () => {
-          emitter.end();
+          logger.info("connection end");
+          retry(b.next());
         });
 
         return () => {
@@ -58,6 +94,10 @@ module.exports = async function subscribe({
       .thru(handleMsg(filterEvents));
 
     pool.plug(realtime$);
+  };
+
+  unread$.onEnd(() => {
+    connectRealtime(realtimeFrom);
   });
 
   return pool.filter();
@@ -75,4 +115,13 @@ const safeParseArray = str => {
   } catch (ex) {
     return [];
   }
+};
+
+const once = fn => {
+  let tries = 0;
+  return (...args) => {
+    if (!tries++) {
+      return fn(...args);
+    }
+  };
 };
