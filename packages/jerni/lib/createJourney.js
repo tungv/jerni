@@ -16,11 +16,15 @@ module.exports = function createJourney({ writeTo, stores }) {
     // register every models in each read source to SOURCE_BY_MODELS map
     // so we can retrieve them later in `#read(model)`
     readSource.registerModels(SOURCE_BY_MODELS);
+  });
 
-    // we also subscribe for new changes from each source
-    // in order to resolve `#waitFor(event)` and future `#waitFor(event, model)`
-    readSource.subscribe(id => {
-      racer.bump(index, id);
+  const enableWatchMode = once(() => {
+    stores.forEach((readSource, index) => {
+      // we also subscribe for new changes from each source
+      // in order to resolve `#waitFor(event)` and future `#waitFor(event, model)`
+      readSource.subscribe(id => {
+        racer.bump(index, id);
+      });
     });
   });
 
@@ -49,6 +53,7 @@ module.exports = function createJourney({ writeTo, stores }) {
   };
 
   const waitFor = event => {
+    enableWatchMode();
     return new Promise((resolve, reject) => {
       let resolved = false;
       racer.wait(event.id).then(() => {
@@ -145,3 +150,11 @@ module.exports = function createJourney({ writeTo, stores }) {
 };
 
 const toArray = stream$ => stream$.scan((prev, next) => prev.concat(next), []);
+const once = fn => {
+  let tries = 0;
+  return (...args) => {
+    if (!tries++) {
+      return fn(...args);
+    }
+  };
+};

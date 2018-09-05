@@ -51,25 +51,9 @@ module.exports = class MongoDBStore extends Store {
 
     this.connected = makeDefer();
 
-    let firstSuccessfulPackageReceived = false;
-
     this.actuallyConnect().then(async conn => {
       this.connection = conn;
-
-      // get change stream from __snapshots collection
-      const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
-
-      const change$ = watch(conn.client, snapshotsCol, this.models);
-
-      change$.observe(id => {
-        if (!firstSuccessfulPackageReceived) {
-          firstSuccessfulPackageReceived = true;
-          this.connected.resolve();
-        }
-
-        this.lastReceivedEventId = id;
-        this.listeners.forEach(fn => fn(id));
-      });
+      this.connected.resolve();
     });
   }
 
@@ -84,7 +68,21 @@ module.exports = class MongoDBStore extends Store {
 
   async getLastSeenId() {
     await this.connected.promise;
-    return this.lastReceivedEventId;
+    const condition = {
+      $or: this.models.map(m => ({ name: m.name, version: m.version }))
+    };
+
+    const conn = this.connection;
+    const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
+    const resp = await snapshotsCol.find(condition).toArray();
+
+    const oldestVersion = resp.reduce((v, obj) => {
+      if (obj.__v > v) {
+        return obj.__v;
+      }
+      return v;
+    }, 0);
+    return oldestVersion;
   }
 
   async clean() {
@@ -166,8 +164,25 @@ module.exports = class MongoDBStore extends Store {
     return this.connection.db.collection(model.collectionName);
   }
 
+  watch() {
+    if (this.watching) return;
+
+    this.watching = true;
+    const conn = this.connection;
+    // get change stream from __snapshots collection
+    const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
+
+    const change$ = watch(conn.client, snapshotsCol, this.models);
+    change$.observe(id => {
+      this.lastReceivedEventId = id;
+      this.listeners.forEach(fn => fn(id));
+    });
+  }
+
   subscribe(fn) {
     this.listeners.push(fn);
+
+    this.watch();
 
     // unsubscribe
     return () => {
@@ -254,4 +269,13 @@ module.exports = class MongoDBStore extends Store {
       .filter(buf => buf.length)
       .flatMapConcat(events => kefir.fromPromise(transformEvent(events)));
   }
+};
+
+const once = fn => {
+  let tries = 0;
+  return (...args) => {
+    if (!tries++) {
+      return fn(...args);
+    }
+  };
 };
