@@ -1,6 +1,6 @@
 {
   "name": "@heq/example-deploy-with-now",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "license": "MIT",
   "dependencies": {
     "heq": "^2.0.7"
