@@ -1,4 +1,7 @@
 const log4js = require("log4js");
+
+const createQueue = require("./queue");
+
 const logger = log4js.getLogger("@jerni/store-mongo");
 
 if (process.env.NODE_ENV === "production") {
@@ -15,7 +18,6 @@ const kefir = require("kefir");
 
 const MongoClient = require("mongodb").MongoClient;
 const makeDefer = require("./makeDefer");
-const watch = require("./watch");
 const transform = require("./transform");
 
 const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
@@ -53,7 +55,10 @@ module.exports = class MongoDBStore extends Store {
 
     this.actuallyConnect().then(async conn => {
       this.connection = conn;
+
+      this.queue = await createQueue(conn.db, "notifications", this.models);
       this.connected.resolve();
+      logger.info("connected");
     });
   }
 
@@ -86,9 +91,11 @@ module.exports = class MongoDBStore extends Store {
   }
 
   async clean() {
+    logger.info("cleaning [start]");
     await this.connected.promise;
 
     const { db } = this.connection;
+    await this.queue.DEV__clean();
     const promises = this.models.map(m => {
       const col = db.collection(m.collectionName);
       return col.deleteMany({});
@@ -103,6 +110,7 @@ module.exports = class MongoDBStore extends Store {
     );
 
     await Promise.all(promises);
+    logger.info("cleaning [completed]");
   }
 
   async actuallyConnect() {
@@ -146,14 +154,12 @@ module.exports = class MongoDBStore extends Store {
       });
 
       hb.on("error", err => {
-        console.error("mongodb didnt respond the heartbeat message");
         process.nextTick(function() {
           process.exit(1);
         });
       });
       return { client, db };
     } catch (ex) {
-      console.error(ex);
       process.exit(1);
     }
   }
@@ -172,10 +178,12 @@ module.exports = class MongoDBStore extends Store {
     // get change stream from __snapshots collection
     const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
 
-    const change$ = watch(conn.client, snapshotsCol, this.models);
-    change$.observe(id => {
-      this.lastReceivedEventId = id;
-      this.listeners.forEach(fn => fn(id));
+    this.connected.promise.then(() => {
+      this.queue.subscribe(id => {
+        logger.debug("arrived_event", id);
+        this.lastReceivedEventId = id;
+        this.listeners.forEach(fn => fn(id));
+      });
     });
   }
 
@@ -194,11 +202,13 @@ module.exports = class MongoDBStore extends Store {
     await this.connected.promise;
 
     const conn = this.connection;
+    const queue = this.queue;
 
     const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
 
     const transformEvent = events =>
       new PLazy(resolve => {
+        logger.trace("transforming events", events);
         const allPromises = this.models.map(async model => {
           const ops = flatten(
             events.map(event => {
@@ -210,6 +220,7 @@ module.exports = class MongoDBStore extends Store {
             })
           );
 
+          const latestId = events[events.length - 1].id;
           if (ops.length === 0) {
             await snapshotsCol.findOneAndUpdate(
               {
@@ -217,12 +228,19 @@ module.exports = class MongoDBStore extends Store {
                 version: model.version
               },
               {
-                $set: { __v: events[events.length - 1].id }
+                $set: { __v: latestId }
               },
               {
                 upsert: true
               }
             );
+
+            await queue.commit({
+              source: this.name,
+              model: model.name,
+              model_version: model.version,
+              event_id: latestId
+            });
             return {
               model,
               added: 0,
@@ -246,6 +264,12 @@ module.exports = class MongoDBStore extends Store {
               upsert: true
             }
           );
+          await queue.commit({
+            source: this.name,
+            model: model.name,
+            model_version: model.version,
+            event_id: latestId
+          });
 
           return {
             model,

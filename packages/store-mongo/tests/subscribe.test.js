@@ -28,6 +28,7 @@ test.cb("subscribe", t => {
   });
 
   const conn = new Store({
+    name: "test_1",
     url: MONGODB,
     dbName: "test_transform",
     models: [model1, model2]

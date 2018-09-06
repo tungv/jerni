@@ -83,6 +83,7 @@ test.cb("e2e", t => {
   });
 
   const conn = new Store({
+    name: "e2e_db",
     url: MONGODB,
     dbName: "test_e2e",
     models: [model]
