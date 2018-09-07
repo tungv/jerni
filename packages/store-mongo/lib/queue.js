@@ -80,8 +80,7 @@ const getCollection = async (db, name) => {
   const coll = await db.createCollection(actualName, {
     capped: true,
     size: CAP_SIZE,
-    max: 1000,
-    strict: true
+    max: 1000
   });
   logger.debug(`created`);
 
