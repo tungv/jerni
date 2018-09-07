@@ -1,6 +1,6 @@
 const kefir = require("kefir");
 const log4js = require("log4js");
-const logger = log4js.getLogger("@jerni/store-mongo");
+const logger = log4js.getLogger("jerni/mongo-queue");
 
 const CAP_SIZE = 5242880;
 
@@ -54,6 +54,8 @@ const create = async (db, name, models) => {
 
   if (process.env.NODE_ENV !== "production") {
     queue.DEV__clean = async () => {
+      logger.debug("dropping");
+      await db.dropCollection(`QUEUE__${name}`);
       coll = await getCollection(db, name);
     };
   } else {
@@ -67,13 +69,19 @@ const create = async (db, name, models) => {
 const getCollection = async (db, name) => {
   const actualName = `QUEUE__${name}`;
 
+  logger.debug(`retrieving existing`);
   const existing = db.collection(actualName);
-  if (!(await existing.isCapped())) {
-    logger.debug(`reused`);
-    return existing;
+  try {
+    if (await existing.isCapped()) {
+      logger.debug(`reused`);
+      return existing;
+    } else {
+      logger.debug("dropping");
+      await db.dropCollection(actualName);
+    }
+  } catch (ex) {
+    logger.debug("cannot reuse");
   }
-
-  await db.dropCollection(actualName);
 
   logger.debug(`create new capped collection ${actualName}`);
 
