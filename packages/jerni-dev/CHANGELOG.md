@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/tungv/jerni/compare/jerni-dev@0.4.4...jerni-dev@0.5.0) (2018-09-07)
+
+
+### Features
+
+* **devtool:** prepend `+` to journey filepath for modules ([f2ed6f7](https://github.com/tungv/jerni/commit/f2ed6f7))
+
+
+
+
 <a name="0.4.4"></a>
 ## [0.4.4](https://github.com/tungv/jerni/compare/jerni-dev@0.4.3...jerni-dev@0.4.4) (2018-09-05)
 
