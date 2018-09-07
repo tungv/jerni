@@ -92,11 +92,6 @@ const getCollection = async (db, name) => {
   });
   logger.debug(`created`);
 
-  // console.log({ isCapped: await coll.isCapped() });
-  // if (!(await coll.isCapped())) {
-  //   process.exit("WTF");
-  // }
-
   return coll;
 };
 

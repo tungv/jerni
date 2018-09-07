@@ -25,7 +25,6 @@ module.exports = async (filepath, opts) => {
       buffer => {
         const lastPulse = last(buffer);
         const lastEvent = last(lastPulse.output.events);
-        console.log(require("util").inspect(lastPulse.events, { depth: null }));
         logger.info(`event #${lastEvent.id} ${lastEvent.type} has arrived`);
       },
       err => {
