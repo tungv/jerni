@@ -1,6 +1,6 @@
 {
   "name": "heq-store-with-dev",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -9,8 +9,8 @@
     "toggle-error": "mv models/people.js models/people.js.bk && mv models/people_error.js models/people.js && mv models/people.js.bk models/people_error.js"
   },
   "dependencies": {
-    "@jerni/store-mongo": "^0.3.2",
-    "jerni": "^0.4.1"
+    "@jerni/store-mongo": "^0.3.3",
+    "jerni": "^0.4.2"
   },
   "devDependencies": {
     "jerni-dev": "^0.4.4"
