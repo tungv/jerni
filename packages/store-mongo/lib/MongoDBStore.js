@@ -2,7 +2,7 @@ const log4js = require("log4js");
 
 const createQueue = require("./queue");
 
-const logger = log4js.getLogger("@jerni/store-mongo");
+const logger = log4js.getLogger("jerni/store-mongo");
 
 if (process.env.NODE_ENV === "production") {
   logger.level = "info";

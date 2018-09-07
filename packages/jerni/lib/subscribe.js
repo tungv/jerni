@@ -5,7 +5,7 @@ const log4js = require("log4js");
 const backoff = require("./backoff");
 const getChunks = require("./getChunks");
 
-const logger = log4js.getLogger("@jerni");
+const logger = log4js.getLogger("jerni/subscribe");
 
 if (process.env.NODE_ENV === "production") {
   logger.level = "info";
