@@ -82,9 +82,14 @@ const initialTasks = new Listr([
           {
             title: "load store",
             task: async ctx => {
+              const filepath =
+                ctx.filepath[0] === "+"
+                  ? require.resolve(ctx.filepath.slice(1))
+                  : path.resolve(process.cwd(), ctx.filepath);
+
               try {
                 ctx.store = await createProxy(
-                  path.resolve(process.cwd(), ctx.filepath),
+                  path.resolve(process.cwd(), filepath),
                   ctx.onChange
                 );
               } catch (ex) {
