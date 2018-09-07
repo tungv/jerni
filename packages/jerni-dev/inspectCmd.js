@@ -30,7 +30,12 @@ module.exports = async filepath => {
       : kleur.bold.green(latestInPulses)
   );
 
-  const journey = await createProxy(path.resolve(process.cwd(), filepath));
+  const finalPath =
+    filepath[0] === "+"
+      ? require.resolve(filepath.slice(1))
+      : path.resolve(process.cwd(), filepath);
+
+  const journey = await createProxy(finalPath);
   const versions = await journey.versions();
   versions.forEach(([source, v]) => {
     console.log(
