@@ -21,13 +21,15 @@ module.exports = async function subscribe({
 }) {
   const b = backoff({ seed: 10, max: 3000 });
   let lastSeenId = await lastSeenIdGetter();
-  logger.info("last seen id", lastSeenId);
+  logger.debug("last seen id", lastSeenId);
   const { body: unreadEvents } = await got(
     `${queryURL}?lastEventId=${lastSeenId}`,
     {
       json: true
     }
   );
+
+  logger.debug("past events fully retreived");
 
   const realtimeFrom = unreadEvents.length
     ? unreadEvents[unreadEvents.length - 1].id
