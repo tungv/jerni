@@ -14,7 +14,6 @@
   "license": "MIT",
   "dependencies": {
     "@jerni/base": "^0.0.2",
-    "@tungv/mongo-oplog": "3.0.0",
     "kefir": "^3.8.3",
     "log4js": "^3.0.5",
     "mongo-heartbeat": "^1.1.0",
