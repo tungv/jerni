@@ -1,4 +1,4 @@
-const kleur = require("kleur");
+const colors = require("ansi-colors");
 
 const path = require("path");
 
@@ -33,16 +33,16 @@ exports.wrapError = error => {
   };
 };
 exports.formatError = error => {
-  let fmt = `${kleur.bold.red(error.name)}: ${kleur.bold(error.message)}`;
+  let fmt = `${colors.bold.red(error.name)}: ${colors.bold(error.message)}`;
   if (error.location) {
-    fmt += `\n  ${kleur.dim.italic(
+    fmt += `\n  ${colors.dim.italic(
       error.location.column ? "  file" : "file"
-    )}: ${kleur.underline.yellow(error.location.file)}`;
-    fmt += `\n  ${kleur.dim.italic(
+    )}: ${colors.underline.yellow(error.location.file)}`;
+    fmt += `\n  ${colors.dim.italic(
       error.location.column ? "  line" : "line"
-    )}: ${kleur.underline.yellow(error.location.line)}`;
+    )}: ${colors.underline.yellow(error.location.line)}`;
     if (error.location.column) {
-      fmt += `\n  ${kleur.dim.italic("column")}: ${kleur.underline.yellow(
+      fmt += `\n  ${colors.dim.italic("column")}: ${colors.underline.yellow(
         error.location.column
       )}`;
     }

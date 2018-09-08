@@ -1,5 +1,5 @@
 const brighten = require("brighten");
-const kleur = require("kleur");
+const colors = require("ansi-colors");
 
 const path = require("path");
 
@@ -10,12 +10,12 @@ const createProxy = require("./lib/createProxy");
 
 module.exports = async filepath => {
   brighten();
-  console.log(`${kleur.bgGreen.bold(" jerni-dev ")} inspect`);
+  console.log(`${colors.bgGreen.bold(" jerni-dev ")} inspect`);
   const queue = await loadQueue();
   const { id: latestInQueue } = await queue.getLatest();
   console.log(
-    `Queue : ${kleur.italic("latest event ID")}`,
-    kleur.green.bold(latestInQueue)
+    `Queue : ${colors.italic("latest event ID")}`,
+    colors.green.bold(latestInQueue)
   );
 
   const { Pulses } = await loadDatabase();
@@ -24,10 +24,10 @@ module.exports = async filepath => {
     : 0;
 
   console.log(
-    `Pulses: ${kleur.italic("latest event ID")} %s`,
+    `Pulses: ${colors.italic("latest event ID")} %s`,
     latestInPulses < latestInQueue
-      ? kleur.bold.yellow(latestInPulses)
-      : kleur.bold.green(latestInPulses)
+      ? colors.bold.yellow(latestInPulses)
+      : colors.bold.green(latestInPulses)
   );
 
   const finalPath =
@@ -40,8 +40,8 @@ module.exports = async filepath => {
   versions.forEach(([source, v]) => {
     console.log(
       `Stores: %s: %s`,
-      kleur.bold.italic(source),
-      v < latestInQueue ? kleur.bold.yellow(v) : kleur.bold.green(v)
+      colors.bold.italic(source),
+      v < latestInQueue ? colors.bold.yellow(v) : colors.bold.green(v)
     );
   });
   journey.destroy();

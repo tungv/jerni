@@ -1,6 +1,6 @@
 const Listr = require("listr");
 const brighten = require("brighten");
-const kleur = require("kleur");
+const colors = require("ansi-colors");
 const socketIO = require("socket.io");
 
 const fs = require("fs");
@@ -31,9 +31,9 @@ process.on("exit", () => {
 });
 
 const startBanner = () => {
-  const banner = `${kleur.bgGreen.bold.white(
+  const banner = `${colors.bgGreen.bold.white(
     " jerni-dev "
-  )} ${kleur.green.bold.underline("subscribe")}`;
+  )} ${colors.green.bold.underline("subscribe")}`;
   brighten();
   console.log(banner);
 };
@@ -41,7 +41,7 @@ const startBanner = () => {
 const emergencyExit = (title, error) => {
   brighten();
 
-  const msg = `${kleur.bold.bgRed(
+  const msg = `${colors.bold.bgRed(
     " FATAL "
   )} ${title}\n\n  ${error.message.split("\n").join("\n  ")}\n\n`;
 
@@ -321,7 +321,9 @@ module.exports = async function subscribeDev(filepath, opts) {
 
         brighten();
         console.log(
-          `${kleur.bgGreen.bold(" jerni-dev ")} ${kleur.bold(reduxEvent.type)}`
+          `${colors.bgGreen.bold(" jerni-dev ")} ${colors.bold(
+            reduxEvent.type
+          )}`
         );
         await reload(reduxEvent);
       });

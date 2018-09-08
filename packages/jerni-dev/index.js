@@ -1,4 +1,4 @@
-const kleur = require("kleur");
+const colors = require("ansi-colors");
 
 const { URL } = require("url");
 const fs = require("fs");
@@ -26,26 +26,26 @@ const validServer = async url => {
   }
 };
 
-const FIRST = kleur.dim("1)");
-const SECOND = kleur.dim("2)");
-const JERNI_DEV = kleur.bold("jerni-dev");
+const FIRST = colors.dim("1)");
+const SECOND = colors.dim("2)");
+const JERNI_DEV = colors.bold("jerni-dev");
 
 // prettier-ignore
 const fixUrlGuide = `
-  ${FIRST} if you're in ${kleur.bold.green("development")} mode, make sure you ran ${JERNI_DEV}.
-  ${SECOND} if you're in ${kleur.bold.green("production")} mode, please set ${kleur.bold("NODE_ENV=production")} before starting your app
+  ${FIRST} if you're in ${colors.bold.green("development")} mode, make sure you ran ${JERNI_DEV}.
+  ${SECOND} if you're in ${colors.bold.green("production")} mode, please set ${colors.bold("NODE_ENV=production")} before starting your app
 `;
 
-const WARNING = kleur.bgYellow.bold(" jerni-dev ");
-const ERROR = kleur.bgRed.bold(" jerni-dev ");
-const INFO = kleur.bgGreen.bold(" jerni-dev ");
+const WARNING = colors.bgYellow.bold(" jerni-dev ");
+const ERROR = colors.bgRed.bold(" jerni-dev ");
+const INFO = colors.bgGreen.bold(" jerni-dev ");
 
 exports.getDevServerUrl = async providedServerUrl => {
   const devServerUrl = getRunningServerUrl();
   if (!devServerUrl) {
     if (await validServer(providedServerUrl)) {
       console.log(
-        `${WARNING} cannot detect jerni-dev server, use the provided ${kleur.yellow(
+        `${WARNING} cannot detect jerni-dev server, use the provided ${colors.yellow(
           providedServerUrl
         )}.\n${fixUrlGuide}`
       );
@@ -53,7 +53,7 @@ exports.getDevServerUrl = async providedServerUrl => {
     }
 
     console.log(
-      `${ERROR} invalid jerni server provided, received: ${kleur.bold.red(
+      `${ERROR} invalid jerni server provided, received: ${colors.bold.red(
         providedServerUrl
       )}.\n${fixUrlGuide}\n`
     );
@@ -67,7 +67,7 @@ exports.getDevServerUrl = async providedServerUrl => {
 };
 
 exports.waitTooLongExplain = ({ stores, event }) => {
-  const EVENT_FMT = kleur.bold.underline(`#${event.id} - ${event.type}`);
+  const EVENT_FMT = colors.bold.underline(`#${event.id} - ${event.type}`);
   console.log(`${ERROR} wait too long for event ${EVENT_FMT}\n`);
 
   const devServerUrl = getRunningServerUrl();
@@ -80,7 +80,7 @@ exports.waitTooLongExplain = ({ stores, event }) => {
     stores.forEach((store, index) => {
       const url = new URL(store.url);
       console.log(
-        `  ${kleur.dim(`${index + 1})`)} ${url.protocol}//${url.host}`
+        `  ${colors.dim(`${index + 1})`)} ${url.protocol}//${url.host}`
       );
     });
     return;
@@ -88,7 +88,7 @@ exports.waitTooLongExplain = ({ stores, event }) => {
 
   if (devServerUrl && !sentToDev) {
     console.log(
-      `  you're not sending events to ${JERNI_DEV} server. Events are being sent to ${kleur.red(
+      `  you're not sending events to ${JERNI_DEV} server. Events are being sent to ${colors.red(
         event.meta.sent_to
       )}. Make sure you run ${JERNI_DEV} before sending events`
     );
@@ -110,7 +110,7 @@ exports.waitTooLongExplain = ({ stores, event }) => {
   );
   stores.forEach(store => {
     const url = new URL(store.url);
-    console.log(`     ${kleur.dim(`*`)} ${url.protocol}//${url.host}`);
+    console.log(`     ${colors.dim(`*`)} ${url.protocol}//${url.host}`);
   });
 
   console.log("\n");

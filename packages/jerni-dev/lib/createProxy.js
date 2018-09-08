@@ -1,4 +1,4 @@
-const kleur = require("kleur");
+const colors = require("ansi-colors");
 
 const { fork } = require("child_process");
 const fs = require("fs");
@@ -92,7 +92,7 @@ module.exports = async function createProxy(filepath, onChange) {
       } catch (ex) {
         worker.on("message", onMessage);
         console.error(
-          `${kleur.yellow(
+          `${colors.yellow(
             "WARNING"
           )}: cannot create new worker. Keep previous version\n`
         );

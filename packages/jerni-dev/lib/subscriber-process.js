@@ -1,7 +1,7 @@
 const { watch } = require("chokidar");
 const brighten = require("brighten");
 const debounce = require("debounce");
-const kleur = require("kleur");
+const colors = require("ansi-colors");
 const pkgDir = require("pkg-dir");
 
 const path = require("path");
@@ -63,7 +63,7 @@ async function main(filepath) {
       const location = path.relative(process.cwd(), filePath);
       brighten();
       console.log(
-        `\n${kleur.bgYellow.bold(" File changed ")} ${kleur.underline(
+        `\n${colors.bgYellow.bold(" File changed ")} ${colors.underline(
           location
         )} - Replaying...`
       );
