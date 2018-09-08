@@ -4,12 +4,6 @@ const createQueue = require("./queue");
 
 const logger = log4js.getLogger("jerni/store-mongo");
 
-if (process.env.NODE_ENV === "production") {
-  logger.level = "info";
-} else {
-  logger.level = "debug";
-}
-
 const MongoHeartbeat = require("mongo-heartbeat");
 
 const Store = require("@jerni/base/Store");

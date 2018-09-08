@@ -15,6 +15,11 @@ const loadQueue = require("./tasks/load-queue");
 const open = require("./lib/open");
 const startDevServer = require("./start-dev");
 
+const log4js = require("log4js");
+const logger = log4js.getLogger("jerni/subscribe");
+
+logger.level = "error";
+
 const NAMESPACE = "local-dev";
 
 let started = false;
