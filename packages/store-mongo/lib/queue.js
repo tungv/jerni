@@ -112,32 +112,34 @@ const keepCalling = fn => {
 };
 
 const makeStream = async (coll, condition) => {
-  const startFrom = await keepCalling(() =>
-    coll
-      .find(condition)
-      .sort({ $natural: -1 })
-      .limit(1)
-      .next()
-  );
-
-  logger.debug("startFrom", startFrom);
-
-  const streamingQuery = startFrom
-    ? {
-        $and: [condition, { event_id: { $gt: startFrom.event_id } }]
-      }
-    : condition;
-
   try {
-    const cursor = await coll.find(streamingQuery, {
-      tailable: true,
-      awaitData: true,
-      noCursorTimeout: true,
-      numberOfRetries: Number.MAX_VALUE
-    });
+    const pool = kefir.pool();
 
-    return kefir
-      .stream(emitter => {
+    const start = async () => {
+      const startFrom = await keepCalling(() =>
+        coll
+          .find(condition)
+          .sort({ $natural: -1 })
+          .limit(1)
+          .next()
+      );
+
+      logger.debug("startFrom", startFrom);
+
+      const streamingQuery = startFrom
+        ? {
+            $and: [condition, { event_id: { $gt: startFrom.event_id } }]
+          }
+        : condition;
+
+      const cursor = await coll.find(streamingQuery, {
+        tailable: true,
+        awaitData: true,
+        noCursorTimeout: true,
+        numberOfRetries: Number.MAX_VALUE
+      });
+
+      return kefir.stream(emitter => {
         emitter.emit(startFrom || { event_id: 0 });
         const stream = cursor.stream();
         stream.on("data", data => {
@@ -148,14 +150,20 @@ const makeStream = async (coll, condition) => {
           emitter.error(error);
         });
         stream.on("end", () => {
+          logger.debug("tailable query ends, retrying...");
           emitter.end();
+
+          start().then(newStream => pool.plug(newStream));
         });
 
         return () => {
           cursor.close();
         };
-      })
-      .spy("stream");
+      });
+    };
+
+    pool.plug(await start());
+    return pool;
   } catch (ex) {
     logger.error(ex);
   }
