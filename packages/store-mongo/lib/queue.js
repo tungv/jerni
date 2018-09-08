@@ -22,7 +22,6 @@ const create = async (db, name, models) => {
       .scan((latestId, data) => {
         return Math.max(latestId, data.event_id);
       }, 0)
-      .spy("latest id")
       .observe(latestId => {
         listeners.forEach(fn => fn(latestId));
       });
