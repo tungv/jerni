@@ -54,6 +54,7 @@ const create = async (db, name, models) => {
   if (process.env.NODE_ENV !== "production") {
     queue.DEV__clean = async () => {
       logger.debug("dropping");
+      listeners = [];
       await db.dropCollection(`QUEUE__${name}`);
       coll = await getCollection(db, name);
     };
