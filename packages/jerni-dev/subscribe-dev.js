@@ -301,7 +301,12 @@ module.exports = async function subscribeDev(filepath, opts) {
       isReloading = true;
       ctx.io.emit("redux event", { type: "SERVER/RELOADING" });
 
-      ctx = await reloadTasks.run({ ...ctx, reduxEvent });
+      const events = await ctx.queue.query({ from: 0 });
+      if (events.length !== 0) {
+        ctx = await reloadTasks.run({ ...ctx, reduxEvent });
+      } else {
+        console.log("journey is empty, do nothing!");
+      }
 
       ctx.io.emit("redux event", { type: "SERVER/RELOADED" });
       isReloading = false;
