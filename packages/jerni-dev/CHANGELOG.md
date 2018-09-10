@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.6.5"></a>
+## [0.6.5](https://github.com/tungv/jerni/compare/jerni-dev@0.6.4...jerni-dev@0.6.5) (2018-09-10)
+
+
+### Bug Fixes
+
+* **devtool:** exit 1 when inspect/clean fails ([c009271](https://github.com/tungv/jerni/commit/c009271))
+
+
+
+
 <a name="0.6.4"></a>
 ## [0.6.4](https://github.com/tungv/jerni/compare/jerni-dev@0.6.3...jerni-dev@0.6.4) (2018-09-10)
 
