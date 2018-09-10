@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.6.4"></a>
+## [0.6.4](https://github.com/tungv/jerni/compare/jerni-dev@0.6.3...jerni-dev@0.6.4) (2018-09-10)
+
+
+### Bug Fixes
+
+* **devtool:** remove correct DEV_DIR ([5237fcc](https://github.com/tungv/jerni/commit/5237fcc))
+
+
+
+
 <a name="0.6.3"></a>
 ## [0.6.3](https://github.com/tungv/jerni/compare/jerni-dev@0.6.2...jerni-dev@0.6.3) (2018-09-10)
 
