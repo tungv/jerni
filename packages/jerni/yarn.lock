@@ -762,6 +762,10 @@ ansi-align@^2.0.0:
   dependencies:
     string-width "^2.0.0"
 
+ansi-colors@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-3.0.5.tgz#cb9dc64993b64fd6945485f797fc3853137d9a7b"
+
 ansi-escapes@^1.0.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-1.4.0.tgz#d3a8a83b319aa67793662b13e761c7911422306e"
@@ -3575,11 +3579,12 @@ isomorphic-fetch@^2.1.1, isomorphic-fetch@^2.2.1:
     node-fetch "^1.0.1"
     whatwg-fetch ">=0.10.0"
 
-jerni-dev@^0.4.3:
-  version "0.4.3"
-  resolved "https://registry.yarnpkg.com/jerni-dev/-/jerni-dev-0.4.3.tgz#15bc7133cec32174dd72a3b16cace075f5c56a0e"
+jerni-dev@^0.6.4:
+  version "0.6.4"
+  resolved "https://registry.yarnpkg.com/jerni-dev/-/jerni-dev-0.6.4.tgz#2ff8d11f99982cd8a986b41d25064131fe65a6cb"
   dependencies:
     "@heq/server-lokijs" "^1.3.0"
+    ansi-colors "^3.0.5"
     boxen "^1.3.0"
     brighten "^0.0.1"
     chokidar "^2.0.4"
@@ -3590,8 +3595,9 @@ jerni-dev@^0.4.3:
     got "^9.2.0"
     heq-server "^2.1.0"
     isomorphic-fetch "^2.2.1"
-    kleur "^2.0.1"
+    kefir "^3.8.3"
     listr "^0.14.1"
+    log4js "^3.0.5"
     lokijs "^1.5.5"
     micro "^9.3.2"
     microrouter "^3.1.3"
@@ -3712,10 +3718,6 @@ kind-of@^5.0.0:
 kind-of@^6.0.0, kind-of@^6.0.2:
   version "6.0.2"
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.2.tgz#01146b36a6218e64e58f3a8d66de5d7fc6f6d051"
-
-kleur@^2.0.1:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/kleur/-/kleur-2.0.2.tgz#b704f4944d95e255d038f0cb05fb8a602c55a300"
 
 last-line-stream@^1.0.0:
   version "1.0.0"
@@ -4177,9 +4179,15 @@ mkdirp-then@1.2.0:
     any-promise "^1.1.0"
     mkdirp "^0.5.0"
 
-mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0:
+mkdirp@^0.5.0, mkdirp@~0.5.0:
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
+  dependencies:
+    minimist "0.0.8"
+
+mkdirp@^0.5.1:
+  version "0.5.1"
+  resolved "http://registry.npmjs.org/mkdirp/-/mkdirp-0.5.1.tgz#30057438eac6cf7f8c4767f38648d6697d75c903"
   dependencies:
     minimist "0.0.8"
 
