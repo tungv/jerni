@@ -3,18 +3,24 @@ const colors = require("ansi-colors");
 
 const path = require("path");
 
+const { DEV_DIR } = require("./tasks/constants");
+const createProxy = require("./lib/createProxy");
 const last = require("./utils/last");
 const loadDatabase = require("./tasks/loadDatabase");
 const loadQueue = require("./tasks/load-queue");
-const createProxy = require("./lib/createProxy");
 
 module.exports = async filepath => {
   brighten();
   console.log(`${colors.bgGreen.bold(" jerni-dev ")} inspect`);
+  console.log("cwd:".padEnd(8), process.cwd());
+  console.log(
+    "DEV_DIR:".padEnd(8),
+    colors.italic.bold.blue(path.relative(process.cwd(), DEV_DIR))
+  );
   const queue = await loadQueue();
   const { id: latestInQueue } = await queue.getLatest();
   console.log(
-    `Queue : ${colors.italic("latest event ID")}`,
+    `Queue:   ${colors.italic("latest event ID")}`,
     colors.green.bold(latestInQueue)
   );
 
@@ -24,7 +30,7 @@ module.exports = async filepath => {
     : 0;
 
   console.log(
-    `Pulses: ${colors.italic("latest event ID")} %s`,
+    `Pulses:  ${colors.italic("latest event ID")} %s`,
     latestInPulses < latestInQueue
       ? colors.bold.yellow(latestInPulses)
       : colors.bold.green(latestInPulses)
@@ -39,7 +45,7 @@ module.exports = async filepath => {
   const versions = await journey.versions();
   versions.forEach(([source, v]) => {
     console.log(
-      `Stores: %s: %s`,
+      `Stores:  %s: %s`,
       colors.bold.italic(source),
       v < latestInQueue ? colors.bold.yellow(v) : colors.bold.green(v)
     );
