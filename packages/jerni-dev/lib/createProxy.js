@@ -11,9 +11,13 @@ const makeDefer = require("./makeDefer");
 
 const createWorker = filepath => {
   return new Promise((resolve, reject) => {
-    const worker = fork(path.resolve(__dirname, "./subscriber-process.js"), [
-      filepath
-    ]);
+    const worker = fork(
+      path.resolve(__dirname, "./subscriber-process.js"),
+      [filepath],
+      {
+        stdio: "ignore"
+      }
+    );
 
     const onMessage = msg => {
       if (msg.cmd === "ok") {
