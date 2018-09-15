@@ -1,14 +1,8 @@
-const path = require("path");
-
-const { DEV_DIR } = require("./constants");
-const getCollection = require("../utils/getCollection");
+const getPulses = require("../utils/getPulses");
 const normalizePulsesDatabase = require("./normalizePulsesDatabase");
 
 module.exports = async () => {
-  const { coll, db } = await getCollection(
-    path.resolve(DEV_DIR, "pulses.json"),
-    "pulses"
-  );
+  const { coll, db } = await getPulses();
 
   normalizePulsesDatabase(coll);
   db.saveDatabase();

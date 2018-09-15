@@ -1,10 +1,7 @@
 const { router, get } = require("microrouter");
 const { sendError } = require("micro");
 
-const path = require("path");
-
-const { DEV_DIR } = require("./tasks/constants");
-const getCollection = require("./utils/getCollection");
+const getPulses = require("./utils/getPulses");
 
 module.exports = async function(next, queue) {
   return router(
@@ -24,10 +21,7 @@ module.exports = async function(next, queue) {
       return event;
     }),
     get("/dev/pulses", async () => {
-      const { coll: Pulses } = await getCollection(
-        path.resolve(DEV_DIR, "pulses.json"),
-        "pulses"
-      );
+      const { coll: Pulses } = await getPulses();
       const pulses = Pulses.find();
 
       return Promise.all(

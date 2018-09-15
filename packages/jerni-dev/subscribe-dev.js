@@ -1,10 +1,11 @@
 const Listr = require("listr");
 const brighten = require("brighten");
 const colors = require("ansi-colors");
+const kefir = require("kefir");
+const log4js = require("log4js");
 const socketIO = require("socket.io");
 
 const fs = require("fs");
-const kefir = require("kefir");
 const path = require("path");
 
 const { DEV_DIR } = require("./tasks/constants");
@@ -15,7 +16,6 @@ const loadQueue = require("./tasks/load-queue");
 const open = require("./lib/open");
 const startDevServer = require("./start-dev");
 
-const log4js = require("log4js");
 const logger = log4js.getLogger("jerni/subscribe");
 
 logger.level = "error";
@@ -189,16 +189,25 @@ const reloadTasks = new Listr([
       switch (reduxEvent.type) {
         case "EVENT_DEACTIVATED":
           ctx.filter = evt =>
-            !isDeactivated(evt) && evt.id === reduxEvent.payload ? -1 : 0;
+            !isDeactivated(evt) && evt.id === reduxEvent.payload
+              ? "DEACTIVATE"
+              : "KEEP";
           break;
 
         case "EVENT_REACTIVATED":
           ctx.filter = evt =>
-            isDeactivated(evt) && evt.id === reduxEvent.payload ? 1 : 0;
+            isDeactivated(evt) && evt.id === reduxEvent.payload
+              ? "ACTIVATE"
+              : "KEEP";
+          break;
+
+        case "EVENT_DELETED":
+          ctx.filter = evt =>
+            evt.id === reduxEvent.payload ? "DELETE" : "KEEP";
           break;
 
         default:
-          ctx.filter = () => 0;
+          ctx.filter = () => "KEEP";
       }
 
       task.title = "prepared";
@@ -223,34 +232,53 @@ const reloadTasks = new Listr([
       const pulses = await getPulsesWithFullEvents(Pulses.find(), queue);
 
       const newEvents = [];
+      const reconstructedPulseEvents = [];
+      let id = 0;
 
       pulses.forEach(pulse => {
+        const newPulseEvents = [];
+
         pulse.events.forEach(event => {
-          const shouldKeep = filter(event);
-          if (shouldKeep === 1) {
+          const behavior = filter(event);
+          if (behavior === "ACTIVATE") {
             activateEvent(event);
-          } else if (shouldKeep === -1) {
+          } else if (behavior === "DEACTIVATE") {
             deactivateEvent(event);
+          } else if (behavior === "DELETE") {
+            return;
           }
 
+          event.id = ++id;
+          newPulseEvents.push(event);
           newEvents.push(event);
         });
+
+        if (newPulseEvents.length === 0) {
+          return;
+        }
+
+        reconstructedPulseEvents.push(newPulseEvents);
       });
 
       await queue.DEV__swap(newEvents);
 
-      ctx.incoming$ = kefir.sequentially(5, pulses.map(p => p.events));
+      if (reconstructedPulseEvents.length === 0) {
+        ctx.incoming$ = null;
+      } else {
+        ctx.incoming$ = kefir.sequentially(5, reconstructedPulseEvents);
+      }
+
+      ctx.newPulses = [];
       task.title = "new journey constructed";
     }
   },
   {
     title: "replay",
+    skip: ctx => ctx.incoming$ == null,
     task: async ctx => {
       const { Pulses, store, incoming$ } = ctx;
 
       const stream = await store.subscribe(incoming$);
-
-      ctx.newPulses = [];
 
       return stream
         .map(normalizePulse)
@@ -317,7 +345,8 @@ module.exports = async function subscribeDev(filepath, opts) {
         if (
           reduxEvent.type !== "RELOAD" &&
           reduxEvent.type !== "EVENT_DEACTIVATED" &&
-          reduxEvent.type !== "EVENT_REACTIVATED"
+          reduxEvent.type !== "EVENT_REACTIVATED" &&
+          reduxEvent.type !== "EVENT_DELETED"
         ) {
           return;
         }

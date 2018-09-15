@@ -29,6 +29,13 @@ const connectEventBoxToRedux = connect(
           type: "EVENT_REACTIVATED",
           payload: props.id
         })
+      ),
+    onDeleteForeverButtonClick: () =>
+      dispatch(
+        socketEmit({
+          type: "EVENT_DELETED",
+          payload: props.id
+        })
       )
   })
 );
@@ -40,7 +47,8 @@ const TimelineEventBox = ({
   meta,
   status,
   onRemoveButtonClick,
-  onRestoreButtonClick
+  onRestoreButtonClick,
+  onDeleteForeverButtonClick
 }) => (
   <div className={classnames("event", status)}>
     <header>
@@ -56,7 +64,7 @@ const TimelineEventBox = ({
           <span className="action" onClick={onRestoreButtonClick}>
             <MaterialIcon>restore</MaterialIcon>
           </span>
-          <span className="action">
+          <span className="action" onClick={onDeleteForeverButtonClick}>
             <MaterialIcon>delete_forever</MaterialIcon>
           </span>
         </React.Fragment>

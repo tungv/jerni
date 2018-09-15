@@ -11,13 +11,15 @@ const connectSubScriptionTimeline = connect(state => ({
 const SubscriptionTimeline = ({ stream, onRefreshButtonClick }) => (
   <main>
     <CurrentBlock />
-    {stream.map(pulse => (
-      <PulseBlock
-        key={pulse.events[0].id}
-        events={pulse.events}
-        models={pulse.models}
-      />
-    ))}
+    {stream
+      .filter(pulse => pulse.events[0])
+      .map(pulse => (
+        <PulseBlock
+          key={pulse.events[0].id}
+          events={pulse.events}
+          models={pulse.models}
+        />
+      ))}
     <style jsx>{`
       main {
         display: grid;
