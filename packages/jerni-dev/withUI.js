@@ -2,7 +2,7 @@ const next = require("next");
 const { parse } = require("url");
 
 module.exports = async function(service) {
-  const dev = process.env.NODE_ENV === "heq_development";
+  const dev = process.env.JERNI_DEV === "1";
 
   const app = next({ dev, dir: __dirname });
 
