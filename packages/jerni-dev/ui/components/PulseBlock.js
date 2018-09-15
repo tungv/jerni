@@ -28,6 +28,12 @@ class PulseBlock extends React.Component {
     const { events, models, removingCount } = this.props;
     const { collapsed, max } = this.state;
 
+    const totalChanges = models.reduce(
+      (count, { added, modified, removed }) =>
+        count + added + modified + removed,
+      0
+    );
+
     return (
       <React.Fragment>
         <div className="left">
@@ -56,7 +62,10 @@ class PulseBlock extends React.Component {
         </div>
         <TimelineSpine />
         <div className="right">
-          <ModelsChangeGroup models={models} />
+          {totalChanges === 0 && (
+            <span className="empty">nothing happened!</span>
+          )}
+          {totalChanges > 0 && <ModelsChangeGroup models={models} />}
         </div>
         <style jsx>{`
           header {
@@ -85,6 +94,10 @@ class PulseBlock extends React.Component {
 
           .right {
             flex: 1;
+          }
+
+          .empty {
+            color: rgba(0, 0, 0, 0.57);
           }
         `}</style>
       </React.Fragment>
@@ -181,9 +194,6 @@ const ModelsChangeGroup = ({ models }) =>
 
 const ChangeBox = ({ collectionName, added, modified, removed }) => (
   <div>
-    {added + modified + removed === 0 && (
-      <span className="empty">nothing happened!</span>
-    )}
     {added > 0 && (
       <span className="added">
         <output>{added}</output> item{added === 1 ? " has" : "s have"} been
@@ -216,10 +226,6 @@ const ChangeBox = ({ collectionName, added, modified, removed }) => (
       }
       strong {
         text-decoration: underline;
-      }
-
-      .empty {
-        color: rgba(0, 0, 0, 0.57);
       }
 
       .added output {
