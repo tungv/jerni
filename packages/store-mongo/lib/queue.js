@@ -115,54 +115,60 @@ const makeStream = async (coll, condition) => {
   try {
     const pool = kefir.pool();
 
-    const start = async () => {
-      const startFrom = await keepCalling(() =>
-        coll
-          .find(condition)
-          .sort({ $natural: -1 })
-          .limit(1)
-          .next()
-      );
-
-      logger.debug("startFrom", startFrom);
-
-      const streamingQuery = startFrom
-        ? {
-            $and: [condition, { event_id: { $gt: startFrom.event_id } }]
-          }
-        : condition;
-
-      const cursor = await coll.find(streamingQuery, {
-        tailable: true,
-        awaitData: true,
-        noCursorTimeout: true,
-        numberOfRetries: Number.MAX_VALUE
-      });
-
+    const start = () => {
       return kefir.stream(emitter => {
-        emitter.emit(startFrom || { event_id: 0 });
-        const stream = cursor.stream();
-        stream.on("data", data => {
-          emitter.emit(data);
-        });
-        stream.on("error", error => {
-          logger.error("error", error);
-          emitter.error(error);
-        });
-        stream.on("end", () => {
-          logger.debug("tailable query ends, retrying...");
-          emitter.end();
+        let cursor = null;
+        let aborted = false;
 
-          start().then(newStream => pool.plug(newStream));
+        keepCalling(() =>
+          coll
+            .find(condition)
+            .sort({ $natural: -1 })
+            .limit(1)
+            .next()
+        ).then(async startFrom => {
+          logger.debug("startFrom", startFrom);
+
+          const streamingQuery = startFrom
+            ? {
+                $and: [condition, { event_id: { $gt: startFrom.event_id } }]
+              }
+            : condition;
+
+          if (!aborted) {
+            cursor = await coll.find(streamingQuery, {
+              tailable: true,
+              awaitData: true,
+              noCursorTimeout: true,
+              numberOfRetries: Number.MAX_VALUE
+            });
+
+            emitter.emit(startFrom || { event_id: 0 });
+            const stream = cursor.stream();
+            stream.on("data", data => {
+              emitter.emit(data);
+            });
+            stream.on("error", error => {
+              logger.error("error", error);
+              emitter.error(error);
+            });
+            stream.on("end", () => {
+              logger.debug("tailable query ends, retrying...");
+              emitter.end();
+
+              pool.plug(start());
+            });
+          }
         });
 
         return () => {
-          cursor.close();
+          aborted = true;
+          cursor && cursor.close();
         };
       });
     };
 
-    pool.plug(await start());
+    pool.plug(start());
     return pool;
   } catch (ex) {
     logger.error(ex);
