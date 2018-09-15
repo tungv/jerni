@@ -274,7 +274,11 @@ const reloadTasks = new Listr([
   },
   {
     title: "replay",
-    skip: ctx => ctx.incoming$ == null,
+    skip: ctx => {
+      if (ctx.incoming$ == null) {
+        return "new journey is empty";
+      }
+    },
     task: async ctx => {
       const { Pulses, store, incoming$ } = ctx;
 
