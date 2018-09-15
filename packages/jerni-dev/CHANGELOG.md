@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.7.0"></a>
+# [0.7.0](https://github.com/tungv/jerni/compare/jerni-dev@0.6.8...jerni-dev@0.7.0) (2018-09-15)
+
+
+### Bug Fixes
+
+* **devtool:** do not replay if new journey is empty ([7410ae3](https://github.com/tungv/jerni/commit/7410ae3))
+* **devtool:** do not show more than one "nothing happened" ([04e79bf](https://github.com/tungv/jerni/commit/04e79bf))
+
+
+### Features
+
+* **devtool:** remove event forever ([f9f3203](https://github.com/tungv/jerni/commit/f9f3203))
+
+
+
+
 <a name="0.6.8"></a>
 ## [0.6.8](https://github.com/tungv/jerni/compare/jerni-dev@0.6.7...jerni-dev@0.6.8) (2018-09-10)
 

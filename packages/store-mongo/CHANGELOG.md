@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.4.1"></a>
+## [0.4.1](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.0...@jerni/store-mongo@0.4.1) (2018-09-15)
+
+
+### Bug Fixes
+
+* **store-mongo:** keep trying immediately after database replayed ([3cba7cb](https://github.com/tungv/jerni/commit/3cba7cb))
+
+
+
+
 <a name="0.4.0"></a>
 # [0.4.0](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.3.3...@jerni/store-mongo@0.4.0) (2018-09-08)
 
