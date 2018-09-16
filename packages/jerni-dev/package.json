@@ -50,6 +50,7 @@
     "redux-array-middleware": "^1.0.1",
     "rimraf": "^2.6.2",
     "sade": "^1.4.1",
-    "socket.io": "^2.1.1"
+    "socket.io": "^2.1.1",
+    "tempfile": "^2.0.0"
   }
 }
