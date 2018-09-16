@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.8.0"></a>
+# [0.8.0](https://github.com/tungv/jerni/compare/jerni-dev@0.7.0...jerni-dev@0.8.0) (2018-09-16)
+
+
+### Features
+
+* **devtool:** export jerni-dev/proxy for test utils ([0c0e0f3](https://github.com/tungv/jerni/commit/0c0e0f3))
+
+
+
+
 <a name="0.7.0"></a>
 # [0.7.0](https://github.com/tungv/jerni/compare/jerni-dev@0.6.8...jerni-dev@0.7.0) (2018-09-15)
 
