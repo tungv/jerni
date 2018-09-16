@@ -1,6 +1,7 @@
 const tempfile = require("tempfile");
 
 const { NAMESPACE } = require("./tasks/constants");
+const last = require("./utils/last");
 
 module.exports = async function proxy(journey) {
   const queue = await createQueue();
@@ -64,6 +65,10 @@ async function start(journey, queue, initialEvents) {
 
   for (const event of initialEvents) {
     await queue.commit(event);
+  }
+
+  if (initialEvents.length) {
+    await journey.waitFor(last(initialEvents));
   }
 
   return subscription;
