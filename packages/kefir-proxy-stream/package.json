@@ -1,0 +1,9 @@
+{
+  "name": "kefir-proxy-stream",
+  "version": "0.0.1",
+  "main": "index.js",
+  "license": "MIT",
+  "peerDependencies": {
+    "kefir": "^3.8.5"
+  }
+}
