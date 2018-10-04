@@ -19,7 +19,7 @@
     "clean": "jerni-dev clean journey.js",
     "dev-api": "micro-dev",
     "dev-jerni": "jerni-dev journey.js",
-    "start-api": "micro",
+    "start-api": "NODE_ENV=production micro",
     "start-jerni": "jerni journey.js"
   }
 }
