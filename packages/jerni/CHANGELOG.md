@@ -3,6 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/tungv/jerni/compare/jerni@0.4.16...jerni@0.5.0) (2018-10-04)
+
+
+### Bug Fixes
+
+* **jerni:** interval has to be a number instead of an object ([2ef8fc2](https://github.com/tungv/jerni/commit/2ef8fc2))
+
+
+### Features
+
+* **jerni:** add --http option to change monitor port ([f262449](https://github.com/tungv/jerni/commit/f262449))
+* **jerni:** adjust max wait time in commit to 30s ([3a49f11](https://github.com/tungv/jerni/commit/3a49f11))
+
+
+
+
 <a name="0.4.16"></a>
 ## [0.4.16](https://github.com/tungv/jerni/compare/jerni@0.4.15...jerni@0.4.16) (2018-09-16)
 
