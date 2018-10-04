@@ -6,7 +6,7 @@ const pkgDir = require("pkg-dir");
 
 const path = require("path");
 
-const { serializeStream, deserializeStream } = require("./proxy-stream");
+const { serializeStream, deserializeStream } = require("kefir-proxy-stream");
 const { wrapError } = require("./wrapError");
 
 const importPathWithInterop = async filepath => {

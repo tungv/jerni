@@ -6,7 +6,7 @@ const path = require("path");
 
 const { formatError } = require("./wrapError");
 const { getDevFile } = require("../tasks/constants");
-const { serializeStream, deserializeStream } = require("./proxy-stream");
+const { serializeStream, deserializeStream } = require("kefir-proxy-stream");
 const makeDefer = require("./makeDefer");
 
 const createWorker = filepath => {

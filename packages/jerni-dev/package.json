@@ -30,6 +30,8 @@
     "heq-server": "^2.1.0",
     "isomorphic-fetch": "^2.2.1",
     "kefir": "^3.8.3",
+    "kefir-proxy": "^1.0.0",
+    "kefir-proxy-stream": "^0.0.1",
     "listr": "^0.14.1",
     "log4js": "^3.0.5",
     "lokijs": "^1.5.5",
