@@ -21,6 +21,7 @@
     "arrify": "^1.0.1",
     "got": "^9.0.0",
     "kefir": "^3.8.3",
+    "kefir-proxy-stream": "^0.0.1",
     "log4js": "^3.0.5",
     "read-pkg-up": "^4.0.0",
     "sade": "^1.4.1"

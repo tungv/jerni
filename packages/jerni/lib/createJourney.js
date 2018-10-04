@@ -72,7 +72,7 @@ module.exports = function createJourney({ writeTo, stores }) {
           `Timeout: wait too long for #${event.id} - ${event.type}`
         );
         reject(err);
-      }, 1000);
+      }, 30000);
     });
   };
 
