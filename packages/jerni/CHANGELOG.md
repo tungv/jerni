@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.5.1"></a>
+## [0.5.1](https://github.com/tungv/jerni/compare/jerni@0.5.0...jerni@0.5.1) (2018-10-05)
+
+
+
+
+**Note:** Version bump only for package jerni
+
 <a name="0.5.0"></a>
 # [0.5.0](https://github.com/tungv/jerni/compare/jerni@0.4.16...jerni@0.5.0) (2018-10-04)
 
