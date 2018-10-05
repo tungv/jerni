@@ -1,5 +1,5 @@
 {
-  "name": "@heq/example-deploy-with-now",
+  "name": "@heq/cloud",
   "version": "1.0.2",
   "license": "MIT",
   "dependencies": {
