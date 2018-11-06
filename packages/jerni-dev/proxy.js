@@ -18,11 +18,13 @@ module.exports = async function proxy(journey) {
           };
 
         case "stop":
-          return () => {
+          return async () => {
             ended = true;
             if (subscription) {
               subscription.unsubscribe();
             }
+
+            await journey.dispose();
 
             return committed;
           };
