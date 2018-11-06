@@ -175,8 +175,10 @@ module.exports = class MongoDBStore extends Store {
     this.connected.promise.then(() => {
       this.queue.subscribe(id => {
         logger.debug("arrived_event", id);
-        this.lastReceivedEventId = id;
-        this.listeners.forEach(fn => fn(id));
+        if (!this.lastReceivedEventId || this.lastReceivedEventId < id) {
+          this.lastReceivedEventId = id;
+          this.listeners.forEach(fn => fn(id));
+        }
       });
     });
   }
