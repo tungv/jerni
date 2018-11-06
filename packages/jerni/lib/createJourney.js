@@ -117,6 +117,9 @@ module.exports = function createJourney({ writeTo, stores }) {
     commit,
     waitFor,
     subscribe,
+    dispose: () => {
+      stores.forEach(store => store.dispose());
+    },
 
     versions: async () => {
       const latestEventIdArray = await Promise.all(
