@@ -53,6 +53,9 @@ module.exports = function createJourney({ writeTo, stores }) {
   };
 
   const waitFor = event => {
+    if (racer.max() >= event.id) {
+      return;
+    }
     enableWatchMode();
     return new Promise((resolve, reject) => {
       let resolved = false;
