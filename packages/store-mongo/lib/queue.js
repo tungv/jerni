@@ -4,69 +4,7 @@ const logger = log4js.getLogger("jerni/mongo-queue");
 
 const CAP_SIZE = 5242880;
 
-const create = async (db, name, models) => {
-  logger.debug("getting collection");
-  let coll = await getCollection(db, name);
-  logger.debug("getting collection done");
-
-  const condition = {
-    $or: models.map(m => ({ model: m.name, model_version: m.version }))
-  };
-
-  let listeners = [];
-  let subscription;
-
-  const startSubscription = async () => {
-    const stream = await makeStream(coll, condition);
-    subscription = stream
-      .scan((latestId, data) => {
-        return Math.max(latestId, data.event_id);
-      }, 0)
-      .observe(latestId => {
-        listeners.forEach(fn => fn(latestId));
-      });
-  };
-
-  const commit = async data => {
-    logger.debug("mongo queue committing", data.event_id);
-    await coll.insertOne(data);
-  };
-
-  const subscribe = handler => {
-    listeners.push(handler);
-
-    if (listeners.length === 1) {
-      logger.info("start subscribing");
-      startSubscription();
-    }
-
-    return () => {
-      listeners = listeners.filter(fn => fn !== handler);
-      if (listeners.length === 0) {
-        logger.info("stop subscribing");
-        subscription && subscription.unsubscribe();
-      }
-    };
-  };
-
-  const queue = { commit, subscribe };
-
-  if (process.env.NODE_ENV !== "production") {
-    queue.DEV__clean = async () => {
-      logger.debug("dropping");
-      listeners = [];
-      await db.dropCollection(`QUEUE__${name}`);
-      coll = await getCollection(db, name);
-    };
-  } else {
-    queue.DEV__clean = () => {};
-  }
-
-  logger.debug("queue created");
-  return queue;
-};
-
-const getCollection = async (db, name) => {
+const getCollection = async (db, name = "notification") => {
   const actualName = `QUEUE__${name}`;
 
   logger.debug(`retrieving existing`);
@@ -93,6 +31,51 @@ const getCollection = async (db, name) => {
   logger.debug(`created`);
 
   return coll;
+};
+
+const createCommitter = async (db, name) => {
+  let coll = await getCollection(db, name);
+  return data => {
+    logger.debug("mongo queue committing", data.event_id);
+    return coll.insertOne(data);
+  };
+};
+
+const createSubscriber = async (db, models, name) => {
+  let coll = await getCollection(db, name);
+  let listeners = [];
+
+  const condition = {
+    $or: models.map(m => ({ model: m.name, model_version: m.version }))
+  };
+
+  const startSubscription = async () => {
+    const stream = await makeStream(coll, condition);
+    subscription = stream
+      .scan((latestId, data) => {
+        return Math.max(latestId, data.event_id);
+      }, 0)
+      .observe(latestId => {
+        listeners.forEach(fn => fn(latestId));
+      });
+  };
+
+  return handler => {
+    listeners.push(handler);
+
+    if (listeners.length === 1) {
+      logger.info("start subscribing");
+      startSubscription();
+    }
+
+    return () => {
+      listeners = listeners.filter(fn => fn !== handler);
+      if (listeners.length === 0) {
+        logger.info("stop subscribing");
+        subscription && subscription.unsubscribe();
+      }
+    };
+  };
 };
 
 const keepCalling = fn => {
@@ -175,4 +158,17 @@ const makeStream = async (coll, condition) => {
   }
 };
 
-module.exports = create;
+exports.DEV__clean = async (db, name = "notification") => {
+  if (process.env.NODE_ENV !== "production") {
+    logger.debug("dropping");
+    listeners = [];
+    try {
+      await db.dropCollection(`QUEUE__${name}`);
+    } finally {
+      logger.debug("queue created");
+    }
+  }
+};
+
+exports.createSubscriber = createSubscriber;
+exports.createCommitter = createCommitter;

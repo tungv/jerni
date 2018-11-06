@@ -1,17 +1,14 @@
+const MongoHeartbeat = require("mongo-heartbeat");
+const PLazy = require("p-lazy");
+const Store = require("@jerni/base/Store");
+const kefir = require("kefir");
 const log4js = require("log4js");
 
-const createQueue = require("./queue");
+const { DEV__clean, createCommitter, createSubscriber } = require("./queue");
 
 const logger = log4js.getLogger("jerni/store-mongo");
 
-const MongoHeartbeat = require("mongo-heartbeat");
-
-const Store = require("@jerni/base/Store");
-const PLazy = require("p-lazy");
-const kefir = require("kefir");
-
 const MongoClient = require("mongodb").MongoClient;
-const makeDefer = require("./makeDefer");
 const transform = require("./transform");
 
 const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
@@ -44,15 +41,24 @@ module.exports = class MongoDBStore extends Store {
       url,
       dbName
     };
+    this.openConnections = [];
 
-    this.connected = makeDefer();
+    this.connection = null;
 
-    this.actuallyConnect().then(async conn => {
+    this.keepConnection(conn => {
       this.connection = conn;
 
-      this.queue = await createQueue(conn.db, "notifications", this.models);
-      this.connected.resolve();
-      logger.info("connected");
+      const hb = MongoHeartbeat(conn.db, {
+        interval: 60 * 1000,
+        timeout: 10000,
+        tolerance: 3
+      });
+
+      hb.on("error", err => {
+        process.nextTick(function() {
+          process.exit(1);
+        });
+      });
     });
   }
 
@@ -84,83 +90,51 @@ module.exports = class MongoDBStore extends Store {
     return oldestVersion;
   }
 
-  async clean() {
-    logger.info("cleaning [start]");
-    await this.connected.promise;
-
-    const { db } = this.connection;
-    await this.queue.DEV__clean();
-    const promises = this.models.map(m => {
-      const col = db.collection(m.collectionName);
-      return col.deleteMany({});
-    });
-
-    const condition = {
-      $or: this.models.map(m => ({ name: m.name, version: m.version }))
-    };
-
-    promises.push(
-      db.collection(SNAPSHOT_COLLECTION_NAME).deleteMany(condition)
-    );
-
-    await Promise.all(promises);
-    logger.info("cleaning [completed]");
-  }
-
-  async actuallyConnect() {
+  async useConnection(computation) {
+    let client = null;
     try {
-      const client = await connect(this.connectionInfo.url);
-
-      if (process.env.NODE_ENV === "production") {
-        // minimal logging
-        client.on("close", () => {
-          logger.info("connection closed");
-        });
-        client.on("reconnect", () => {
-          logger.info("connection reconnected");
-        });
-      } else {
-        [
-          "connect",
-          "reconnect",
-          "serverOpening",
-          "serverClosed",
-          "serverDescriptionChanged",
-          "topologyOpening",
-          "topologyClosed",
-          "topologyDescriptionChanged",
-          "reconnectFailed",
-          "close",
-          "error",
-          "destroy"
-        ].forEach(evt =>
-          client.on(evt, () => {
-            logger.debug(evt);
-          })
-        );
-      }
-
+      client = await connect(this.connectionInfo.url);
       const db = client.db(this.connectionInfo.dbName);
-      const hb = MongoHeartbeat(db, {
-        interval: 60 * 1000,
-        timeout: 10000,
-        tolerance: 3
-      });
-
-      hb.on("error", err => {
-        process.nextTick(function() {
-          process.exit(1);
-        });
-      });
-      return { client, db };
-    } catch (ex) {
-      process.exit(1);
+      return await computation({ client, db });
+    } finally {
+      client && client.close();
     }
   }
 
-  async getDriver(model) {
-    await this.connected.promise;
+  async keepConnection(computation) {
+    const client = await connect(this.connectionInfo.url);
+    const db = client.db(this.connectionInfo.dbName);
+    this.openConnections.push(client);
+    return computation({ client, db });
+  }
 
+  async clean() {
+    logger.info("cleaning [start]");
+
+    await this.useConnection(async ({ db }) => {
+      await DEV__clean(db);
+      const promises = this.models.map(m => {
+        const col = db.collection(m.collectionName);
+        return col.deleteMany({});
+      });
+
+      const condition = {
+        $or: this.models.map(m => ({ name: m.name, version: m.version }))
+      };
+
+      promises.push(
+        db.collection(SNAPSHOT_COLLECTION_NAME).deleteMany(condition)
+      );
+
+      try {
+        await Promise.all(promises);
+      } finally {
+        logger.info("cleaning [completed]");
+      }
+    });
+  }
+
+  async getDriver(model) {
     return this.connection.db.collection(model.collectionName);
   }
 
@@ -168,12 +142,13 @@ module.exports = class MongoDBStore extends Store {
     if (this.watching) return;
 
     this.watching = true;
-    const conn = this.connection;
-    // get change stream from __snapshots collection
-    const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
 
-    this.connected.promise.then(() => {
-      this.queue.subscribe(id => {
+    this.keepConnection(async conn => {
+      // get change stream from __snapshots collection
+      const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
+      const subscribe = await createSubscriber(conn.db, this.models);
+
+      subscribe(id => {
         logger.debug("arrived_event", id);
         if (!this.lastReceivedEventId || this.lastReceivedEventId < id) {
           this.lastReceivedEventId = id;
@@ -195,99 +170,102 @@ module.exports = class MongoDBStore extends Store {
   }
 
   async receive(kefirStreamOfBatchedEvents) {
-    await this.connected.promise;
+    return this.keepConnection(async conn => {
+      const commit = await createCommitter(conn.db);
 
-    const conn = this.connection;
-    const queue = this.queue;
+      const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
 
-    const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
+      const transformEvent = events =>
+        new PLazy(resolve => {
+          logger.trace("transforming events", events);
+          const allPromises = this.models.map(async model => {
+            const ops = flatten(
+              events.map(event => {
+                try {
+                  return transform(model.transform, event);
+                } catch (ex) {
+                  return [];
+                }
+              })
+            );
 
-    const transformEvent = events =>
-      new PLazy(resolve => {
-        logger.trace("transforming events", events);
-        const allPromises = this.models.map(async model => {
-          const ops = flatten(
-            events.map(event => {
-              try {
-                return transform(model.transform, event);
-              } catch (ex) {
-                return [];
-              }
-            })
-          );
+            const latestId = events[events.length - 1].id;
+            if (ops.length === 0) {
+              await snapshotsCol.findOneAndUpdate(
+                {
+                  name: model.name,
+                  version: model.version
+                },
+                {
+                  $set: { __v: latestId }
+                },
+                {
+                  upsert: true
+                }
+              );
 
-          const latestId = events[events.length - 1].id;
-          if (ops.length === 0) {
+              await commit({
+                source: this.name,
+                model: model.name,
+                model_version: model.version,
+                event_id: latestId
+              });
+              return {
+                model,
+                added: 0,
+                modified: 0,
+                removed: 0
+              };
+            }
+
+            const coll = conn.db.collection(model.collectionName);
+            const modelOpsResult = await coll.bulkWrite(ops);
+
             await snapshotsCol.findOneAndUpdate(
               {
                 name: model.name,
                 version: model.version
               },
               {
-                $set: { __v: latestId }
+                $set: { __v: events[events.length - 1].id }
               },
               {
                 upsert: true
               }
             );
-
-            await queue.commit({
+            await commit({
               source: this.name,
               model: model.name,
               model_version: model.version,
               event_id: latestId
             });
+
             return {
               model,
-              added: 0,
-              modified: 0,
-              removed: 0
+              added: modelOpsResult.nUpserted,
+              modified: modelOpsResult.nModified,
+              removed: modelOpsResult.nRemoved
             };
-          }
-
-          const coll = conn.db.collection(model.collectionName);
-          const modelOpsResult = await coll.bulkWrite(ops);
-
-          await snapshotsCol.findOneAndUpdate(
-            {
-              name: model.name,
-              version: model.version
-            },
-            {
-              $set: { __v: events[events.length - 1].id }
-            },
-            {
-              upsert: true
-            }
-          );
-          await queue.commit({
-            source: this.name,
-            model: model.name,
-            model_version: model.version,
-            event_id: latestId
           });
 
-          return {
-            model,
-            added: modelOpsResult.nUpserted,
-            modified: modelOpsResult.nModified,
-            removed: modelOpsResult.nRemoved
-          };
-        });
-
-        return Promise.all(allPromises).then(changesByModels => {
-          resolve({
-            events,
-            models: changesByModels
+          return Promise.all(allPromises).then(changesByModels => {
+            resolve({
+              events,
+              models: changesByModels
+            });
           });
         });
-      });
 
-    return kefirStreamOfBatchedEvents
-      .flatten()
-      .bufferWithTimeOrCount(this.buffer.time, this.buffer.count)
-      .filter(buf => buf.length)
-      .flatMapConcat(events => kefir.fromPromise(transformEvent(events)));
+      return kefirStreamOfBatchedEvents
+        .flatten()
+        .bufferWithTimeOrCount(this.buffer.time, this.buffer.count)
+        .filter(buf => buf.length)
+        .flatMapConcat(events => kefir.fromPromise(transformEvent(events)));
+    });
+  }
+
+  dispose() {
+    this.openConnections.forEach(client => client.close(true));
   }
 };
 
