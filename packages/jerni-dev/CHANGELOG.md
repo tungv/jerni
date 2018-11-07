@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.8.4"></a>
+## [0.8.4](https://github.com/tungv/jerni/compare/jerni-dev@0.8.3...jerni-dev@0.8.4) (2018-11-07)
+
+
+### Bug Fixes
+
+* **devtool:** make proxy wait until disposition is done ([27b96aa](https://github.com/tungv/jerni/commit/27b96aa))
+
+
+
+
 <a name="0.8.3"></a>
 ## [0.8.3](https://github.com/tungv/jerni/compare/jerni-dev@0.8.2...jerni-dev@0.8.3) (2018-10-05)
 

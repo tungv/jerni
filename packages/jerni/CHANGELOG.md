@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.6.0"></a>
+# [0.6.0](https://github.com/tungv/jerni/compare/jerni@0.5.1...jerni@0.6.0) (2018-11-07)
+
+
+### Bug Fixes
+
+* **jerni:** return immediately if waitFor a past event ([366f8b9](https://github.com/tungv/jerni/commit/366f8b9))
+
+
+### Features
+
+* add journey.dispose ([36e7371](https://github.com/tungv/jerni/commit/36e7371))
+
+
+
+
 <a name="0.5.1"></a>
 ## [0.5.1](https://github.com/tungv/jerni/compare/jerni@0.5.0...jerni@0.5.1) (2018-10-05)
 
