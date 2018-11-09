@@ -43,20 +43,20 @@ test.cb("subscribe", t => {
     .then(count => {
       t.is(count, 0);
 
-      conn.subscribe(async id => {
-        if (id === 6) {
-          const coll = await conn.getDriver(model1);
-
-          const items = await coll.find({}).toArray();
-          t.is(items.length, 6);
-          t.deepEqual(items.map(item => item.id), [1, 2, 3, 4, 5, 6]);
-          subscription.unsubscribe();
-          t.end();
-        }
-      });
-
       conn.receive(stream).then(outputStream => {
         subscription = outputStream.observe();
+
+        conn.subscribe(async id => {
+          if (id === 6) {
+            const coll = await conn.getDriver(model1);
+
+            const items = await coll.find({}).toArray();
+            t.is(items.length, 6);
+            t.deepEqual(items.map(item => item.id), [1, 2, 3, 4, 5, 6]);
+            subscription.unsubscribe();
+            t.end();
+          }
+        });
       });
     });
 });

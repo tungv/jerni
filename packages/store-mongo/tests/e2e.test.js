@@ -98,42 +98,42 @@ test.cb("e2e", t => {
     .then(count => {
       t.is(count, 0);
 
-      conn.subscribe(async id => {
-        if (id === 7) {
-          const coll = await conn.getDriver(model);
-
-          const items = await coll.find({}).toArray();
-
-          t.deepEqual(items.map(({ _id, ...item }) => item), [
-            {
-              __op: 3,
-              __v: 7,
-              counter: 7,
-              event_type: "TEST_1",
-              array: [
-                { unique: 2 },
-                { unique: 3 },
-                { unique: 4 },
-                { unique: 5 },
-                { unique: 6 },
-                { unique: 7 }
-              ]
-            },
-            { __op: 0, __v: 2, counter: 0, event_type: "TEST_2" },
-            { __op: 0, __v: 4, counter: 0, event_type: "TEST_1" },
-            { __op: 0, __v: 5, counter: 0, event_type: "TEST_3" },
-            { __op: 0, __v: 6, counter: 0, event_type: "TEST_4" },
-            { __op: 1, __v: 6, y: 1 },
-            { __op: 2, __v: 6, y: 2 },
-            { __op: 0, __v: 7, counter: 0, event_type: "TEST_5" }
-          ]);
-          t.end();
-          subscription.unsubscribe();
-        }
-      });
-
       conn.receive(stream).then(outputStream => {
         subscription = outputStream.observe();
+
+        conn.subscribe(async id => {
+          if (id === 7) {
+            const coll = await conn.getDriver(model);
+
+            const items = await coll.find({}).toArray();
+
+            t.deepEqual(items.map(({ _id, ...item }) => item), [
+              {
+                __op: 3,
+                __v: 7,
+                counter: 7,
+                event_type: "TEST_1",
+                array: [
+                  { unique: 2 },
+                  { unique: 3 },
+                  { unique: 4 },
+                  { unique: 5 },
+                  { unique: 6 },
+                  { unique: 7 }
+                ]
+              },
+              { __op: 0, __v: 2, counter: 0, event_type: "TEST_2" },
+              { __op: 0, __v: 4, counter: 0, event_type: "TEST_1" },
+              { __op: 0, __v: 5, counter: 0, event_type: "TEST_3" },
+              { __op: 0, __v: 6, counter: 0, event_type: "TEST_4" },
+              { __op: 1, __v: 6, y: 1 },
+              { __op: 2, __v: 6, y: 2 },
+              { __op: 0, __v: 7, counter: 0, event_type: "TEST_5" }
+            ]);
+            t.end();
+            subscription.unsubscribe();
+          }
+        });
       });
     });
 });
