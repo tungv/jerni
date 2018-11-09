@@ -2,12 +2,10 @@ const MongoHeartbeat = require("mongo-heartbeat");
 const PLazy = require("p-lazy");
 const Store = require("@jerni/base/Store");
 const kefir = require("kefir");
-const log4js = require("log4js");
 
 const { DEV__clean, createCommitter, createSubscriber } = require("./queue");
 
-const logger = log4js.getLogger("jerni/store-mongo");
-
+const DEBUG = process.env.DEBUG === "true";
 const MongoClient = require("mongodb").MongoClient;
 const transform = require("./transform");
 
@@ -109,7 +107,7 @@ module.exports = class MongoDBStore extends Store {
   }
 
   async clean() {
-    logger.info("cleaning [start]");
+    DEBUG && console.info("cleaning [start]");
 
     await this.useConnection(async ({ db }) => {
       await DEV__clean(db);
@@ -129,7 +127,7 @@ module.exports = class MongoDBStore extends Store {
       try {
         await Promise.all(promises);
       } finally {
-        logger.info("cleaning [completed]");
+        DEBUG && console.info("cleaning [completed]");
       }
     });
   }
@@ -144,12 +142,10 @@ module.exports = class MongoDBStore extends Store {
     this.watching = true;
 
     this.keepConnection(async conn => {
-      // get change stream from __snapshots collection
-      const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
       const subscribe = await createSubscriber(conn.db, this.models);
 
       subscribe(id => {
-        logger.debug("arrived_event", id);
+        DEBUG && console.debug("arrived_event", id);
         if (!this.lastReceivedEventId || this.lastReceivedEventId < id) {
           this.lastReceivedEventId = id;
           this.listeners.forEach(fn => fn(id));
@@ -170,6 +166,7 @@ module.exports = class MongoDBStore extends Store {
   }
 
   async receive(kefirStreamOfBatchedEvents) {
+    DEBUG && console.log("receive");
     return this.keepConnection(async conn => {
       const commit = await createCommitter(conn.db);
 
@@ -177,7 +174,6 @@ module.exports = class MongoDBStore extends Store {
 
       const transformEvent = events =>
         new PLazy(resolve => {
-          logger.trace("transforming events", events);
           const allPromises = this.models.map(async model => {
             const ops = flatten(
               events.map(event => {

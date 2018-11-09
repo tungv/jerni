@@ -15,7 +15,6 @@
   "dependencies": {
     "@jerni/base": "^0.0.2",
     "kefir": "^3.8.3",
-    "log4js": "^3.0.5",
     "mongo-heartbeat": "^1.1.0",
     "mongodb": "^3.1.1",
     "p-lazy": "^1.0.0"

@@ -1,47 +1,47 @@
 const kefir = require("kefir");
-const log4js = require("log4js");
-const logger = log4js.getLogger("jerni/mongo-queue");
-
+const DEBUG = process.env.DEBUG === "true";
 const CAP_SIZE = 5242880;
 
 const getCollection = async (db, name = "notification") => {
   const actualName = `QUEUE__${name}`;
 
-  logger.debug(`retrieving existing`);
+  DEBUG && console.debug(`retrieving existing`);
   const existing = db.collection(actualName);
   try {
     if (await existing.isCapped()) {
-      logger.debug(`reused`);
+      DEBUG && console.debug(`reused`);
       return existing;
     } else {
-      logger.debug("dropping");
+      DEBUG && console.debug("dropping");
       await db.dropCollection(actualName);
     }
   } catch (ex) {
-    logger.debug("cannot reuse");
+    DEBUG && console.debug("cannot reuse");
   }
 
-  logger.debug(`create new capped collection ${actualName}`);
+  DEBUG && console.debug(`create new capped collection ${actualName}`);
 
   const coll = await db.createCollection(actualName, {
     capped: true,
     size: CAP_SIZE,
     max: 1000
   });
-  logger.debug(`created`);
+  DEBUG && console.debug(`created`);
 
   return coll;
 };
 
 const createCommitter = async (db, name) => {
+  DEBUG && console.log("get committer");
   let coll = await getCollection(db, name);
   return data => {
-    logger.debug("mongo queue committing", data.event_id);
+    DEBUG && console.debug("mongo queue committing", data.event_id);
     return coll.insertOne(data);
   };
 };
 
 const createSubscriber = async (db, models, name) => {
+  DEBUG && console.log("get subscriber");
   let coll = await getCollection(db, name);
   let listeners = [];
 
@@ -64,14 +64,14 @@ const createSubscriber = async (db, models, name) => {
     listeners.push(handler);
 
     if (listeners.length === 1) {
-      logger.info("start subscribing");
+      DEBUG && console.info("start subscribing");
       startSubscription();
     }
 
     return () => {
       listeners = listeners.filter(fn => fn !== handler);
       if (listeners.length === 0) {
-        logger.info("stop subscribing");
+        DEBUG && console.info("stop subscribing");
         subscription && subscription.unsubscribe();
       }
     };
@@ -110,7 +110,7 @@ const makeStream = async (coll, condition) => {
             .limit(1)
             .next()
         ).then(async startFrom => {
-          logger.debug("startFrom", startFrom);
+          DEBUG && console.debug("startFrom", startFrom);
 
           const streamingQuery = startFrom
             ? {
@@ -132,11 +132,11 @@ const makeStream = async (coll, condition) => {
               emitter.emit(data);
             });
             stream.on("error", error => {
-              logger.error("error", error);
+              DEBUG && console.error("error", error);
               emitter.error(error);
             });
             stream.on("end", () => {
-              logger.debug("tailable query ends, retrying...");
+              DEBUG && console.debug("tailable query ends, retrying...");
               emitter.end();
 
               pool.plug(start());
@@ -154,18 +154,18 @@ const makeStream = async (coll, condition) => {
     pool.plug(start());
     return pool;
   } catch (ex) {
-    logger.error(ex);
+    DEBUG && console.error(ex);
   }
 };
 
 exports.DEV__clean = async (db, name = "notification") => {
   if (process.env.NODE_ENV !== "production") {
-    logger.debug("dropping");
-    listeners = [];
+    DEBUG && console.debug("dropping");
     try {
       await db.dropCollection(`QUEUE__${name}`);
+    } catch (ex) {
     } finally {
-      logger.debug("queue created");
+      DEBUG && console.debug("dropped");
     }
   }
 };
