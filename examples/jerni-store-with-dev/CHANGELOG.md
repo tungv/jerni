@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.0.32"></a>
+## [1.0.32](https://github.com/tungv/jerni/compare/heq-store-with-dev@1.0.31...heq-store-with-dev@1.0.32) (2018-11-09)
+
+
+
+
+**Note:** Version bump only for package heq-store-with-dev
+
 <a name="1.0.31"></a>
 ## [1.0.31](https://github.com/tungv/jerni/compare/heq-store-with-dev@1.0.30...heq-store-with-dev@1.0.31) (2018-11-07)
 
