@@ -70,22 +70,22 @@ module.exports = class MongoDBStore extends Store {
   }
 
   async getLastSeenId() {
-    await this.connected.promise;
-    const condition = {
-      $or: this.models.map(m => ({ name: m.name, version: m.version }))
-    };
+    return this.useConnection(async conn => {
+      const condition = {
+        $or: this.models.map(m => ({ name: m.name, version: m.version }))
+      };
 
-    const conn = this.connection;
-    const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
-    const resp = await snapshotsCol.find(condition).toArray();
+      const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
+      const resp = await snapshotsCol.find(condition).toArray();
 
-    const oldestVersion = resp.reduce((v, obj) => {
-      if (obj.__v > v) {
-        return obj.__v;
-      }
-      return v;
-    }, 0);
-    return oldestVersion;
+      const oldestVersion = resp.reduce((v, obj) => {
+        if (obj.__v > v) {
+          return obj.__v;
+        }
+        return v;
+      }, 0);
+      return oldestVersion;
+    });
   }
 
   async useConnection(computation) {
