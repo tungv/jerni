@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.4.5"></a>
+## [0.4.5](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.4...@jerni/store-mongo@0.4.5) (2018-11-13)
+
+
+### Bug Fixes
+
+* **store-mongo:** remove outdate this.connected promise ([7e968e5](https://github.com/tungv/jerni/commit/7e968e5))
+
+
+
+
 <a name="0.4.4"></a>
 ## [0.4.4](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.2...@jerni/store-mongo@0.4.4) (2018-11-09)
 
