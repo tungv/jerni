@@ -1,4 +1,5 @@
 const kefir = require("kefir");
+
 const DEBUG = process.env.DEBUG === "true";
 const CAP_SIZE = 5242880;
 
@@ -36,7 +37,14 @@ const createCommitter = async (db, name) => {
   let coll = await getCollection(db, name);
   return data => {
     DEBUG && console.debug("mongo queue committing", data.event_id);
-    return coll.insertOne(data);
+    return coll.insertMany(
+      data.models.map(model => ({
+        source: data.source,
+        model: model.name,
+        model_version: model.version,
+        event_id: data.event_id
+      }))
+    );
   };
 };
 

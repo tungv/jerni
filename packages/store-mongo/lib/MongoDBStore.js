@@ -174,6 +174,7 @@ module.exports = class MongoDBStore extends Store {
 
       const transformEvent = events =>
         new PLazy(resolve => {
+          const latestId = events[events.length - 1].id;
           const allPromises = this.models.map(async model => {
             const ops = flatten(
               events.map(event => {
@@ -185,37 +186,23 @@ module.exports = class MongoDBStore extends Store {
               })
             );
 
-            const latestId = events[events.length - 1].id;
-            if (ops.length === 0) {
-              await snapshotsCol.findOneAndUpdate(
-                {
-                  name: model.name,
-                  version: model.version
-                },
-                {
-                  $set: { __v: latestId }
-                },
-                {
-                  upsert: true
-                }
-              );
+            let changes = {
+              model,
+              added: 0,
+              modified: 0,
+              removed: 0
+            };
 
-              await commit({
-                source: this.name,
-                model: model.name,
-                model_version: model.version,
-                event_id: latestId
-              });
-              return {
+            if (ops.length > 0) {
+              const coll = conn.db.collection(model.collectionName);
+              const modelOpsResult = await coll.bulkWrite(ops);
+              changes = {
                 model,
-                added: 0,
-                modified: 0,
-                removed: 0
+                added: modelOpsResult.nUpserted,
+                modified: modelOpsResult.nModified,
+                removed: modelOpsResult.nRemoved
               };
             }
-
-            const coll = conn.db.collection(model.collectionName);
-            const modelOpsResult = await coll.bulkWrite(ops);
 
             await snapshotsCol.findOneAndUpdate(
               {
@@ -229,25 +216,20 @@ module.exports = class MongoDBStore extends Store {
                 upsert: true
               }
             );
-            await commit({
-              source: this.name,
-              model: model.name,
-              model_version: model.version,
-              event_id: latestId
-            });
 
-            return {
-              model,
-              added: modelOpsResult.nUpserted,
-              modified: modelOpsResult.nModified,
-              removed: modelOpsResult.nRemoved
-            };
+            return changes;
           });
 
           return Promise.all(allPromises).then(changesByModels => {
-            resolve({
-              events,
-              models: changesByModels
+            return commit({
+              source: this.name,
+              models: this.models,
+              event_id: latestId
+            }).then(changesByModels => {
+              resolve({
+                events,
+                models: changesByModels
+              });
             });
           });
         });
@@ -273,3 +255,5 @@ const once = fn => {
     }
   };
 };
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
