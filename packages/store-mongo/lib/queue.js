@@ -109,6 +109,9 @@ const makeStream = async (coll, condition) => {
             .sort({ $natural: -1 })
             .limit(1)
             .next()
+            .catch(ex => {
+              emitter.error(ex);
+            })
         ).then(async startFrom => {
           DEBUG && console.debug("startFrom", startFrom);
 
