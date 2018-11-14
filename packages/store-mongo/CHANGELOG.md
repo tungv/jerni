@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.4.7"></a>
+## [0.4.7](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.6...@jerni/store-mongo@0.4.7) (2018-11-14)
+
+
+### Bug Fixes
+
+* **store-mongo:** only ping subscribers if all models have done writing ([dcb50cf](https://github.com/tungv/jerni/commit/dcb50cf))
+
+
+
+
 <a name="0.4.6"></a>
 ## [0.4.6](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.5...@jerni/store-mongo@0.4.6) (2018-11-14)
 
