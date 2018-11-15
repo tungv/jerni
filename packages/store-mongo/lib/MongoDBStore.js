@@ -167,8 +167,8 @@ module.exports = class MongoDBStore extends Store {
 
   async receive(kefirStreamOfBatchedEvents) {
     DEBUG && console.log("receive");
-    return this.keepConnection(async conn => {
-      const commit = await createCommitter(conn.db);
+    return this.keepConnection(conn => {
+      const commitPromise = createCommitter(conn.db);
 
       const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
 
@@ -221,16 +221,20 @@ module.exports = class MongoDBStore extends Store {
           });
 
           return Promise.all(allPromises).then(changesByModels => {
-            return commit({
-              source: this.name,
-              models: this.models,
-              event_id: latestId
-            }).then(() => {
-              resolve({
-                events,
-                models: changesByModels
+            return commitPromise
+              .then(commit =>
+                commit({
+                  source: this.name,
+                  models: this.models,
+                  event_id: latestId
+                })
+              )
+              .then(() => {
+                resolve({
+                  events,
+                  models: changesByModels
+                });
               });
-            });
           });
         });
 
@@ -246,14 +250,3 @@ module.exports = class MongoDBStore extends Store {
     this.openConnections.forEach(client => client.close(true));
   }
 };
-
-const once = fn => {
-  let tries = 0;
-  return (...args) => {
-    if (!tries++) {
-      return fn(...args);
-    }
-  };
-};
-
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
