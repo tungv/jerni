@@ -225,7 +225,7 @@ module.exports = class MongoDBStore extends Store {
               source: this.name,
               models: this.models,
               event_id: latestId
-            }).then(changesByModels => {
+            }).then(() => {
               resolve({
                 events,
                 models: changesByModels
