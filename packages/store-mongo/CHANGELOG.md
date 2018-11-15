@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.4.9"></a>
+## [0.4.9](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.8...@jerni/store-mongo@0.4.9) (2018-11-15)
+
+
+### Bug Fixes
+
+* **store-mongo:** return output stream immediately after getting connection ([b8fc708](https://github.com/tungv/jerni/commit/b8fc708))
+
+
+
+
 <a name="0.4.8"></a>
 ## [0.4.8](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.7...@jerni/store-mongo@0.4.8) (2018-11-15)
 
