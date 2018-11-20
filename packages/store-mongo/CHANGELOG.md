@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.4.10"></a>
+## [0.4.10](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.9...@jerni/store-mongo@0.4.10) (2018-11-20)
+
+
+### Bug Fixes
+
+* **store-mongo:** recover when a race condition occurs ([8d0cfc3](https://github.com/tungv/jerni/commit/8d0cfc3))
+
+
+
+
 <a name="0.4.9"></a>
 ## [0.4.9](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.8...@jerni/store-mongo@0.4.9) (2018-11-15)
 
