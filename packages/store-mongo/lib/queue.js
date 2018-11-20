@@ -22,14 +22,19 @@ const getCollection = async (db, name = "notification") => {
 
   DEBUG && console.debug(`create new capped collection ${actualName}`);
 
-  const coll = await db.createCollection(actualName, {
-    capped: true,
-    size: CAP_SIZE,
-    max: 1000
-  });
-  DEBUG && console.debug(`created`);
+  try {
+    const coll = await db.createCollection(actualName, {
+      capped: true,
+      size: CAP_SIZE,
+      max: 1000
+    });
+    DEBUG && console.debug(`created`);
 
-  return coll;
+    return coll;
+  } catch (ex) {
+    // race conditions that happen in parallel creation of a queue. This only occures in test env
+    return db.collection(actualName);
+  }
 };
 
 const createCommitter = async (db, name) => {
