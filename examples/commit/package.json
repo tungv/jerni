@@ -1,6 +1,6 @@
 {
   "name": "@jerni/example-commit",
-  "version": "1.2.28",
+  "version": "1.2.29",
   "main": "index.js",
   "license": "MIT",
   "private": true,
@@ -9,7 +9,7 @@
     "micro-dev": "^3.0.0"
   },
   "dependencies": {
-    "@jerni/store-mongo": "^0.4.10",
+    "@jerni/store-mongo": "^0.5.0",
     "jerni": "^0.6.1",
     "micro": "^9.3.3",
     "microrouter": "^3.1.3",

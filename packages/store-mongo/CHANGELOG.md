@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.5.0"></a>
+# [0.5.0](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.10...@jerni/store-mongo@0.5.0) (2019-01-24)
+
+
+### Features
+
+* **mongo:** allow arrayFilters ([e52cd00](https://github.com/tungv/jerni/commit/e52cd00))
+
+
+
+
 <a name="0.4.10"></a>
 ## [0.4.10](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.4.9...@jerni/store-mongo@0.4.10) (2018-11-20)
 
