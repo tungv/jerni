@@ -1,7 +1,7 @@
 {
   "name": "heq",
   "version": "2.0.7",
-  "description": "CLI to start an event.js server",
+  "description": "CLI to start an event sourcing server",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {

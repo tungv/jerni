@@ -49,13 +49,6 @@
   dependencies:
     arrify "^1.0.1"
 
-"@jerni/base@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@jerni/base/-/base-0.0.2.tgz#04355d7d731831a0a3c9fb89b4258dc3434c43b5"
-  integrity sha512-e3lEQjl9lcknBEHSyoNsma/LP4V9TUoFwd5Og/YQhPX9avDJPpUvRtRC6/BNCo1/zqWghzlRK8wgda/sXl1Zpg==
-  dependencies:
-    kefir "^3.8.3"
-
 "@ladjs/time-require@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@ladjs/time-require/-/time-require-0.1.4.tgz#5c615d75fd647ddd5de9cf6922649558856b21a1"
