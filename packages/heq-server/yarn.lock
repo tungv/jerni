@@ -16,9 +16,10 @@
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
-"@heq/server-redis@^1.0.3":
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-1.0.3.tgz#7e46911d3221a846fce2fd540d2504a975bd2f8d"
+"@heq/server-redis@^1.0.4":
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-1.0.4.tgz#263b3da627ed3bc82760a4766ef95333f57f0073"
+  integrity sha512-OOOOdwzyTpIVn4iV8Z/eDIcxw/5F1qNV+oYnRsYdbDyYHPYPOAjqb9wFz6gpNzxUu0snYe779kFBBl48WRVwLQ==
   dependencies:
     kefir "^3.8.3"
     redis "^2.8.0"
@@ -885,8 +886,9 @@ es-to-primitive@^1.1.1:
     is-symbol "^1.0.1"
 
 es6-promisify@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/es6-promisify/-/es6-promisify-6.0.0.tgz#b526a75eaa5ca600e960bf3d5ad98c40d75c7203"
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/es6-promisify/-/es6-promisify-6.0.1.tgz#6edaa45f3bd570ffe08febce66f7116be4b1cdb6"
+  integrity sha512-J3ZkwbEnnO+fGAKrjVpeUAnZshAdfZvbhQpqfIH9kSAspReRC4nJnu8ewm55b4y9ElyeuhCTzJD0XiH8Tsbhlw==
 
 escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.5:
   version "1.0.5"
@@ -3104,8 +3106,9 @@ rimraf@2, rimraf@^2.5.1, rimraf@^2.5.4, rimraf@^2.6.1:
     glob "^7.0.5"
 
 run-lua@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/run-lua/-/run-lua-1.0.1.tgz#06863e588e1695febefb31ad157cab533e0fb9ac"
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/run-lua/-/run-lua-1.0.2.tgz#564b420dea1c48a4408d560ec4cf8113eb1e85c5"
+  integrity sha1-VktCDeocSKRAjVYOxM+BE+sehcU=
   dependencies:
     es6-promisify "^6.0.0"
 
