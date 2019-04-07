@@ -84,6 +84,7 @@ const factory = async userConfig => {
       });
 
       res.write(':ok\n\n');
+      await sleep(0);
       flush(res);
 
       try {
