@@ -1,4 +1,3 @@
-const micro = require("micro");
 const got = require("got");
 const ports = require("port-authority");
 const createServer = require("./createHeqServer");
