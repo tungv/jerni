@@ -9,6 +9,7 @@
   "author": "Tung Vu <me@tungv.com>",
   "license": "ISC",
   "devDependencies": {
+    "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",
     "eslint-config-react-app": "^3.0.8",
     "eslint-plugin-flowtype": "2.x",
