@@ -32,7 +32,7 @@ describe("http::subscribe", () => {
       buffer.push(msg);
 
       // stop after receiving event #5
-      if (msg.slice(0, 5) === "id: 5") {
+      if (msg.includes("id: 5")) {
         server.destroy();
       }
     });
@@ -71,14 +71,9 @@ describe("http::subscribe", () => {
 
       buffer.push(msg);
 
-      // stop after receiving event #5
-
-      const chunks = msg.split("\n\n");
-
-      for (const chunk of chunks) {
-        if (chunk.slice(0, 6) === "id: 10") {
-          server.destroy();
-        }
+      // stop after receiving event #10
+      if (msg.includes("id: 10")) {
+        server.destroy();
       }
     });
 
@@ -96,6 +91,49 @@ describe("http::subscribe", () => {
         { id: 9, payload: { key: "value" }, type: "TEST" },
         { id: 10, payload: { key: "value" }, type: "TEST" },
       ]);
+      done();
+    });
+  });
+
+  it("should wait for a specific time ", async done => {
+    const port = await ports.find(32000);
+    const server = await createServer(port);
+    ensureDestroy(server);
+
+    const stream = got.stream(`http://localhost:${port}/subscribe`, {
+      headers: {
+        "Last-Event-ID": 0,
+        "Burst-Time": 100,
+      },
+    });
+
+    setTimeout(() => {
+      server.destroy();
+    }, 400);
+
+    for (let i = 0; i < 5; ++i) {
+      await sleep(45);
+      await commitSomething({ port });
+    }
+
+    const received = [];
+
+    stream.on("data", data => {
+      const msg = String(data);
+      for (const item of msg.split("\n\n")) {
+        if (item.startsWith(":ok")) {
+          continue;
+        }
+
+        const idRow = item.split("\n")[0];
+        const id = idRow.substr(4);
+        if (id) received.push(id);
+      }
+    });
+
+    stream.on("end", async () => {
+      sleep(1);
+      expect(received).toEqual(["2", "4", "5"]);
       done();
     });
   });
