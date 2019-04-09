@@ -25,8 +25,8 @@ local event
 
 for id=from,to do
   if redis.call('hexists', KEYS[2], id) == 1 then
-  table.insert(newArray, {id, redis.call('hget', KEYS[2], id)});
-end
+    table.insert(newArray, {id, redis.call('hget', KEYS[2], id)});
+  end
 end
 
 return newArray
@@ -47,11 +47,9 @@ const adapter = ({ url, ns = "local" }) => {
 
   subClient.subscribe(`${ns}::events`);
 
-  const events$ = kefir.fromEvents(
-    subClient,
-    "message",
-    (channel, message) => message,
-  );
+  const events$ = kefir.fromEvents(subClient, "message", (channel, message) => {
+    return message;
+  });
 
   const commit = async event => {
     delete event.id;
@@ -89,7 +87,7 @@ const adapter = ({ url, ns = "local" }) => {
     try {
       const argv = [String(from)];
 
-      if (typeof to !== 'undefined') {
+      if (typeof to !== "undefined") {
         argv.push(String(to));
       }
 
@@ -103,29 +101,74 @@ const adapter = ({ url, ns = "local" }) => {
         id,
       }));
     } catch (ex) {
-      console.error(ex);
       return [];
     }
   };
-
-  const subscribe = () => ({
-    events$: events$.map(message => {
-      const rawId = message.split(':')[0];
-      const id = Number(rawId);
-      const rawEvent = message.slice(rawId.length + 1);
-
-      const event = JSON.parse(rawEvent);
-      event.id = id;
-      return event;
-    }),
-  });
 
   const destroy = () => {
     redisClient.quit();
     subClient.quit();
   };
 
-  return { commit, subscribe, query, destroy, getLatest };
+  async function* generate(from, max, time, filter) {
+    let i = from;
+    let subscription;
+
+    try {
+      while (true) {
+        const to = i + max;
+        const batch = await query({ from: i, to });
+
+        const matched = batch.filter(filter);
+        if (matched.length) {
+          // console.log("from query", matched);
+          yield matched;
+        }
+
+        const lastEvent = last(batch);
+        if (lastEvent) {
+          i = last(batch).id;
+        } else {
+          break;
+        }
+        // await sleep(time);
+      }
+
+      const queue = [];
+
+      subscription = events$
+        .map(message => {
+          const rawId = message.split(":")[0];
+          const id = Number(rawId);
+          const rawEvent = message.slice(rawId.length + 1);
+
+          const event = JSON.parse(rawEvent);
+          event.id = id;
+          return event;
+        })
+        .filter(event => event.id > i)
+        .filter(filter)
+        .observe(event => {
+          queue.push(event);
+        });
+
+      while (true) {
+        if (queue.length) {
+          const buffer = [...queue];
+          queue.length = 0;
+          // console.log("from sub", buffer);
+          yield buffer;
+        }
+        await sleep(time);
+      }
+    } finally {
+      if (subscription) subscription.unsubscribe();
+    }
+  }
+
+  return { commit, generate, query, destroy, getLatest };
 };
 
 module.exports = adapter;
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const last = array => (array.length >= 1 ? array[array.length - 1] : null);
