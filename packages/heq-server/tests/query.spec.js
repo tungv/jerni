@@ -1,12 +1,8 @@
-const micro = require("micro");
 const got = require("got");
 const ports = require("port-authority");
 const createServer = require("./createHeqServer");
 const ensureDestroy = require("./teardown");
 const commitSomething = require("./testCommit");
-const simpleParse = require("./simpleParse");
-
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 describe("http::query", () => {
   it("should able to query", async () => {

@@ -11,7 +11,7 @@ describe("http::subscribe", () => {
   it("should able to subscribe from the beginning", async done => {
     jest.setTimeout(500);
     const port = await ports.find(32000);
-    const server = await createServer(port);
+    const server = await createServer(port, "__testSub1__");
     ensureDestroy(server);
 
     for (let i = 0; i < 5; ++i) await commitSomething({ port });
