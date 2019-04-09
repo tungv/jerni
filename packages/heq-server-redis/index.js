@@ -1,6 +1,6 @@
-const kefir = require('kefir');
-const redis = require('redis');
-const runLua = require('run-lua');
+const kefir = require("kefir");
+const redis = require("redis");
+const runLua = require("run-lua");
 
 const lua_commit = `
   local event = ARGV[1];
@@ -21,9 +21,12 @@ local to = tonumber(
   ARGV[2] or redis.call('get', KEYS[1])
 );
 local newArray = {};
+local event
 
 for id=from,to do
+  if redis.call('hexists', KEYS[2], id) == 1 then
   table.insert(newArray, {id, redis.call('hget', KEYS[2], id)});
+end
 end
 
 return newArray
@@ -38,7 +41,7 @@ const lua_latest = `
   return {id, redis.call('hget', KEYS[2], id)};
 `;
 
-const adapter = ({ url, ns = 'local' }) => {
+const adapter = ({ url, ns = "local" }) => {
   const redisClient = redis.createClient(url);
   const subClient = redis.createClient(url);
 
@@ -46,8 +49,8 @@ const adapter = ({ url, ns = 'local' }) => {
 
   const events$ = kefir.fromEvents(
     subClient,
-    'message',
-    (channel, message) => message
+    "message",
+    (channel, message) => message,
   );
 
   const commit = async event => {
@@ -69,7 +72,7 @@ const adapter = ({ url, ns = 'local' }) => {
     if (id === 0) {
       return {
         id: 0,
-        type: '@@INIT',
+        type: "@@INIT",
       };
     }
 
