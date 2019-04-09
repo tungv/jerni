@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "node index",
     "test": "jest",
-    "test:e2e": "REDIS_E2E=1 jest --forceExit"
+    "test:e2e": "REDIS_E2E=1 jest"
   },
   "author": "Tung Vu <me@tungv.com>",
   "license": "ISC",
