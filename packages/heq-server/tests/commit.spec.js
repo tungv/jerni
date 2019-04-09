@@ -6,7 +6,7 @@ const ensureDestroy = require("./teardown");
 describe("http::commit", () => {
   it("should able to commit", async () => {
     const port = await ports.find(30000);
-    const server = await createServer(port);
+    const server = await createServer(port, "test-commit");
     ensureDestroy(server);
 
     const { body } = await got(`http://localhost:${port}/commit`, {

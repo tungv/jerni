@@ -7,7 +7,7 @@ const commitSomething = require("./testCommit");
 describe("http::query", () => {
   it("should able to query", async () => {
     const port = await ports.find(31000);
-    const server = await createServer(port);
+    const server = await createServer(port, "__testQuery__");
     ensureDestroy(server);
 
     for (let i = 0; i < 5; ++i) await commitSomething({ port });

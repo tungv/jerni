@@ -1,9 +1,7 @@
 const micro = require("micro");
-const http = require("http");
-const ports = require("port-authority");
 const factory = require("../src/factory");
 
-module.exports = async function createServer(port) {
+module.exports = async function createServer(port, ns = "__test__") {
   const config = {
     http: { port },
   };
@@ -11,16 +9,16 @@ module.exports = async function createServer(port) {
   if (process.env.REDIS_E2E) {
     const { execSync } = require("child_process");
 
-    execSync("redis-cli -n 2 flush");
+    execSync(`redis-cli -n 2 del {${ns}}::id {${ns}}::events`);
 
     config.queue = {
       driver: "@heq/server-redis",
       url: "redis://localhost:6379/2",
-      ns: "__test__",
+      ns,
     };
   }
 
-  const service = await factory();
+  const service = await factory(config);
 
   const server = micro(service);
   return new Promise(resolve => {

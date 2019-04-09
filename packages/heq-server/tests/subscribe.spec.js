@@ -50,7 +50,7 @@ describe("http::subscribe", () => {
   it("should able to subscribe from a past event id", async done => {
     jest.setTimeout(500);
     const port = await ports.find(32000);
-    const server = await createServer(port);
+    const server = await createServer(port, "__testSub2__");
     ensureDestroy(server);
 
     for (let i = 0; i < 5; ++i) await commitSomething({ port });
@@ -58,7 +58,8 @@ describe("http::subscribe", () => {
     const stream = got.stream(`http://localhost:${port}/subscribe`, {
       headers: {
         "Last-Event-ID": 2,
-        "Burst-Time": 1,
+        "Burst-Time": 10,
+        "Burst-Count": 3,
       },
     });
 
@@ -97,7 +98,7 @@ describe("http::subscribe", () => {
 
   it("should wait for a specific time ", async done => {
     const port = await ports.find(32000);
-    const server = await createServer(port);
+    const server = await createServer(port, "__testSub3__");
     ensureDestroy(server);
 
     const stream = got.stream(`http://localhost:${port}/subscribe`, {
@@ -115,7 +116,6 @@ describe("http::subscribe", () => {
       await sleep(45);
       await commitSomething({ port });
     }
-
     const received = [];
 
     stream.on("data", data => {
