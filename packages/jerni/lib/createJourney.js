@@ -72,7 +72,7 @@ module.exports = function createJourney({ writeTo, stores }) {
         }
 
         const err = new Error(
-          `Timeout: wait too long for #${event.id} - ${event.type}`
+          `Timeout: wait too long for #${event.id} - ${event.type}`,
         );
         reject(err);
       }, 30000);
@@ -85,11 +85,11 @@ module.exports = function createJourney({ writeTo, stores }) {
       subscribeURL: `${currentWriteTo}/subscribe`,
       lastSeenIdGetter: async () => {
         const latestEventIdArray = await Promise.all(
-          stores.map(source => source.getLastSeenId())
+          stores.map(source => source.getLastSeenId()),
         );
 
         return Math.min(...latestEventIdArray);
-      }
+      },
     });
 
     return incomingEvents$;
@@ -102,8 +102,8 @@ module.exports = function createJourney({ writeTo, stores }) {
       return source.receive(incomingEvents$).then(stream =>
         stream.map(output => ({
           source,
-          output
-        }))
+          output,
+        })),
       );
     });
 
@@ -123,16 +123,16 @@ module.exports = function createJourney({ writeTo, stores }) {
 
     versions: async () => {
       const latestEventIdArray = await Promise.all(
-        stores.map(source => source.getLastSeenId())
+        stores.map(source => source.getLastSeenId()),
       );
 
       const vx = stores.reduce(
         (array, store, index) =>
           array.concat([[store.name, latestEventIdArray[index]]]),
-        []
+        [],
       );
       return vx;
-    }
+    },
   };
 
   if (dev) {
@@ -145,17 +145,16 @@ module.exports = function createJourney({ writeTo, stores }) {
 
       DEV__getNewestVersion: async () => {
         const latestEventIdArray = await Promise.all(
-          stores.map(source => source.getLastSeenId())
+          stores.map(source => source.getLastSeenId()),
         );
         return Math.max(...latestEventIdArray);
-      }
+      },
     });
   }
 
   return journey;
 };
 
-const toArray = stream$ => stream$.scan((prev, next) => prev.concat(next), []);
 const once = fn => {
   let tries = 0;
   return (...args) => {
