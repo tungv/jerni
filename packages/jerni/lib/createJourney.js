@@ -12,17 +12,17 @@ module.exports = function createJourney({ writeTo, stores }) {
 
   let currentWriteTo = writeTo;
 
-  stores.forEach((readSource, index) => {
+  stores.forEach((store, index) => {
     // register every models in each read source to SOURCE_BY_MODELS map
     // so we can retrieve them later in `#read(model)`
-    readSource.registerModels(SOURCE_BY_MODELS);
+    store.registerModels(SOURCE_BY_MODELS);
   });
 
   const enableWatchMode = once(() => {
-    stores.forEach((readSource, index) => {
+    stores.forEach((store, index) => {
       // we also subscribe for new changes from each source
       // in order to resolve `#waitFor(event)` and future `#waitFor(event, model)`
-      readSource.subscribe(id => {
+      store.subscribe(id => {
         racer.bump(index, id);
       });
     });
