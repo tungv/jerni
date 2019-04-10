@@ -41,7 +41,15 @@ function adapter() {
     }
   }
 
-  return { commit, query, getLatest, generate };
+  function DEV__getDriver() {
+    return {
+      clear() {
+        events.length = 0;
+      },
+    };
+  }
+
+  return { commit, query, getLatest, generate, DEV__getDriver };
 }
 
 module.exports = adapter;
