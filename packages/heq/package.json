@@ -1,6 +1,6 @@
 {
   "name": "heq",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "CLI to start an event sourcing server",
   "main": "index.js",
   "bin": "index.js",
@@ -19,9 +19,9 @@
   "author": "Tung Vu <me@tungv.com>",
   "license": "ISC",
   "dependencies": {
-    "@heq/server-redis": "^1.0.4",
+    "@heq/server-redis": "^2.0.0",
     "brighten": "^0.0.1",
-    "heq-server": "^2.1.0",
+    "heq-server": "^2.2.0",
     "ip": "^1.1.5",
     "micro": "^9.3.2",
     "port-authority": "^1.0.4",
