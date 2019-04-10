@@ -1,7 +1,12 @@
 const { router, get, post } = require("microrouter");
 const micro = require("micro");
 
-const { getLastEventId, getBurstCount, getBurstTime } = require("./utils");
+const {
+  getLastEventId,
+  getBurstCount,
+  getBurstTime,
+  getIncludes,
+} = require("./utils");
 
 const over = arrayFns => param => arrayFns.map(fn => fn(param));
 const once = fn => {
@@ -16,8 +21,6 @@ const once = fn => {
     fn(...params);
   };
 };
-
-const always = v => () => v;
 
 const toOutput = events => `id: ${events[events.length - 1].id}
 event: INCMSG
@@ -49,10 +52,11 @@ const factory = async userConfig => {
       return queue.commit(body);
     }),
     get(http.subscribePath, async (req, res) => {
-      const [lastEventId = 0, count = 20, time = 1] = over([
+      const [lastEventId = 0, count = 20, time = 1, includes = []] = over([
         getLastEventId,
         getBurstCount,
         getBurstTime,
+        getIncludes,
       ])(req);
 
       let ended = false;
@@ -82,7 +86,7 @@ const factory = async userConfig => {
       await sleep(0);
       flush(res);
 
-      const stream = queue.generate(lastEventId, count, time, always(true));
+      const stream = queue.generate(lastEventId, count, time, includes);
 
       try {
         for await (let buffer of stream) {

@@ -110,9 +110,13 @@ const adapter = ({ url, ns = "local" }) => {
     subClient.quit();
   };
 
-  async function* generate(from, max, time, filter) {
+  async function* generate(from, max, time, includingTypes = []) {
     let i = from;
     let subscription;
+
+    const filter = includingTypes.length
+      ? event => includingTypes.includes(event.type)
+      : alwaysTrue;
 
     try {
       while (true) {
@@ -172,3 +176,4 @@ const adapter = ({ url, ns = "local" }) => {
 module.exports = adapter;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const last = array => (array.length >= 1 ? array[array.length - 1] : null);
+const alwaysTrue = () => true;

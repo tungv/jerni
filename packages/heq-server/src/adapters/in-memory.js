@@ -15,9 +15,13 @@ function adapter() {
   const getLatest = () =>
     events.length === 0 ? { id: 0, type: "@@INIT" } : events[events.length - 1];
 
-  async function* generate(from, max, time, filter) {
+  async function* generate(from, max, time, includingTypes = []) {
     const buffer = [];
     let i = from;
+
+    const filter = includingTypes.length
+      ? event => includingTypes.includes(event.type)
+      : alwaysTrue;
 
     while (true) {
       await sleep(time);
@@ -43,3 +47,5 @@ function adapter() {
 module.exports = adapter;
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+const alwaysTrue = () => true;
