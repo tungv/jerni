@@ -117,4 +117,52 @@ test("journey should waitFor all models", async t => {
   t.true(duration > 100 && duration <= 120);
 });
 
+test("should throw if some models don't have a meta", t => {
+  const model1 = new DummyModel({ name: "internal_1" });
+  const model2 = new DummyModel({
+    name: "internal_2",
+    meta: {
+      includes: ["TYPE1", "TYPE2"],
+    },
+  });
+  const model3 = new DummyModel({ name: "internal_3" });
+  const model4 = new DummyModel({ name: "internal_4" });
+
+  t.throws(() => {
+    const conn = new DummyStore({
+      name: "conn_1",
+      models: [model1, model2, model3, model4],
+    });
+    createJourney({
+      writeTo: "http://localhost:8080",
+      stores: [conn],
+    });
+  });
+});
+
+test("should throw if the last model doesn't have a meta", t => {
+  const model1 = new DummyModel({ name: "internal_1" });
+  const model2 = new DummyModel({
+    name: "internal_2",
+  });
+  const model3 = new DummyModel({ name: "internal_3" });
+  const model4 = new DummyModel({
+    name: "internal_4",
+    meta: {
+      includes: ["TYPE1", "TYPE2"],
+    },
+  });
+
+  t.throws(() => {
+    const conn = new DummyStore({
+      name: "conn_1",
+      models: [model1, model2, model3, model4],
+    });
+    createJourney({
+      writeTo: "http://localhost:8080",
+      stores: [conn],
+    });
+  });
+});
+
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));

@@ -40,17 +40,18 @@ exports.Store = class DummyStore extends Store {
       .map(events => events.filter(e => e.id % 4 === 0))
       .filter(x => x.length)
       .map(events => ({
-        events
+        events,
       }));
   }
 };
 
 exports.Model = class DummyModel {
-  constructor({ name }) {
+  constructor({ name, meta }) {
     this.name = name;
+    this.meta = meta;
   }
 
   toString() {
-    return `[DummyModel ${name}]`;
+    return `[DummyModel ${this.name}]`;
   }
 };
