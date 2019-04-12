@@ -1,6 +1,6 @@
 {
   "name": "@jerni/base",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "main": "index.js",
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
