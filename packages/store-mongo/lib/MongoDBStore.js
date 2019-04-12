@@ -14,10 +14,10 @@ const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 const flatten = arrayDeep => [].concat(...arrayDeep);
 
 const connect = async url => {
-  const client = await MongoClient.connect(
-    url,
-    { useNewUrlParser: true, reconnectTries: Number.MAX_VALUE }
-  );
+  const client = await MongoClient.connect(url, {
+    useNewUrlParser: true,
+    reconnectTries: Number.MAX_VALUE,
+  });
   return client;
 };
 
@@ -29,15 +29,15 @@ module.exports = class MongoDBStore extends Store {
     models,
     buffer = {
       time: 2,
-      count: 100
-    }
+      count: 100,
+    },
   }) {
     super({ name, models, url });
     this.buffer = buffer;
     this.listeners = [];
     this.connectionInfo = {
       url,
-      dbName
+      dbName,
     };
     this.openConnections = [];
 
@@ -49,7 +49,7 @@ module.exports = class MongoDBStore extends Store {
       const hb = MongoHeartbeat(conn.db, {
         interval: 60 * 1000,
         timeout: 10000,
-        tolerance: 3
+        tolerance: 3,
       });
 
       hb.on("error", err => {
@@ -65,25 +65,36 @@ module.exports = class MongoDBStore extends Store {
       name: this.name,
       url: this.url,
       dbName: this.dbName,
-      buffer: this.buffer
+      buffer: this.buffer,
     };
   }
 
   async getLastSeenId() {
     return this.useConnection(async conn => {
       const condition = {
-        $or: this.models.map(m => ({ name: m.name, version: m.version }))
+        $or: this.models.map(m => ({ name: m.name, version: m.version })),
       };
 
       const snapshotsCol = conn.db.collection(SNAPSHOT_COLLECTION_NAME);
       const resp = await snapshotsCol.find(condition).toArray();
 
-      const oldestVersion = resp.reduce((v, obj) => {
-        if (obj.__v > v) {
-          return obj.__v;
+      if (resp.length < this.models.length) {
+        for (const model of this.models) {
+          await snapshotsCol.findOneAndUpdate(
+            {
+              name: model.name,
+              version: model.version,
+            },
+            { $setOnInsert: { __v: 0 } },
+            {
+              upsert: true,
+            },
+          );
         }
-        return v;
-      }, 0);
+        return 0;
+      }
+
+      const oldestVersion = Math.min(...resp.map(obj => obj.__v));
       return oldestVersion;
     });
   }
@@ -117,11 +128,11 @@ module.exports = class MongoDBStore extends Store {
       });
 
       const condition = {
-        $or: this.models.map(m => ({ name: m.name, version: m.version }))
+        $or: this.models.map(m => ({ name: m.name, version: m.version })),
       };
 
       promises.push(
-        db.collection(SNAPSHOT_COLLECTION_NAME).deleteMany(condition)
+        db.collection(SNAPSHOT_COLLECTION_NAME).deleteMany(condition),
       );
 
       try {
@@ -183,14 +194,14 @@ module.exports = class MongoDBStore extends Store {
                 } catch (ex) {
                   return [];
                 }
-              })
+              }),
             );
 
             let changes = {
               model,
               added: 0,
               modified: 0,
-              removed: 0
+              removed: 0,
             };
 
             if (ops.length > 0) {
@@ -200,21 +211,19 @@ module.exports = class MongoDBStore extends Store {
                 model,
                 added: modelOpsResult.nUpserted,
                 modified: modelOpsResult.nModified,
-                removed: modelOpsResult.nRemoved
+                removed: modelOpsResult.nRemoved,
               };
             }
 
             await snapshotsCol.findOneAndUpdate(
               {
                 name: model.name,
-                version: model.version
+                version: model.version,
+                __v: { $lt: events[events.length - 1].id },
               },
               {
-                $set: { __v: events[events.length - 1].id }
+                $set: { __v: events[events.length - 1].id },
               },
-              {
-                upsert: true
-              }
             );
 
             return changes;
@@ -226,13 +235,13 @@ module.exports = class MongoDBStore extends Store {
                 commit({
                   source: this.name,
                   models: this.models,
-                  event_id: latestId
-                })
+                  event_id: latestId,
+                }),
               )
               .then(() => {
                 resolve({
                   events,
-                  models: changesByModels
+                  models: changesByModels,
                 });
               });
           });
