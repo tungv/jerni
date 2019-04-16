@@ -37,7 +37,7 @@ test("should subscribe", async t => {
 
   const stream = await subscribe({
     subscribeURL: "http://localhost:19090/subscribe",
-    queryURL: "http://localhost:19090/query",
+    // queryURL: "http://localhost:19090/query",
     lastSeenIdGetter: () => 0,
   });
 
@@ -93,7 +93,7 @@ test("should subscribe with filter", async t => {
 
   const stream = await subscribe({
     subscribeURL: "http://localhost:19091/subscribe",
-    queryURL: "http://localhost:19091/query",
+    // queryURL: "http://localhost:19091/query",
     lastSeenIdGetter: () => 0,
     includes: ["TEST_1", "TEST_3"],
   });

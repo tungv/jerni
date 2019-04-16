@@ -80,8 +80,19 @@ module.exports = function createJourney({ writeTo, stores }) {
   };
 
   const getDefaultEventStream = async () => {
+    const includes = [];
+
+    for (const store of stores) {
+      if (store.meta.includes) {
+        includes.push(...store.meta.includes);
+      } else {
+        includes.length = 0;
+        break;
+      }
+    }
+
     const incomingEvents$ = await getEventsStream({
-      queryURL: `${currentWriteTo}/query`,
+      includes,
       subscribeURL: `${currentWriteTo}/subscribe`,
       lastSeenIdGetter: async () => {
         const latestEventIdArray = await Promise.all(
