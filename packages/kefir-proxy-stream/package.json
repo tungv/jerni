@@ -4,6 +4,6 @@
   "main": "index.js",
   "license": "MIT",
   "peerDependencies": {
-    "kefir": "^3.8.5"
+    "kefir": "*"
   }
 }
