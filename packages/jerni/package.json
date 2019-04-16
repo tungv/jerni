@@ -1,6 +1,6 @@
 {
   "name": "jerni",
-  "version": "0.7.3",
+  "version": "0.8.0",
   "description": "Server-side Flux architecture framework",
   "main": "index.js",
   "bin": "cli/index.js",
@@ -12,7 +12,7 @@
     "ava": "^1.4.1",
     "brighten": "^0.0.1",
     "heq-server": "^2.2.1",
-    "jerni-dev": "^0.8.10",
+    "jerni-dev": "^0.8.11",
     "micro": "^9.3.2",
     "tcp-proxy.js": "^1.2.0"
   },
@@ -20,7 +20,7 @@
     "arrify": "^1.0.1",
     "got": "^9.0.0",
     "kefir": "^3.8.3",
-    "kefir-proxy-stream": "^0.1.0",
+    "kefir-proxy-stream": "^0.2.0",
     "log4js": "^3.0.5",
     "read-pkg-up": "^4.0.0",
     "sade": "^1.4.1"
