@@ -12,17 +12,17 @@ module.exports = function createJourney({ writeTo, stores }) {
 
   let currentWriteTo = writeTo;
 
-  stores.forEach((readSource, index) => {
+  stores.forEach((store, index) => {
     // register every models in each read source to SOURCE_BY_MODELS map
     // so we can retrieve them later in `#read(model)`
-    readSource.registerModels(SOURCE_BY_MODELS);
+    store.registerModels(SOURCE_BY_MODELS);
   });
 
   const enableWatchMode = once(() => {
-    stores.forEach((readSource, index) => {
+    stores.forEach((store, index) => {
       // we also subscribe for new changes from each source
       // in order to resolve `#waitFor(event)` and future `#waitFor(event, model)`
-      readSource.subscribe(id => {
+      store.subscribe(id => {
         racer.bump(index, id);
       });
     });
@@ -72,7 +72,7 @@ module.exports = function createJourney({ writeTo, stores }) {
         }
 
         const err = new Error(
-          `Timeout: wait too long for #${event.id} - ${event.type}`
+          `Timeout: wait too long for #${event.id} - ${event.type}`,
         );
         reject(err);
       }, 30000);
@@ -80,16 +80,27 @@ module.exports = function createJourney({ writeTo, stores }) {
   };
 
   const getDefaultEventStream = async () => {
+    const includes = [];
+
+    for (const store of stores) {
+      if (store.meta.includes) {
+        includes.push(...store.meta.includes);
+      } else {
+        includes.length = 0;
+        break;
+      }
+    }
+
     const incomingEvents$ = await getEventsStream({
-      queryURL: `${currentWriteTo}/query`,
+      includes,
       subscribeURL: `${currentWriteTo}/subscribe`,
       lastSeenIdGetter: async () => {
         const latestEventIdArray = await Promise.all(
-          stores.map(source => source.getLastSeenId())
+          stores.map(source => source.getLastSeenId()),
         );
 
         return Math.min(...latestEventIdArray);
-      }
+      },
     });
 
     return incomingEvents$;
@@ -102,8 +113,8 @@ module.exports = function createJourney({ writeTo, stores }) {
       return source.receive(incomingEvents$).then(stream =>
         stream.map(output => ({
           source,
-          output
-        }))
+          output,
+        })),
       );
     });
 
@@ -123,16 +134,16 @@ module.exports = function createJourney({ writeTo, stores }) {
 
     versions: async () => {
       const latestEventIdArray = await Promise.all(
-        stores.map(source => source.getLastSeenId())
+        stores.map(source => source.getLastSeenId()),
       );
 
       const vx = stores.reduce(
         (array, store, index) =>
           array.concat([[store.name, latestEventIdArray[index]]]),
-        []
+        [],
       );
       return vx;
-    }
+    },
   };
 
   if (dev) {
@@ -145,17 +156,16 @@ module.exports = function createJourney({ writeTo, stores }) {
 
       DEV__getNewestVersion: async () => {
         const latestEventIdArray = await Promise.all(
-          stores.map(source => source.getLastSeenId())
+          stores.map(source => source.getLastSeenId()),
         );
         return Math.max(...latestEventIdArray);
-      }
+      },
     });
   }
 
   return journey;
 };
 
-const toArray = stream$ => stream$.scan((prev, next) => prev.concat(next), []);
 const once = fn => {
   let tries = 0;
   return (...args) => {

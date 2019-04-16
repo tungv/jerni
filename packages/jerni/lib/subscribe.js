@@ -8,26 +8,13 @@ const getChunks = require("./getChunks");
 const logger = log4js.getLogger("jerni/subscribe");
 
 module.exports = async function subscribe({
-  queryURL,
   subscribeURL,
   lastSeenIdGetter,
-  includes = []
+  includes = [],
 }) {
   const b = backoff({ seed: 10, max: 3000 });
   let lastSeenId = await lastSeenIdGetter();
   logger.debug("last seen id", lastSeenId);
-  const { body: unreadEvents } = await got(
-    `${queryURL}?lastEventId=${lastSeenId}`,
-    {
-      json: true
-    }
-  );
-
-  logger.debug("past events fully retreived");
-
-  const realtimeFrom = unreadEvents.length
-    ? unreadEvents[unreadEvents.length - 1].id
-    : lastSeenId;
 
   const pool = kefir.pool();
 
@@ -35,15 +22,18 @@ module.exports = async function subscribe({
     ? e => includes.includes(e.type)
     : x => x;
 
-  const unread$ = kefir.constant(unreadEvents.filter(filterEvents));
-
-  setTimeout(() => pool.plug(unread$), 1);
-
   const connectRealtime = realtimeFrom => {
     const realtime$ = kefir
       .stream(emitter => {
         logger.debug("attempting to subscribe from #%d", realtimeFrom);
-        const resp$ = got.stream(`${subscribeURL}?lastEventId=${realtimeFrom}`);
+
+        const resp$ = got.stream(subscribeURL, {
+          headers: {
+            "last-event-id": realtimeFrom,
+            includes: includes.join(","),
+          },
+        });
+
         const retry = once(waitTime => {
           emitter.end();
 
@@ -93,11 +83,9 @@ module.exports = async function subscribe({
     pool.plug(realtime$);
   };
 
-  unread$.onEnd(() => {
-    connectRealtime(realtimeFrom);
-  });
+  connectRealtime(lastSeenId);
 
-  return pool.filter();
+  return pool;
 };
 
 const handleMsg = filterEvents => messages$ =>

@@ -12,7 +12,7 @@ test("createJourney to return a journey", t => {
 
   const journey = createJourney({
     writeTo: "http://localhost:8080",
-    stores: [dummyStore]
+    stores: [dummyStore],
   });
 
   t.true(typeof journey.getReader === "function");
@@ -21,26 +21,26 @@ test("createJourney to return a journey", t => {
 });
 
 test("journey should be able to commit event", async t => {
-  const { queue, server } = await makeServer({
+  const { server } = await makeServer({
     ns: "test_commit",
-    port: 18080
+    port: 18080,
   });
 
   const dummyStore = new DummyStore({
     name: "conn_0",
-    models: []
+    models: [],
   });
 
   const journey = createJourney({
     writeTo: "http://localhost:18080",
-    stores: [dummyStore]
+    stores: [dummyStore],
   });
 
   const now = Date.now();
   const event = await journey.commit({
     type: "TEST",
     payload: { key: "value" },
-    meta: { some: "meta" }
+    meta: { some: "meta" },
   });
 
   t.truthy(event.id);
@@ -62,12 +62,12 @@ test("journey should return specific driver instance", async t => {
   const model4 = new DummyModel({ name: "internal_4" });
   const conn = new DummyStore({
     name: "conn_1",
-    models: [model1, model2, model3, model4]
+    models: [model1, model2, model3, model4],
   });
 
   const journey = createJourney({
     writeTo: "http://localhost:8080",
-    stores: [conn]
+    stores: [conn],
   });
 
   t.is(journey.getReader(model1), "internal_1@conn_1");
@@ -88,17 +88,17 @@ test("journey should waitFor all models", async t => {
   const conn1 = new DummyStore({
     name: "conn_1",
     models: [model1, model2],
-    emitter: emitter1
+    emitter: emitter1,
   });
   const conn2 = new DummyStore({
     name: "conn_2",
     models: [model3, model4],
-    emitter: emitter2
+    emitter: emitter2,
   });
 
   const journey = createJourney({
     writeTo: "http://localhost:8080",
-    stores: [conn1, conn2]
+    stores: [conn1, conn2],
   });
 
   const startWaiting = Date.now();
@@ -115,6 +115,54 @@ test("journey should waitFor all models", async t => {
 
   await waitPromise;
   t.true(duration > 100 && duration <= 120);
+});
+
+test("should throw if some models don't have a meta", t => {
+  const model1 = new DummyModel({ name: "internal_1" });
+  const model2 = new DummyModel({
+    name: "internal_2",
+    meta: {
+      includes: ["TYPE1", "TYPE2"],
+    },
+  });
+  const model3 = new DummyModel({ name: "internal_3" });
+  const model4 = new DummyModel({ name: "internal_4" });
+
+  t.throws(() => {
+    const conn = new DummyStore({
+      name: "conn_1",
+      models: [model1, model2, model3, model4],
+    });
+    createJourney({
+      writeTo: "http://localhost:8080",
+      stores: [conn],
+    });
+  });
+});
+
+test("should throw if the last model doesn't have a meta", t => {
+  const model1 = new DummyModel({ name: "internal_1" });
+  const model2 = new DummyModel({
+    name: "internal_2",
+  });
+  const model3 = new DummyModel({ name: "internal_3" });
+  const model4 = new DummyModel({
+    name: "internal_4",
+    meta: {
+      includes: ["TYPE1", "TYPE2"],
+    },
+  });
+
+  t.throws(() => {
+    const conn = new DummyStore({
+      name: "conn_1",
+      models: [model1, model2, model3, model4],
+    });
+    createJourney({
+      writeTo: "http://localhost:8080",
+      stores: [conn],
+    });
+  });
 });
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));

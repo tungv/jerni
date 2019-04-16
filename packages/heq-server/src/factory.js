@@ -1,13 +1,12 @@
-const { handleErrors } = require('micro-boom');
-const { router, get, post } = require('microrouter');
-const micro = require('micro');
+const { router, get, post } = require("microrouter");
+const micro = require("micro");
 
 const {
   getLastEventId,
   getBurstCount,
   getBurstTime,
-  getRetry,
-} = require('./utils');
+  getIncludes,
+} = require("./utils");
 
 const over = arrayFns => param => arrayFns.map(fn => fn(param));
 const once = fn => {
@@ -46,18 +45,18 @@ const factory = async userConfig => {
     post(http.commitPath, async req => {
       const body = await micro.json(req);
 
-      if (typeof body.type !== 'string') {
-        throw micro.createError(400, 'type is required');
+      if (typeof body.type !== "string") {
+        throw micro.createError(400, "type is required");
       }
 
       return queue.commit(body);
     }),
     get(http.subscribePath, async (req, res) => {
-      const [lastEventId = 0, count = 20, time = 1, retry = 10] = over([
+      const [lastEventId = 0, count = 20, time = 1, includes = []] = over([
         getLastEventId,
         getBurstCount,
         getBurstTime,
-        getRetry,
+        getIncludes,
       ])(req);
 
       let ended = false;
@@ -69,80 +68,65 @@ const factory = async userConfig => {
         res.end();
       });
 
-      req.on('end', removeClient);
-      req.on('close', removeClient);
-      res.on('finish', removeClient);
+      req.on("end", removeClient);
+      req.on("close", removeClient);
+      res.on("finish", removeClient);
 
       req.socket.setTimeout(0);
       req.socket.setNoDelay(true);
       req.socket.setKeepAlive(true);
 
       res.writeHead(200, {
-        'Content-Type': 'text/event-stream;charset=UTF-8',
-        'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
+        "Content-Type": "text/event-stream;charset=UTF-8",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
       });
 
-      res.write(':ok\n\n');
+      res.write(":ok\n\n");
       await sleep(0);
       flush(res);
 
+      const stream = queue.generate(lastEventId, count, time, includes);
+
       try {
-        // subscribe
-        const { events$, latest } = queue.subscribe();
-
-        const pastEvents = await queue.query({
-          from: lastEventId,
-        });
-
-        if (pastEvents.length) res.write(toOutput(pastEvents));
-
-        events$
-          .filter(
-            e =>
-              pastEvents.length
-                ? e.id > pastEvents[pastEvents.length - 1].id
-                : true
-          )
-          .bufferWithTimeOrCount(time, count)
-          .filter(b => b.length)
-          .map(toOutput)
-          .observe(block => {
-            // console.log('send to %s %s', req.url, block);
-            if (!ended) res.write(block);
-          });
+        for await (let buffer of stream) {
+          if (ended) {
+            break;
+          }
+          if (buffer.length) res.write(toOutput(buffer));
+        }
       } catch (ex) {
         console.error(ex);
-        res.end();
+        removeClient();
       }
-    })
+    }),
   );
 
   return service;
 };
 
 const getQueue = queueConfigOrActualQueue => {
-  if (typeof queueConfigOrActualQueue.subscribe === 'function') {
+  if (typeof queueConfigOrActualQueue.subscribe === "function") {
     return queueConfigOrActualQueue;
   }
 
   const adapterPkgName =
-    queueConfigOrActualQueue.driver || './adapters/in-memory';
+    queueConfigOrActualQueue.driver || "./adapters/in-memory";
   const adapter = require(adapterPkgName);
   return adapter(queueConfigOrActualQueue);
 };
 
 const parseConfig = ({ queue: queueConfig = {}, http: httpConfig = {} }) => {
   const {
-    commitPath = '/commit',
-    subscribePath = '/subscribe',
-    queryPath = '/query',
-    eventsPath = '/events',
+    commitPath = "/commit",
+    subscribePath = "/subscribe",
+    queryPath = "/query",
+    eventsPath = "/events",
     port,
   } = httpConfig;
 
   if (Number.isNaN(port)) {
-    console.error('port is unspecified');
+    console.error("port is unspecified");
     process.exit(1);
   }
 
@@ -161,7 +145,7 @@ const parseConfig = ({ queue: queueConfig = {}, http: httpConfig = {} }) => {
 module.exports = factory;
 
 function flush(response) {
-  if (response.flush && response.flush.name !== 'deprecated') {
+  if (response.flush && response.flush.name !== "deprecated") {
     response.flush();
   }
 }

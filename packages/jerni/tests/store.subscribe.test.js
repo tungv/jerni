@@ -9,7 +9,7 @@ test("should subscribe", async t => {
   brighten();
   const { queue, server } = await makeServer({
     ns: "test_subscribe_1",
-    port: 19090
+    port: 19090,
   });
 
   const driver = await queue.DEV__getDriver();
@@ -17,19 +17,19 @@ test("should subscribe", async t => {
 
   const dummyConnection = new DummyStore({
     name: "conn_0",
-    models: []
+    models: [],
   });
 
   const store = createJourney({
     writeTo: "http://localhost:19090",
-    stores: [dummyConnection]
+    stores: [dummyConnection],
   });
 
   for (let i = 0; i < 10; ++i) {
     await store.commit({
       type: "TEST",
       payload: { key: "value" },
-      meta: { some: "meta" }
+      meta: { some: "meta" },
     });
   }
 
@@ -37,8 +37,8 @@ test("should subscribe", async t => {
 
   const stream = await subscribe({
     subscribeURL: "http://localhost:19090/subscribe",
-    queryURL: "http://localhost:19090/query",
-    lastSeenIdGetter: () => 0
+    // queryURL: "http://localhost:19090/query",
+    lastSeenIdGetter: () => 0,
   });
 
   const events = [];
@@ -51,7 +51,7 @@ test("should subscribe", async t => {
     await store.commit({
       type: "TEST",
       payload: { key: "value" },
-      meta: { some: "meta" }
+      meta: { some: "meta" },
     });
   }
   server.close();
@@ -65,7 +65,7 @@ test("should subscribe with filter", async t => {
   brighten();
   const { queue, server } = await makeServer({
     ns: "test_subscribe_2",
-    port: 19091
+    port: 19091,
   });
 
   const driver = await queue.DEV__getDriver();
@@ -73,19 +73,19 @@ test("should subscribe with filter", async t => {
 
   const dummyConnection = new DummyStore({
     name: "conn_0",
-    models: []
+    models: [],
   });
 
   const store = createJourney({
     writeTo: "http://localhost:19091",
-    stores: [dummyConnection]
+    stores: [dummyConnection],
   });
 
   for (let i = 0; i < 10; ++i) {
     await store.commit({
       type: `TEST_${i % 4}`,
       payload: { key: "value" },
-      meta: { some: "meta" }
+      meta: { some: "meta" },
     });
   }
 
@@ -93,9 +93,9 @@ test("should subscribe with filter", async t => {
 
   const stream = await subscribe({
     subscribeURL: "http://localhost:19091/subscribe",
-    queryURL: "http://localhost:19091/query",
+    // queryURL: "http://localhost:19091/query",
     lastSeenIdGetter: () => 0,
-    includes: ["TEST_1", "TEST_3"]
+    includes: ["TEST_1", "TEST_3"],
   });
 
   const events = [];
@@ -108,7 +108,7 @@ test("should subscribe with filter", async t => {
     await store.commit({
       type: `TEST_${i % 4}`,
       payload: { key: "value" },
-      meta: { some: "meta" }
+      meta: { some: "meta" },
     });
   }
   server.close();
@@ -126,7 +126,7 @@ test("should subscribe with filter", async t => {
     14,
     16,
     18,
-    20
+    20,
   ]);
 });
 
@@ -134,7 +134,7 @@ test("await store.subscribe()", async t => {
   brighten();
   const { queue, server } = await makeServer({
     ns: "test_subscribe_3",
-    port: 19092
+    port: 19092,
   });
 
   const driver = await queue.DEV__getDriver();
@@ -145,19 +145,19 @@ test("await store.subscribe()", async t => {
 
   const dummyConnection = new DummyStore({
     name: "conn_0",
-    models: [model1, model2]
+    models: [model1, model2],
   });
 
   const store = createJourney({
     writeTo: "http://localhost:19092",
-    stores: [dummyConnection]
+    stores: [dummyConnection],
   });
 
   for (let i = 0; i < 10; ++i) {
     await store.commit({
       type: "TEST",
       payload: { key: "value" },
-      meta: { some: "meta" }
+      meta: { some: "meta" },
     });
   }
 
@@ -175,7 +175,7 @@ test("await store.subscribe()", async t => {
     await store.commit({
       type: "TEST",
       payload: { key: "value" },
-      meta: { some: "meta" }
+      meta: { some: "meta" },
     });
   }
   server.close();
@@ -193,14 +193,14 @@ test("await store.subscribe()", async t => {
     dummyConnection,
     dummyConnection,
     dummyConnection,
-    dummyConnection
+    dummyConnection,
   ]);
 
   t.deepEqual(outputs.map(out => out.output.events.map(event => event.id)), [
     [4, 8],
     [12],
     [16],
-    [20]
+    [20],
   ]);
 });
 

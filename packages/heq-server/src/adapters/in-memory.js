@@ -1,35 +1,59 @@
-const mitt = require('mitt');
-const kefir = require('kefir');
-
-const adapter = () => {
-  const emitter = mitt();
+function adapter() {
   const events = [];
   let id = 0;
 
   const commit = event => {
     events[id] = event;
     event.id = ++id;
-    // console.log('commit', id);
-    emitter.emit('data', event);
     return event;
   };
 
   const query = ({ from, to = id }) => {
-    // console.log('query', { from, to });
     return events.slice(from, to);
   };
 
-  const subscribe = () => {
-    // console.log('subscribe', { id });
-    const events$ = kefir.fromEvents(emitter, 'data');
-
-    return { events$ };
-  };
-
   const getLatest = () =>
-    events.length === 0 ? { id: 0, type: '@@INIT' } : events[events.length - 1];
+    events.length === 0 ? { id: 0, type: "@@INIT" } : events[events.length - 1];
 
-  return { commit, subscribe, query, getLatest };
-};
+  async function* generate(from, max, time, includingTypes = []) {
+    const buffer = [];
+    let i = from;
+
+    const filter = includingTypes.length
+      ? event => includingTypes.includes(event.type)
+      : alwaysTrue;
+
+    while (true) {
+      await sleep(time);
+      for (; i < events.length; ++i) {
+        const event = events[i];
+        if (filter(event)) {
+          buffer.push(event);
+
+          if (buffer.length >= max) {
+            yield buffer;
+            buffer.length = 0;
+          }
+        }
+      }
+      yield buffer;
+      buffer.length = 0;
+    }
+  }
+
+  function DEV__getDriver() {
+    return {
+      clear() {
+        events.length = 0;
+      },
+    };
+  }
+
+  return { commit, query, getLatest, generate, DEV__getDriver };
+}
 
 module.exports = adapter;
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+const alwaysTrue = () => true;

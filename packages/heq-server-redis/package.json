@@ -1,13 +1,13 @@
 {
   "name": "@heq/server-redis",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "Redis Adapter for heq-server",
   "main": "index.js",
   "engines": {
     "node": "^8.9.0 || ^9.0.0 || ^10.0.0"
   },
   "scripts": {
-    "test": "jest --forceExit"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/tungv/events#readme",
   "devDependencies": {
-    "jest": "^22.4.3"
+    "jest": "^24.7.1"
   },
   "dependencies": {
     "kefir": "^3.8.3",
