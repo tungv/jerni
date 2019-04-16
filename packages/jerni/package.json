@@ -1,6 +1,6 @@
 {
   "name": "jerni",
-  "version": "0.7.0",
+  "version": "0.7.3",
   "description": "Server-side Flux architecture framework",
   "main": "index.js",
   "bin": "cli/index.js",
@@ -8,11 +8,11 @@
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
   "devDependencies": {
-    "@jerni/base": "^0.1.0",
+    "@jerni/base": "^0.1.4",
     "ava": "^1.4.1",
     "brighten": "^0.0.1",
     "heq-server": "^2.2.1",
-    "jerni-dev": "^0.8.7",
+    "jerni-dev": "^0.8.10",
     "micro": "^9.3.2",
     "tcp-proxy.js": "^1.2.0"
   },
