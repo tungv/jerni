@@ -1,7 +1,16 @@
 const kefir = require("kefir");
 
-const getIncludes = model =>
-  model.meta || (model.transform ? model.transform.meta : null);
+const getMeta = model => {
+  if (model.meta) {
+    return model.meta;
+  }
+
+  if (model.transform && model.transform.meta) {
+    return model.transform.meta;
+  }
+
+  return {};
+};
 
 class Connection {
   constructor({ name, models = [], url } = {}) {
@@ -17,7 +26,7 @@ class Connection {
     let hasMeta = false;
     for (let i = 0; i < models.length; ++i) {
       const model = models[i];
-      const includes = getIncludes(model);
+      const { includes } = getMeta(model);
 
       if (includes) {
         if (!hasMeta && i === models.length - 1) {
