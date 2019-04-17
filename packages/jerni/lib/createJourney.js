@@ -52,32 +52,41 @@ module.exports = function createJourney({ writeTo, stores }) {
     });
   };
 
-  const waitFor = event => {
+  function waitFor(event, ms = 3000) {
     if (racer.max() >= event.id) {
       return;
     }
     enableWatchMode();
     return new Promise((resolve, reject) => {
       let resolved = false;
+      let timeoutId;
+
       racer.wait(event.id).then(() => {
         resolved = true;
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
         resolve();
       });
 
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         if (resolved) return;
 
         if (dev) {
           require("./dev-aware").waitTooLongExplain({ event, stores });
         }
 
-        const err = new Error(
-          `Timeout: wait too long for #${event.id} - ${event.type}`,
-        );
+        const err = new Error();
+        err.name = "JerniPersistenceTimeout";
+        err.message = `Timeout: wait too long for #${event.id} - ${event.type}`;
+        err.data = {
+          id: event.id,
+          type: event.type,
+        };
         reject(err);
-      }, 30000);
+      }, ms);
     });
-  };
+  }
 
   const getDefaultEventStream = async () => {
     const includes = [];
