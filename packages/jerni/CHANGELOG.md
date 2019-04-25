@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.9.0"></a>
+# [0.9.0](https://github.com/tungv/jerni/compare/jerni@0.8.0...jerni@0.9.0) (2019-04-17)
+
+
+### Features
+
+* **jerni:** custom timeout error and duration ([0d77196](https://github.com/tungv/jerni/commit/0d77196))
+
+
+
+
 <a name="0.7.0"></a>
 # [0.7.0](https://github.com/tungv/jerni/compare/jerni@0.6.2...jerni@0.7.0) (2019-04-12)
 

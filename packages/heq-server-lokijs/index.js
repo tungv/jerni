@@ -2,10 +2,13 @@ const Loki = require("lokijs");
 const mitt = require("mitt");
 const kefir = require("kefir");
 
+const alwaysTrue = () => true;
+
 const delokize = obj => {
   if (obj == null) {
     return obj;
   }
+
   const { $loki, ...event } = { ...obj };
   event.meta = { ...obj.meta };
 
@@ -51,8 +54,61 @@ const adapter = ({ ns = "local", filepath = "heq-events.db" }) => {
       }
 
       done(coll);
-    }
+    },
   });
+
+  async function* generate(lastEventId, count, time, includingTypes) {
+    const filter = includingTypes.length
+      ? event => includingTypes.includes(event.type)
+      : alwaysTrue;
+
+    const Events = await events;
+
+    let from = lastEventId;
+
+    const unread = Events.find({ $loki: { $gt: from } })
+      .filter(filter)
+      .map(delokize);
+    const buffer = [];
+
+    for (const event of unread) {
+      buffer.push(event);
+
+      if (buffer.length >= count) {
+        yield [...buffer];
+        buffer.length = 0;
+      }
+    }
+
+    if (buffer.length) {
+      yield buffer.length;
+    }
+
+    let subscription;
+
+    try {
+      subscription = kefir
+        .fromEvents(emitter, "data")
+        .filter(filter)
+        .map(delokize)
+        .bufferWithTimeOrCount(time, count)
+        .filter(array => array.length)
+        .observe(events => {
+          buffer.push(...events);
+        });
+
+      while (true) {
+        if (buffer.length) {
+          yield [...buffer];
+          buffer.length = 0;
+        }
+      }
+    } finally {
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    }
+  }
 
   const commit = async event => {
     latest = (await events).insert({ ...event, meta: { ...event.meta } });
@@ -82,17 +138,13 @@ const adapter = ({ ns = "local", filepath = "heq-events.db" }) => {
     return (await events).find({ $loki: { $gt: from } }).map(delokize);
   };
 
-  const subscribe = () => ({
-    events$: kefir.fromEvents(emitter, "data").map(delokize)
-  });
-
   const destroy = () => {
     // noop
   };
 
   const getEvent = async id => delokize((await events).get(id));
 
-  const api = { commit, subscribe, query, destroy, getLatest, getEvent };
+  const api = { commit, generate, query, destroy, getLatest, getEvent };
 
   api.DEV__swap = async newEvents => {
     const Events = await events;

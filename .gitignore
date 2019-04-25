@@ -8,5 +8,6 @@ build
 .next
 
 *.db
+*.*~
 .env
 .history
