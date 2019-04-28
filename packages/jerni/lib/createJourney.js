@@ -91,6 +91,7 @@ module.exports = function createJourney({ writeTo, stores }) {
   const getDefaultEventStream = async () => {
     const includes = [];
 
+    if (!dev) {
     for (const store of stores) {
       if (store.meta.includes) {
         includes.push(...store.meta.includes);
@@ -98,6 +99,7 @@ module.exports = function createJourney({ writeTo, stores }) {
         includes.length = 0;
         break;
       }
+    }
     }
 
     const incomingEvents$ = await getEventsStream({
