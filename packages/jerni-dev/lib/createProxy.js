@@ -14,9 +14,9 @@ const createWorker = filepath => {
     const worker = fork(
       path.resolve(__dirname, "./subscriber-process.js"),
       [filepath],
-      {
-        stdio: "ignore"
-      }
+      // {
+      //   stdio: "ignore"
+      // }
     );
 
     const onMessage = msg => {
