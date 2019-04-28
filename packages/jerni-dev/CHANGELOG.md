@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.9.1"></a>
+## [0.9.1](https://github.com/tungv/jerni/compare/jerni-dev@0.9.0...jerni-dev@0.9.1) (2019-04-28)
+
+
+
+
+**Note:** Version bump only for package jerni-dev
+
 <a name="0.8.7"></a>
 ## [0.8.7](https://github.com/tungv/jerni/compare/jerni-dev@0.8.6...jerni-dev@0.8.7) (2019-04-12)
 

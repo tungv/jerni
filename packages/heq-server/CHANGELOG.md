@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="2.2.2"></a>
+## [2.2.2](https://github.com/tungv/jerni/compare/heq-server@2.2.1...heq-server@2.2.2) (2019-04-28)
+
+
+### Bug Fixes
+
+* **server:** check for generate instead of outdated subscribe ([0b77cf9](https://github.com/tungv/jerni/commit/0b77cf9))
+
+
+
+
 <a name="2.2.1"></a>
 ## [2.2.1](https://github.com/tungv/jerni/compare/heq-server@2.2.0...heq-server@2.2.1) (2019-04-12)
 

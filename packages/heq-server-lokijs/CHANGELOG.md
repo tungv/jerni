@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="2.0.1"></a>
+## [2.0.1](https://github.com/tungv/heq/compare/@heq/server-lokijs@2.0.0...@heq/server-lokijs@2.0.1) (2019-04-28)
+
+
+### Bug Fixes
+
+* **server-lokijs:** sleep to release main thread ([da2634d](https://github.com/tungv/heq/commit/da2634d))
+
+
+
+
 <a name="1.3.0"></a>
 # [1.3.0](https://github.com/tungv/heq/compare/@heq/server-lokijs@1.2.1...@heq/server-lokijs@1.3.0) (2018-08-30)
 

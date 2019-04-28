@@ -1,6 +1,6 @@
 {
   "name": "@heq/server-lokijs",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "LokiJS adapter for heq-server",
   "main": "index.js",
   "scripts": {
