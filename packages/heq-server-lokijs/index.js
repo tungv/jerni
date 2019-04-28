@@ -102,6 +102,7 @@ const adapter = ({ ns = "local", filepath = "heq-events.db" }) => {
           yield [...buffer];
           buffer.length = 0;
         }
+        await sleep(time);
       }
     } finally {
       if (subscription) {
@@ -159,3 +160,4 @@ const adapter = ({ ns = "local", filepath = "heq-events.db" }) => {
 };
 
 module.exports = adapter;
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
