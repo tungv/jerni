@@ -106,7 +106,7 @@ const factory = async userConfig => {
 };
 
 const getQueue = queueConfigOrActualQueue => {
-  if (typeof queueConfigOrActualQueue.subscribe === "function") {
+  if (typeof queueConfigOrActualQueue.generate === "function") {
     return queueConfigOrActualQueue;
   }
 
