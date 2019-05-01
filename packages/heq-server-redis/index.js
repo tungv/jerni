@@ -115,8 +115,10 @@ const adapter = ({ url, ns = "local" }) => {
     let subscription;
 
     const filter = includingTypes.length
-      ? event => includingTypes.includes(event.type)
-      : alwaysTrue;
+      ? event => event.id > i && includingTypes.includes(event.type)
+      : event => event.id > i;
+
+    const queue = [];
 
     try {
       while (true) {
@@ -124,37 +126,36 @@ const adapter = ({ url, ns = "local" }) => {
         const batch = await query({ from: i, to });
 
         const matched = batch.filter(filter);
+        subscription = events$
+          .map(message => {
+            const rawId = message.split(":")[0];
+            const id = Number(rawId);
+            const rawEvent = message.slice(rawId.length + 1);
+
+            const event = JSON.parse(rawEvent);
+            event.id = id;
+            return event;
+          })
+          .filter(filter)
+          .observe(event => {
+            queue.push(event);
+          });
+
         if (matched.length) {
-          // console.log("from query", matched);
           yield matched;
         }
 
         const lastEvent = last(batch);
         if (lastEvent) {
           i = last(batch).id;
+          // continue to query
+          // console.log("unsubscription");
+          subscription.unsubscribe();
         } else {
           break;
         }
         // await sleep(time);
       }
-
-      const queue = [];
-
-      subscription = events$
-        .map(message => {
-          const rawId = message.split(":")[0];
-          const id = Number(rawId);
-          const rawEvent = message.slice(rawId.length + 1);
-
-          const event = JSON.parse(rawEvent);
-          event.id = id;
-          return event;
-        })
-        .filter(event => event.id > i)
-        .filter(filter)
-        .observe(event => {
-          queue.push(event);
-        });
 
       while (true) {
         if (queue.length) {
@@ -176,4 +177,3 @@ const adapter = ({ url, ns = "local" }) => {
 module.exports = adapter;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const last = array => (array.length >= 1 ? array[array.length - 1] : null);
-const alwaysTrue = () => true;
