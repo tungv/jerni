@@ -167,10 +167,10 @@ describe("redis adapter", () => {
       await queue.commit({ type: "test", payload: i + 1 });
     }
 
-    const next5 = [];
+    const allEvents = [];
     (async function() {
-      for await (const buffer of queue.generate(5, 2, 10, () => true)) {
-        next5.push(...buffer);
+      for await (const buffer of queue.generate(0, 2, 10, [])) {
+        allEvents.push(...buffer);
 
         if (last(buffer).id === 10) {
           break;
@@ -178,10 +178,14 @@ describe("redis adapter", () => {
       }
 
       queue.destroy();
-      expect(next5).toEqual([
+      expect(allEvents).toEqual([
+        { id: 1, payload: 1, type: "test" },
+        { id: 2, payload: 2, type: "test" },
+        { id: 3, payload: 3, type: "test" },
+        { id: 4, payload: 4, type: "test" },
+        { id: 5, payload: 5, type: "test" },
         { id: 6, payload: 6, type: "test" },
         { id: 7, payload: 7, type: "test" },
-
         { id: 8, payload: 8, type: "test" },
         { id: 9, payload: 9, type: "test" },
         { id: 10, payload: 10, type: "test" },
