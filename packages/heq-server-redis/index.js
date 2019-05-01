@@ -126,6 +126,8 @@ const adapter = ({ url, ns = "local" }) => {
         const batch = await query({ from: i, to });
 
         const matched = batch.filter(filter);
+
+        // console.log("sub >>>>>>", i, to);
         subscription = events$
           .map(message => {
             const rawId = message.split(":")[0];
@@ -149,7 +151,7 @@ const adapter = ({ url, ns = "local" }) => {
         if (lastEvent) {
           i = last(batch).id;
           // continue to query
-          // console.log("unsubscription");
+          queue.length = 0;
           subscription.unsubscribe();
         } else {
           break;
