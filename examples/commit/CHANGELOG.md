@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="1.2.40"></a>
+## [1.2.40](https://github.com/tungv/jerni/compare/@jerni/example-commit@1.2.39...@jerni/example-commit@1.2.40) (2019-05-02)
+
+
+
+
+**Note:** Version bump only for package @jerni/example-commit
+
 <a name="1.2.39"></a>
 ## [1.2.39](https://github.com/tungv/jerni/compare/@jerni/example-commit@1.2.38...@jerni/example-commit@1.2.39) (2019-04-28)
 
