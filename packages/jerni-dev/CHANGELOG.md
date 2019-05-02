@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+<a name="0.9.3"></a>
+## [0.9.3](https://github.com/tungv/jerni/compare/jerni-dev@0.9.2...jerni-dev@0.9.3) (2019-05-02)
+
+
+### Bug Fixes
+
+* **devtools:** support new generate api in test mode ([2757f44](https://github.com/tungv/jerni/commit/2757f44))
+
+
+
+
 <a name="0.9.2"></a>
 ## [0.9.2](https://github.com/tungv/jerni/compare/jerni-dev@0.9.1...jerni-dev@0.9.2) (2019-05-02)
 
