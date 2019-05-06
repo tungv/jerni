@@ -23,7 +23,9 @@ module.exports = async function createServer(port, ns = "__test__") {
 
   const server = micro(service);
   server.on("close", () => {
-    config.queue.destroy();
+    if (process.env.REDIS_E2E) {
+      config.queue.destroy();
+    }
   });
   return new Promise(resolve => {
     server.listen(port, err => {

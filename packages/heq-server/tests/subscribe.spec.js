@@ -96,47 +96,48 @@ describe("http::subscribe", () => {
     });
   });
 
-  it("should wait for a specific time ", async done => {
-    const port = await ports.find(32000);
-    const server = await createServer(port, "__testSub3__");
-    ensureDestroy(server);
+  process.env.REDIS_E2E &&
+    it("should wait for a specific time ", async done => {
+      const port = await ports.find(32000);
+      const server = await createServer(port, "__testSub3__");
+      ensureDestroy(server);
 
-    const stream = got.stream(`http://localhost:${port}/subscribe`, {
-      headers: {
-        "Last-Event-ID": 0,
-        "Burst-Time": 100,
-      },
-    });
+      const stream = got.stream(`http://localhost:${port}/subscribe`, {
+        headers: {
+          "Last-Event-ID": 0,
+          "Burst-Time": 100,
+        },
+      });
 
-    setTimeout(() => {
-      server.destroy();
-    }, 400);
+      setTimeout(() => {
+        server.destroy();
+      }, 400);
 
-    for (let i = 0; i < 5; ++i) {
-      await sleep(45);
-      await commitSomething({ port });
-    }
-    const received = [];
-
-    stream.on("data", data => {
-      const msg = String(data);
-      for (const item of msg.split("\n\n")) {
-        if (item.startsWith(":ok")) {
-          continue;
-        }
-
-        const idRow = item.split("\n")[0];
-        const id = idRow.substr(4);
-        if (id) received.push(id);
+      for (let i = 0; i < 5; ++i) {
+        await sleep(45);
+        await commitSomething({ port });
       }
-    });
+      const received = [];
 
-    stream.on("end", async () => {
-      sleep(1);
-      expect(received).toEqual(["2", "4", "5"]);
-      done();
+      stream.on("data", data => {
+        const msg = String(data);
+        for (const item of msg.split("\n\n")) {
+          if (item.startsWith(":ok")) {
+            continue;
+          }
+
+          const idRow = item.split("\n")[0];
+          const id = idRow.substr(4);
+          if (id) received.push(id);
+        }
+      });
+
+      stream.on("end", async () => {
+        sleep(1);
+        expect(received).toEqual(["2", "4", "5"]);
+        done();
+      });
     });
-  });
 
   it("should only return a subset of events matching types", async done => {
     const port = await ports.find(32000);
