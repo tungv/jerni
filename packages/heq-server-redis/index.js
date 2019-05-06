@@ -29,7 +29,12 @@ const adapter = ({ url, ns = "local" }) => {
   const commit = async event => {
     delete event.id;
     const id = await runLua(redisClient, lua_commit, {
-      keys: [`{${ns}}::id`, `{${ns}}::events`, `{${ns}}::TYPE::${event.type}`],
+      keys: [
+        `{${ns}}::id`,
+        `{${ns}}::events`,
+        `{${ns}}::TYPE::${event.type}`,
+        `{${ns}}::index_count`,
+      ],
       argv: [JSON.stringify(event), ns],
     });
 
@@ -71,6 +76,7 @@ const adapter = ({ url, ns = "local" }) => {
         keys: [
           `{${ns}}::id`,
           `{${ns}}::events`,
+          `{${ns}}::index_count`,
           ...types.map(type => `{${ns}}::TYPE::${type}`),
         ],
         argv,
@@ -118,6 +124,7 @@ const adapter = ({ url, ns = "local" }) => {
         });
 
         const lastEvent = last(array);
+        const matched = array.filter(filter);
         if (lastEvent) {
           i = lastEvent.id;
         }
@@ -139,8 +146,8 @@ const adapter = ({ url, ns = "local" }) => {
             queue.push(event);
           });
 
-        if (array.length) {
-          yield array;
+        if (matched.length) {
+          yield matched;
         }
 
         if (!isEnd) {

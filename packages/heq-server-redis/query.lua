@@ -9,9 +9,9 @@ local to = tonumber(
 );
 local from = tonumber(ARGV[2]) + 1;
 local newArray = {};
-local event
+local shouldUseIndex = redis.call('exists', KEYS[3]) == 1 and (tonumber(redis.call('get', KEYS[3])) == last);
 
-if numberOfTypes == 0 then
+if numberOfTypes == 0 or not shouldUseIndex then
   for id=from,to do
     if redis.call('hexists', KEYS[2], id) == 1 then
       table.insert(newArray, {id, redis.call('hget', KEYS[2], id)});
@@ -25,7 +25,7 @@ end
 for id=from,to do
   local matches = false
   for keyIndex=1,numberOfTypes do 
-    if (redis.call('SISMEMBER', KEYS[2 + keyIndex], id) == 1) then
+    if (redis.call('SISMEMBER', KEYS[3 + keyIndex], id) == 1) then
       matches = true;
       break;
     end
