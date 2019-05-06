@@ -2,35 +2,10 @@ const kefir = require("kefir");
 const redis = require("redis");
 const runLua = require("run-lua");
 
-const lua_commit = `
-  local event = ARGV[1];
-  local counter = redis.call('INCR', KEYS[1]);
+const { readFileSync } = require("fs");
 
-  redis.call('HSET', KEYS[2], counter, event);
-  redis.call('PUBLISH', ARGV[2]..'::events', counter .. ':' .. event);
-  return counter;
-`;
-
-const lua_query = `
-if redis.call('exists', KEYS[1]) == 0 then
-  return {}
-end
-
-local from = tonumber(ARGV[1]) + 1;
-local to = tonumber(
-  ARGV[2] or redis.call('get', KEYS[1])
-);
-local newArray = {};
-local event
-
-for id=from,to do
-  if redis.call('hexists', KEYS[2], id) == 1 then
-    table.insert(newArray, {id, redis.call('hget', KEYS[2], id)});
-  end
-end
-
-return newArray
-`;
+const lua_commit = String(readFileSync(require.resolve("./commit.lua")));
+const lua_query = String(readFileSync(require.resolve("./query.lua")));
 
 const lua_latest = `
   if redis.call('exists', KEYS[1]) == 0 then
@@ -54,7 +29,7 @@ const adapter = ({ url, ns = "local" }) => {
   const commit = async event => {
     delete event.id;
     const id = await runLua(redisClient, lua_commit, {
-      keys: [`{${ns}}::id`, `{${ns}}::events`],
+      keys: [`{${ns}}::id`, `{${ns}}::events`, `{${ns}}::TYPE::${event.type}`],
       argv: [JSON.stringify(event), ns],
     });
 
@@ -80,28 +55,41 @@ const adapter = ({ url, ns = "local" }) => {
     };
   };
 
-  const query = async ({ from = -1, to }) => {
+  const internalQuery = async ({ from = -1, to, types = [] }) => {
     if (from === -1) {
-      return [];
+      return { isEnd: true, array: [] };
     }
+
     try {
-      const argv = [String(from)];
+      const argv = [types.length, String(from)];
 
       if (typeof to !== "undefined") {
         argv.push(String(to));
       }
 
       const array = await runLua(redisClient, lua_query, {
-        keys: [`{${ns}}::id`, `{${ns}}::events`],
+        keys: [
+          `{${ns}}::id`,
+          `{${ns}}::events`,
+          ...types.map(type => `{${ns}}::TYPE::${type}`),
+        ],
         argv,
       });
 
-      return array.map(([id, event]) => ({
-        ...JSON.parse(event),
-        id,
-      }));
+      const _to = array.shift();
+      const last = array.shift();
+      const isEnd = _to >= last;
+
+      return {
+        isEnd,
+        array: array.map(([id, event]) => ({
+          ...JSON.parse(event),
+          id,
+        })),
+      };
     } catch (ex) {
-      return [];
+      console.error(ex.message);
+      return { isEnd: true, array: [] };
     }
   };
 
@@ -123,11 +111,17 @@ const adapter = ({ url, ns = "local" }) => {
     try {
       while (true) {
         const to = i + max;
-        const batch = await query({ from: i, to });
+        const { isEnd, array } = await internalQuery({
+          from: i,
+          to,
+          types: includingTypes,
+        });
 
-        const matched = batch.filter(filter);
+        const lastEvent = last(array);
+        if (lastEvent) {
+          i = lastEvent.id;
+        }
 
-        // console.log("sub >>>>>>", i, to);
         subscription = events$
           .map(message => {
             const rawId = message.split(":")[0];
@@ -140,42 +134,50 @@ const adapter = ({ url, ns = "local" }) => {
           })
           .filter(filter)
           .observe(event => {
+            const lastInQueue = last(queue);
+            if (lastInQueue && lastInQueue.id === event.id) return;
             queue.push(event);
           });
 
-        if (matched.length) {
-          yield matched;
+        if (array.length) {
+          yield array;
         }
 
-        const lastEvent = last(batch);
-        if (lastEvent) {
-          i = last(batch).id;
+        if (!isEnd) {
+          i = to;
           // continue to query
           queue.length = 0;
+
           subscription.unsubscribe();
         } else {
           break;
         }
-        // await sleep(time);
       }
 
       while (true) {
         if (queue.length) {
           const buffer = [...queue];
           queue.length = 0;
-          // console.log("from sub", buffer);
           yield buffer;
         }
         await sleep(time);
       }
     } finally {
-      if (subscription) subscription.unsubscribe();
+      if (subscription) {
+        subscription.unsubscribe();
+      }
     }
   }
+
+  const query = async (...args) => {
+    const resp = await internalQuery(...args);
+    return resp.array;
+  };
 
   return { commit, generate, query, destroy, getLatest };
 };
 
 module.exports = adapter;
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 const last = array => (array.length >= 1 ? array[array.length - 1] : null);

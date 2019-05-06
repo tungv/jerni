@@ -226,7 +226,7 @@ describe("redis adapter", () => {
     for (let i = 0; i < MAX_CLIENTS; ++i) {
       outputs.push([]);
       (async function() {
-        for await (const buffer of queue.generate(0, 2, 10, () => true)) {
+        for await (const buffer of queue.generate(0, 2, 10, [])) {
           outputs[i].push(...buffer);
 
           if (last(buffer).id === 100) {
