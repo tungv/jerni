@@ -1,7 +1,5 @@
-const tempfile = require("tempfile");
-
-const { NAMESPACE } = require("./tasks/constants");
 const last = require("./utils/last");
+const kefir = require("kefir");
 
 module.exports = async function proxy(journey) {
   const queue = await createQueue();
@@ -42,17 +40,14 @@ module.exports = async function proxy(journey) {
         default:
           return target[prop];
       }
-    }
+    },
   });
   return output;
 };
 
 async function createQueue() {
-  const adapter = require("@heq/server-lokijs");
-  const queue = await adapter({
-    ns: NAMESPACE,
-    filepath: tempfile("events.json")
-  });
+  const adapter = require("heq-server/src/adapters/in-memory");
+  const queue = adapter();
 
   return queue;
 }
@@ -60,9 +55,26 @@ async function createQueue() {
 async function start(journey, queue, initialEvents) {
   await journey.DEV__cleanAll();
 
-  const { events$ } = queue.subscribe();
+  const events$ = kefir.stream(emitter => {
+    let stopped = false;
 
-  const stream = await journey.subscribe(events$.map(evt => [evt]));
+    (async function() {
+      for await (const buffer of queue.generate(0, 1, 1, [])) {
+        if (stopped) return;
+        if (buffer.length) {
+          emitter.emit(buffer);
+        }
+      }
+    })();
+
+    return () => {
+      stopped = true;
+    };
+  });
+
+  // const { events$ } = queue.subscribe();
+
+  const stream = await journey.subscribe(events$);
   const subscription = stream.observe();
 
   for (const event of initialEvents) {

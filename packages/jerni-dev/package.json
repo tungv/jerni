@@ -1,6 +1,6 @@
 {
   "name": "jerni-dev",
-  "version": "0.9.1",
+  "version": "0.9.4",
   "description": "CLI tool for develop clients of `heq-server` instances",
   "main": "index.js",
   "bin": "cli.js",
@@ -27,7 +27,7 @@
     "date-fns": "^1.29.0",
     "debounce": "^1.2.0",
     "got": "^9.2.0",
-    "heq-server": "^2.2.2",
+    "heq-server": "^2.2.4",
     "isomorphic-fetch": "^2.2.1",
     "kefir": "^3.8.3",
     "kefir-proxy-stream": "^0.2.0",
