@@ -49,6 +49,13 @@
   dependencies:
     arrify "^1.0.1"
 
+"@jerni/base@^0.1.4":
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/@jerni/base/-/base-0.1.4.tgz#7339eaa766dc94983148ad28625b2f45a0038392"
+  integrity sha512-jI3KlUIxCrk9VC1rjcNYhYOmis4eGOGH9QaqWxAg9daxXsoqjN7fEAzMhlP7tu8kfOW76PIMcrb65pCQt+yq4w==
+  dependencies:
+    kefir "^3.8.3"
+
 "@ladjs/time-require@^0.1.4":
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/@ladjs/time-require/-/time-require-0.1.4.tgz#5c615d75fd647ddd5de9cf6922649558856b21a1"
@@ -1704,9 +1711,9 @@ js-tokens@^3.0.2:
   integrity sha1-mGbfOVECEw449/mWvOtlRDIJwls=
 
 js-yaml@^3.10.0:
-  version "3.12.0"
-  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.12.0.tgz#eaed656ec8344f10f527c6bfa1b6e2244de167d1"
-  integrity sha512-PIt2cnwmPfL4hKNwqeiuz4bKfnzHTBv6HyVgjahA6mPLwPDzjDWrplJBMjHUFxku/N3FlmrbyPclad+I+4mJ3A==
+  version "3.13.1"
+  resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-3.13.1.tgz#aff151b30bfdfa8e49e05da22e7415e9dfa37847"
+  integrity sha512-YfbcO7jXDdyj0DGxYVSlSeQNHbD7XPWvrVWeVUujrQEoZzWJIRrCPoyk6kL6IAjAG2IolMK4T0hNUe0HOUs5Jw==
   dependencies:
     argparse "^1.0.7"
     esprima "^4.0.0"
