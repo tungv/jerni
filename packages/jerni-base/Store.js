@@ -24,12 +24,13 @@ class Connection {
 
     // check meta
     let hasMeta = false;
+
     for (let i = 0; i < models.length; ++i) {
       const model = models[i];
       const { includes } = getMeta(model);
 
       if (includes) {
-        if (!hasMeta && i === models.length - 1) {
+        if (!hasMeta && i === models.length - 1 && i !== 0) {
           const msg = `Either every model has a meta or none does!
 found a model [${model.name}] having no meta while others have.
         `;

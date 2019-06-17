@@ -144,23 +144,28 @@ test("should throw if the last model doesn't have a meta", t => {
   const model1 = new DummyModel({ name: "internal_1" });
   const model2 = new DummyModel({
     name: "internal_2",
-  });
-  const model3 = new DummyModel({ name: "internal_3" });
-  const model4 = new DummyModel({
-    name: "internal_4",
     meta: {
       includes: ["TYPE1", "TYPE2"],
     },
   });
 
-  t.throws(() => {
-    const conn = new DummyStore({
+  t.notThrows(() => {
+    const connWithoutMeta = new DummyStore({
       name: "conn_1",
-      models: [model1, model2, model3, model4],
+      models: [model1],
     });
     createJourney({
       writeTo: "http://localhost:8080",
-      stores: [conn],
+      stores: [connWithoutMeta],
+    });
+
+    const connWithMeta = new DummyStore({
+      name: "conn_2",
+      models: [model2],
+    });
+    createJourney({
+      writeTo: "http://localhost:8080",
+      stores: [connWithMeta],
     });
   });
 });
