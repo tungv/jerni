@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.7](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.5.6...@jerni/store-mongo@0.5.7) (2019-06-17)
+
+**Note:** Version bump only for package @jerni/store-mongo
+
+
+
+
+
 <a name="0.5.2"></a>
 ## [0.5.2](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.5.1...@jerni/store-mongo@0.5.2) (2019-04-12)
 

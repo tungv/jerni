@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.2.5](https://github.com/tungv/jerni/compare/heq-server@2.2.4...heq-server@2.2.5) (2019-06-17)
+
+**Note:** Version bump only for package heq-server
+
+
+
+
+
 <a name="2.2.4"></a>
 ## [2.2.4](https://github.com/tungv/jerni/compare/heq-server@2.2.3...heq-server@2.2.4) (2019-05-06)
 

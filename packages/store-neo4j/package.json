@@ -1,0 +1,18 @@
+{
+  "name": "@jerni/store-neo4j",
+  "version": "0.0.1",
+  "description": "Sync data from a heq server to a neo4j database",
+  "main": "index.js",
+  "author": "Tung <me@tungv.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@jerni/base": "^0.1.5",
+    "clear": "^0.1.0",
+    "cypher-parser": "^0.1.4",
+    "decypher": "^0.13.0",
+    "estree-walker": "^0.6.1"
+  },
+  "devDependencies": {
+    "chokidar-cli": "^1.2.2"
+  }
+}

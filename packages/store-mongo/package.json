@@ -1,6 +1,6 @@
 {
   "name": "@jerni/store-mongo",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "main": "index.js",
   "files": [
     "lib",
@@ -13,7 +13,7 @@
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
   "dependencies": {
-    "@jerni/base": "^0.1.4",
+    "@jerni/base": "^0.1.5",
     "kefir": "^3.8.3",
     "mongo-heartbeat": "^1.1.0",
     "mongodb": "^3.1.1",
