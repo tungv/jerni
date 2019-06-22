@@ -139,10 +139,10 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@heq/server-redis@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.2.tgz#0f9c7cbeaf10b20044fb34b0b3069f755b34b467"
-  integrity sha512-H4MBZdfcjDFNe/o6pFcF7yA3YZEWOyk5w05DIz3y1BFtfvTQp+ZjrLb4YYDaBW4FTT8iM84YGHN7lk8t+C3xyA==
+"@heq/server-redis@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.3.tgz#7b1a6c7233264d7d83dd18deecbdcd3c7013752e"
+  integrity sha512-Ee6bjNIHajjydPRu7BZbnjYBepfb8OJak6DAnNI+hOFsKNi9qfMQ7FAdh9C0euFf9AS8BZQ1IJpCFVp+Siuy6A==
   dependencies:
     kefir "^3.8.3"
     redis "^2.8.0"
@@ -3655,8 +3655,9 @@ string_decoder@~1.0.3:
     safe-buffer "~5.1.0"
 
 stringstream@~0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/stringstream/-/stringstream-0.0.5.tgz#4e484cd4de5a0bbbee18e46307710a8a81621878"
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/stringstream/-/stringstream-0.0.6.tgz#7880225b0d4ad10e30927d167a1d6f2fd3b33a72"
+  integrity sha512-87GEBAkegbBcweToUrdzf3eLhWNg06FJTebl4BVJz/JgWy8CvEr9dRtX5qWphiynMSQlxxi+QqN0z5T32SLlhA==
 
 strip-ansi@^3.0.0, strip-ansi@^3.0.1:
   version "3.0.1"
