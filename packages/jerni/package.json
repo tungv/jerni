@@ -1,6 +1,6 @@
 {
   "name": "jerni",
-  "version": "0.9.6",
+  "version": "0.9.7",
   "description": "Server-side Flux architecture framework",
   "main": "index.js",
   "bin": "cli/index.js",
@@ -12,7 +12,7 @@
     "ava": "^1.4.1",
     "brighten": "^0.0.1",
     "heq-server": "^2.2.5",
-    "jerni-dev": "^0.9.5",
+    "jerni-dev": "^0.9.6",
     "micro": "^9.3.2",
     "tcp-proxy.js": "^1.2.0"
   },
