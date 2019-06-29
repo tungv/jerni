@@ -3,16 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [0.9.6](https://github.com/tungv/jerni/compare/jerni@0.9.5...jerni@0.9.6) (2019-06-17)
-
-
-### Bug Fixes
-
-* **base:** should not throw meta exception if models length = 1 ([a44e1ba](https://github.com/tungv/jerni/commit/a44e1ba)), closes [#13](https://github.com/tungv/jerni/issues/13)
+<a name="0.9.7"></a>
+## [0.9.7](https://github.com/tungv/jerni/compare/jerni@0.9.6...jerni@0.9.7) (2019-06-29)
 
 
 
 
+**Note:** Version bump only for package jerni
 
 <a name="0.9.5"></a>
 ## [0.9.5](https://github.com/tungv/jerni/compare/jerni@0.9.4...jerni@0.9.5) (2019-05-06)

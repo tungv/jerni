@@ -1,6 +1,6 @@
 {
   "name": "heq-store-with-dev",
-  "version": "1.0.54",
+  "version": "1.0.55",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
@@ -10,10 +10,10 @@
   },
   "dependencies": {
     "@jerni/store-mongo": "^0.5.7",
-    "jerni": "^0.9.6"
+    "jerni": "^0.9.7"
   },
   "devDependencies": {
-    "jerni-dev": "^0.9.5"
+    "jerni-dev": "^0.9.6"
   },
   "private": true
 }

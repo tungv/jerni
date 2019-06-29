@@ -3,10 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-## [0.9.5](https://github.com/tungv/jerni/compare/jerni-dev@0.9.4...jerni-dev@0.9.5) (2019-06-17)
+<a name="0.9.6"></a>
+## [0.9.6](https://github.com/tungv/jerni/compare/jerni-dev@0.9.5...jerni-dev@0.9.6) (2019-06-29)
 
-**Note:** Version bump only for package jerni-dev
 
+### Bug Fixes
+
+* **devtools:** support windows ([ad3a324](https://github.com/tungv/jerni/commit/ad3a324))
 
 
 
