@@ -49,10 +49,10 @@
   dependencies:
     arrify "^1.0.1"
 
-"@jerni/base@^0.1.4":
-  version "0.1.4"
-  resolved "https://registry.yarnpkg.com/@jerni/base/-/base-0.1.4.tgz#7339eaa766dc94983148ad28625b2f45a0038392"
-  integrity sha512-jI3KlUIxCrk9VC1rjcNYhYOmis4eGOGH9QaqWxAg9daxXsoqjN7fEAzMhlP7tu8kfOW76PIMcrb65pCQt+yq4w==
+"@jerni/base@^0.1.5":
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@jerni/base/-/base-0.1.5.tgz#e1f50cb6f8e529597ead3d1cffa59c2c1b15f3a0"
+  integrity sha512-ef1m33rHESfGt5gZecxlmHP/nsREUdm4YvR5AQRmyag7MkjCL3Bder4v+kuk8coM9rG7aY2plso9T92hQu7uAg==
   dependencies:
     kefir "^3.8.3"
 
@@ -1846,9 +1846,9 @@ lodash.isequal@^4.5.0:
   integrity sha1-QVxEePK8wwEgwizhDtMib30+GOA=
 
 lodash.merge@^4.6.0:
-  version "4.6.1"
-  resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.1.tgz#adc25d9cb99b9391c59624f379fbba60d7111d54"
-  integrity sha512-AOYza4+Hf5z1/0Hztxpm2/xiPZgi/cjMqdnKTUWTBSKchJlxXXuUSxCCl8rJlf4g6yww/j6mA8nC8Hw/EZWxKQ==
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
+  integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
 
 lodash@^4.17.4:
   version "4.17.10"
