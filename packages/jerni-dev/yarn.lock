@@ -3522,10 +3522,10 @@ hash.js@^1.0.0, hash.js@^1.0.3:
     inherits "^2.0.3"
     minimalistic-assert "^1.0.1"
 
-heq-server@^2.2.4:
-  version "2.2.4"
-  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.2.4.tgz#a3f3e8aad752674464c4a83e026b0bf1c39c1596"
-  integrity sha512-u0wJVWNkP3wU33a0aoWMY+yQtmSuWB7CZEgrTrCpk0Bn8Bf2MHRfLvqod+EuiIYRsdlpw6fKbgITXBGc7aDztQ==
+heq-server@^2.2.5:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.2.5.tgz#d6a8c38515ef8ff53a7962a8db107025b99bdc5a"
+  integrity sha512-99joOlDSJu2b5E6jUIxgcwZgmsmCfEG/vulqkVfBdRjvny2SgSDJ9wqXUkFVo19P7+nWxsMqWyC3PucKxIyMKQ==
   dependencies:
     ip "^1.1.5"
     kefir "^3.8.3"
@@ -4412,9 +4412,9 @@ lodash.isequal@^4.5.0:
   integrity sha1-QVxEePK8wwEgwizhDtMib30+GOA=
 
 lodash.merge@^4.6.0:
-  version "4.6.1"
-  resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.1.tgz#adc25d9cb99b9391c59624f379fbba60d7111d54"
-  integrity sha512-AOYza4+Hf5z1/0Hztxpm2/xiPZgi/cjMqdnKTUWTBSKchJlxXXuUSxCCl8rJlf4g6yww/j6mA8nC8Hw/EZWxKQ==
+  version "4.6.2"
+  resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
+  integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
 
 lodash@^4.17.10, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.2.0, lodash@^4.5.1:
   version "4.17.11"
