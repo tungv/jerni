@@ -48,9 +48,9 @@
   dependencies:
     arrify "^1.0.1"
 
-"@heq/server-redis@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.2.tgz#0f9c7cbeaf10b20044fb34b0b3069f755b34b467"
+"@heq/server-redis@^2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.3.tgz#7b1a6c7233264d7d83dd18deecbdcd3c7013752e"
   dependencies:
     kefir "^3.8.3"
     redis "^2.8.0"
@@ -1754,9 +1754,9 @@ hawk@~6.0.2:
     hoek "4.x.x"
     sntp "2.x.x"
 
-heq-server@^2.2.4:
-  version "2.2.4"
-  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.2.4.tgz#a3f3e8aad752674464c4a83e026b0bf1c39c1596"
+heq-server@^2.2.5:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.2.5.tgz#d6a8c38515ef8ff53a7962a8db107025b99bdc5a"
   dependencies:
     ip "^1.1.5"
     kefir "^3.8.3"
@@ -2370,8 +2370,8 @@ lodash.merge@^4.6.0:
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.1.tgz#adc25d9cb99b9391c59624f379fbba60d7111d54"
 
 lodash@^4.17.4:
-  version "4.17.10"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.10.tgz#1b7793cf7259ea38fb3661d4d38b3260af8ae4e7"
+  version "4.17.14"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.14.tgz#9ce487ae66c96254fe20b599f21b6816028078ba"
 
 longest@^1.0.1:
   version "1.0.1"
