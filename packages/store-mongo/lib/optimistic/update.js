@@ -15,7 +15,7 @@ exports.applyUpdateOne = returnEmptyOnException((op, eventId, opId) => {
 });
 
 const rawUpdate = (
-  { changes, change, where, upsert = false, arrayFilters },
+  { changes, change, where, arrayFilters },
   eventId,
   opId
 ) => {
@@ -38,7 +38,7 @@ const rawUpdate = (
   };
 
   if (arrayFilters) {
-    return { filter, update, upsert, arrayFilters };
+    return { filter, update, upsert: false, arrayFilters };
   }
-  return { filter, update, upsert };
+  return { filter, update, upsert: false };
 };

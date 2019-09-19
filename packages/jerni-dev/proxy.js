@@ -32,6 +32,11 @@ module.exports = async function proxy(journey) {
             if (ended) {
               throw new Error("jerni-dev/proxy has been stopped");
             }
+            event.meta = event.meta || {};
+            event.meta.sent_to = 'memory';
+            event.meta.occurred_at = Date.now();
+            event.meta.client = 'unit_test';
+            event.meta.clientVersion = 'proxy';
             const res = queue.commit(event);
             committed.push(event);
             return res;
@@ -58,7 +63,7 @@ async function start(journey, queue, initialEvents) {
   const events$ = kefir.stream(emitter => {
     let stopped = false;
 
-    (async function() {
+    (async function () {
       for await (const buffer of queue.generate(0, 1, 1, [])) {
         if (stopped) return;
         if (buffer.length) {

@@ -14,11 +14,30 @@ const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 const flatten = arrayDeep => [].concat(...arrayDeep);
 
 const connect = async url => {
-  const client = await MongoClient.connect(url, {
-    useNewUrlParser: true,
-    reconnectTries: Number.MAX_VALUE,
-  });
+  const client = await MongoClient.connect(
+    url,
+    {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+      reconnectTries: Number.MAX_VALUE,
+    }
+  );
   return client;
+};
+
+const defer = () => {
+  let _res, _rej;
+
+  const p = new Promise((res, rej) => {
+    _res = res;
+    _rej = rej;
+  });
+
+  return {
+    promise: p,
+    resolve: _res,
+    reject: _rej,
+  };
 };
 
 module.exports = class MongoDBStore extends Store {
@@ -43,7 +62,11 @@ module.exports = class MongoDBStore extends Store {
 
     this.connection = null;
 
+    const $q = defer();
+    this.whenReady = $q.promise;
+
     this.keepConnection(conn => {
+      $q.resolve();
       this.connection = conn;
 
       const hb = MongoHeartbeat(conn.db, {
@@ -88,7 +111,7 @@ module.exports = class MongoDBStore extends Store {
             { $setOnInsert: { __v: 0 } },
             {
               upsert: true,
-            },
+            }
           );
         }
         return 0;
@@ -132,7 +155,7 @@ module.exports = class MongoDBStore extends Store {
       };
 
       promises.push(
-        db.collection(SNAPSHOT_COLLECTION_NAME).deleteMany(condition),
+        db.collection(SNAPSHOT_COLLECTION_NAME).deleteMany(condition)
       );
 
       try {
@@ -144,6 +167,7 @@ module.exports = class MongoDBStore extends Store {
   }
 
   async getDriver(model) {
+    await this.whenReady;
     return this.connection.db.collection(model.collectionName);
   }
 
@@ -194,7 +218,7 @@ module.exports = class MongoDBStore extends Store {
                 } catch (ex) {
                   return [];
                 }
-              }),
+              })
             );
 
             let changes = {
@@ -223,7 +247,7 @@ module.exports = class MongoDBStore extends Store {
               },
               {
                 $set: { __v: events[events.length - 1].id },
-              },
+              }
             );
 
             return changes;
@@ -236,7 +260,7 @@ module.exports = class MongoDBStore extends Store {
                   source: this.name,
                   models: this.models,
                   event_id: latestId,
-                }),
+                })
               )
               .then(() => {
                 resolve({
