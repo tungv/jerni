@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.9.7](https://github.com/tungv/jerni/compare/jerni-dev@0.9.5...jerni-dev@0.9.7) (2019-09-19)
+
+
+### Bug Fixes
+
+* **devtools:** support windows ([94dc9a9](https://github.com/tungv/jerni/commit/94dc9a9))
+* **mongo:** make store.getDriver async ([3821888](https://github.com/tungv/jerni/commit/3821888))
+
+
+
+
+
 <a name="0.9.6"></a>
 ## [0.9.6](https://github.com/tungv/jerni/compare/jerni-dev@0.9.5...jerni-dev@0.9.6) (2019-06-29)
 

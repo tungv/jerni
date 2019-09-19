@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.8](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.5.7...@jerni/store-mongo@0.5.8) (2019-09-19)
+
+
+### Bug Fixes
+
+* **mongo:** make store.getDriver async ([3821888](https://github.com/tungv/jerni/commit/3821888))
+
+
+
+
+
 ## [0.5.7](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.5.6...@jerni/store-mongo@0.5.7) (2019-06-17)
 
 **Note:** Version bump only for package @jerni/store-mongo

@@ -1,9 +1,9 @@
 {
   "name": "@heq/cloud",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "license": "MIT",
   "dependencies": {
-    "heq": "^2.0.13"
+    "heq": "^2.0.14"
   },
   "scripts": {
     "start": "heq --redis-namespace=\"cloud\"",
