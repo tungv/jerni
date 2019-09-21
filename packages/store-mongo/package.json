@@ -17,7 +17,8 @@
     "kefir": "^3.8.3",
     "mongo-heartbeat": "^1.1.0",
     "mongodb": "^3.1.1",
-    "p-lazy": "^1.0.0"
+    "p-lazy": "^1.0.0",
+    "saslprep": "^1.0.3"
   },
   "devDependencies": {
     "@sindresorhus/is": "^0.11.0",
