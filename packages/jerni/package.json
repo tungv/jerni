@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "arrify": "^1.0.1",
+    "buffer-time-count-generator": "^1.0.0",
     "got": "^9.0.0",
     "kefir": "^3.8.3",
     "kefir-proxy-stream": "^0.2.0",

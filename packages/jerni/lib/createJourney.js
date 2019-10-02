@@ -92,14 +92,14 @@ module.exports = function createJourney({ writeTo, stores }) {
     const includes = [];
 
     if (!dev) {
-    for (const store of stores) {
-      if (store.meta.includes) {
-        includes.push(...store.meta.includes);
-      } else {
-        includes.length = 0;
-        break;
+      for (const store of stores) {
+        if (store.meta.includes) {
+          includes.push(...store.meta.includes);
+        } else {
+          includes.length = 0;
+          break;
+        }
       }
-    }
     }
 
     const incomingEvents$ = await getEventsStream({
@@ -134,11 +134,29 @@ module.exports = function createJourney({ writeTo, stores }) {
     return kefir.merge(output$Array);
   };
 
+  // experimental version 2
+  async function* generateEvent() {}
+
+  async function* begin(nullableEventIterator) {
+    const eventIterator = nullableEventIterator || generateEvent();
+
+    for await (const eventsBuffer of eventIterator) {
+      const outputs = await Promise.all(
+        stores.map(async store => {
+          store.putToQueue(eventsBuffer);
+        }),
+      );
+
+      yield* outputs;
+    }
+  }
+
   const journey = {
     getReader,
     commit,
     waitFor,
     subscribe,
+    begin,
     dispose: () => {
       stores.forEach(store => store.dispose());
     },

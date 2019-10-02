@@ -4,7 +4,7 @@ const test = require("ava");
 const { Model: DummyModel, Store: DummyStore } = require("./DummyStore");
 
 const { version, name } = require("../package.json");
-const createJourney = require("../lib/createJourney");
+const createJourney = require("../lib/createJourney2");
 const makeServer = require("./makeServer");
 
 test("createJourney to return a journey", t => {
@@ -70,10 +70,10 @@ test("journey should return specific driver instance", async t => {
     stores: [conn],
   });
 
-  t.is(journey.getReader(model1), "internal_1@conn_1");
-  t.is(journey.getReader(model2), "internal_2@conn_1");
-  t.is(journey.getReader(model3), "internal_3@conn_1");
-  t.is(journey.getReader(model4), "internal_4@conn_1");
+  t.is(await journey.getReader(model1), "internal_1@conn_1");
+  t.is(await journey.getReader(model2), "internal_2@conn_1");
+  t.is(await journey.getReader(model3), "internal_3@conn_1");
+  t.is(await journey.getReader(model4), "internal_4@conn_1");
 });
 
 test("journey should waitFor all models", async t => {
