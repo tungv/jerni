@@ -1,7 +1,9 @@
 const got = require("got");
+const bufferTimeCount = require("@async-generator/buffer-time-count");
+const subject = require("@async-generator/subject");
+const map = require("@async-generator/map");
 
 const commitEventToHeqServer = require("./commit");
-const makeDefer = require("./makeDefer");
 const makeRacer = require("./racer");
 
 const dev = process.env.NODE_ENV !== "production";
@@ -123,16 +125,75 @@ module.exports = function createJourney({ writeTo, stores }) {
     });
   }
 
-  async function* begin(optionalIterator) {
-    const eventIterator = optionalIterator || getEvents();
+  async function* begin(config = {}) {
+    const {
+      pulseCount = 200, // default maximum pulse size = 200 events
+      pulseTime = 10, // default maximum wait time = 10ms
+    } = config;
 
-    for await (const buffer of bufferTimeCount(eventIterator, 100, 10)) {
-      const outputs = await Promise.all(
-        stores.map(async store => {
-          return store.handleEvent(buffer);
-        }),
-      );
-      yield outputs;
+    const buffer = [];
+    const MAX = ~~(1000 / pulseCount);
+    const MIN = ~~(500 / pulseCount);
+
+    const [batch$, emit] = subject(buffer);
+
+    async function connect() {
+      const [event$, abort] = await requestEvents({
+        count: pulseCount,
+        time: pulseTime,
+      });
+      console.log("connected!");
+      const incoming$ = bufferTimeCount(event$, pulseCount, pulseTime);
+
+      async function waitForOverflow() {
+        if (buffer.length >= MAX) {
+          console.log(
+            "WARN: buffer overflow. %d over maximum %d",
+            buffer.length,
+            MAX,
+          );
+          return;
+        }
+
+        await sleep(100);
+        await waitForOverflow();
+      }
+
+      waitForOverflow()
+        .then(() => {
+          console.log("Pausing subscription because client is slow");
+          return abort();
+        })
+        .then(scheduleResume);
+
+      for await (const batch of incoming$) {
+        if (batch.length > 0) emit(batch);
+      }
+    }
+
+    async function scheduleResume() {
+      await sleep(100);
+      if (buffer.length <= MIN) {
+        connect();
+      } else {
+        scheduleResume();
+      }
+    }
+
+    connect();
+
+    try {
+      for await (const batch of batch$) {
+        const outputs = await Promise.all(
+          stores.map(async store => {
+            return store.handleEvent(batch);
+          }),
+        );
+
+        yield outputs;
+      }
+    } finally {
+      // abort();
     }
   }
 
@@ -144,17 +205,9 @@ module.exports = function createJourney({ writeTo, stores }) {
     return Math.min(0, ...latestEventIdArray);
   }
 
-  async function* getEvents() {
-    const DOUBLE_NEW_LINE = "\n\n";
-    let request;
-    let happy = true;
-
-    let next = makeDefer();
-
-    const queue = {
-      complete: [],
-      leftover: "",
-    };
+  async function requestEvents() {
+    const parseChunk = makeChunkParser();
+    const [http$, emit] = subject();
 
     const checkpoint = await getLatestSuccessfulCheckPoint();
 
@@ -165,79 +218,78 @@ module.exports = function createJourney({ writeTo, stores }) {
       },
     });
 
-    resp$.on("request", r => {
-      request = r;
-    });
-
-    resp$.on("error", err => {
-      happy = false;
+    const requestPromise = new Promise(resolve => {
+      resp$.on("request", r => {
+        resolve(r);
+      });
     });
 
     resp$.on("data", chunk => {
-      const raw = String(chunk);
-      const chunks = raw.split(DOUBLE_NEW_LINE);
+      const maybeComplete = parseChunk(chunk);
 
-      // incomplete chunk (no double new-line found)
-      if (chunks.length === 1) {
-        queue.leftover += raw;
-        return;
-      }
-
-      const firstChunks = (queue.leftover + chunks[0]).split(DOUBLE_NEW_LINE);
-
-      const complete = firstChunks.concat(chunks.slice(1, -1)).map(chunk => {
-        if (!chunk) {
-          return {};
-        }
-
-        const props = chunk.split("\n");
-
-        return props.reduce((obj, str) => {
-          const splited = str.split(": ");
-
-          if (splited.length >= 2) {
-            const key = splited[0];
-            const value = splited.slice(1).join(": ");
-            obj[key] = key === "id" ? Number(value) : value;
-          }
-          return obj;
-        }, {});
-      });
-
-      queue.complete.push(...complete);
-      queue.leftover = last(chunks);
-      next.resolve();
-      next = makeDefer();
+      if (maybeComplete) emit(maybeComplete);
     });
 
-    try {
-      while (happy) {
-        if (queue.complete.length === 0) {
-          await next.promise;
-          continue;
+    const request = await requestPromise;
+    const event$ = filter(
+      map(flatten(http$), function(httpEvent) {
+        if (httpEvent.event === "INCMSG") {
+          return safeParseArrayFromJSON(httpEvent.data);
         }
+      }),
+      x => x,
+    );
 
-        // copy and reset queue
-        const buffer = [...queue.complete];
-
-        queue.complete.length = 0;
-
-        for (const chunk of buffer) {
-          if (chunk.event === "INCMSG") {
-            yield* safeParseArrayFromJSON(chunk.data);
-          }
-        }
-      }
-    } finally {
+    function abort() {
+      console.log("aborting");
       request && request.abort();
       resp$.end();
     }
 
-    // not happy
-    await sleep(100);
-    yield* getEvents();
+    // return [spy(event$, "event"), abort];
+    return [event$, abort];
   }
 };
+
+function makeChunkParser() {
+  let leftover = "";
+  const DOUBLE_NEW_LINE = "\n\n";
+  return function parseChunk(chunk) {
+    const raw = String(chunk);
+    // console.log("on data");
+    const chunks = raw.split(DOUBLE_NEW_LINE);
+
+    // incomplete chunk (no double new-line found)
+    if (chunks.length === 1) {
+      leftover += raw;
+      return;
+    }
+
+    const firstChunks = (leftover + chunks[0]).split(DOUBLE_NEW_LINE);
+
+    const complete = firstChunks.concat(chunks.slice(1, -1)).map(chunk => {
+      if (!chunk) {
+        return {};
+      }
+
+      const props = chunk.split("\n");
+
+      return props.reduce((obj, str) => {
+        const splited = str.split(": ");
+
+        if (splited.length >= 2) {
+          const key = splited[0];
+          const value = splited.slice(1).join(": ");
+          obj[key] = key === "id" ? Number(value) : value;
+        }
+        return obj;
+      }, {});
+    });
+
+    leftover = last(chunks);
+    if (complete.length) return complete;
+  };
+}
 
 const last = array => (array.length >= 1 ? array[array.length - 1] : null);
 
@@ -251,33 +303,28 @@ const safeParseArrayFromJSON = str => {
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-async function* bufferTimeCount(iter, time, count) {
-  const TIMEOUT = Symbol("timeout");
-  const buffer = [];
+async function* flatten(iter) {
+  for await (const item of iter) {
+    yield* item;
+  }
+}
 
-  try {
-    while (true) {
-      const itemOrTimeout = await Promise.race([
-        sleep(time).then(() => TIMEOUT),
-        iter.next(),
-      ]);
+async function* spy(iter, label) {
+  for await (const item of iter) {
+    console.log("[%s]: %o", label, item);
+    yield item;
+  }
+}
 
-      if (itemOrTimeout === TIMEOUT) {
-        if (buffer.length > 0) {
-          yield [...buffer];
-          buffer.length = 0;
-        }
-      } else {
-        buffer.push(itemOrTimeout.value);
+async function* filter(iter, predicate) {
+  for await (const item of iter) {
+    if (predicate(item)) yield* item;
+  }
+}
 
-        if (buffer.length >= count) {
-          yield [...buffer];
-          buffer.length = 0;
-        }
-      }
-    }
-  } finally {
-    // clean up
-    iter.return();
+async function* sizeEffect(iter, fn) {
+  for await (const item of iter) {
+    fn(item);
+    yield item;
   }
 }

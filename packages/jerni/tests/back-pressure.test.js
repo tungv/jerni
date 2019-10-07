@@ -1,13 +1,19 @@
-const test = require("ava");
-
 const createJourney = require("../lib/createJourney2");
 const makeServer = require("./makeServer");
 
-test("#begin() should terminate subscription if client overflows", async t => {
-  const { server } = await makeServer({
+let server;
+
+afterEach(() => {
+  server.close();
+});
+
+test("#begin() should terminate subscription if client overflows", async () => {
+  const MAX = 500;
+  jest.setTimeout(MAX * 50 * 1.2);
+  server = (await makeServer({
     ns: "test-back-pressure",
     port: 19081,
-  });
+  })).server;
 
   try {
     const store = makeTestStore(event => event.id);
@@ -17,32 +23,30 @@ test("#begin() should terminate subscription if client overflows", async t => {
       stores: [store],
     });
 
-    await journey.commit({ type: "type_1", payload: {} });
-    await journey.commit({ type: "type_2", payload: {} });
-    await journey.commit({ type: "type_3", payload: {} });
+    for (let i = 0; i < MAX; ++i) {
+      await journey.commit({ type: "type_1" });
+    }
 
     const db = await store.getDriver();
     const outputs = [];
-    for await (const output of journey.begin()) {
-      // only 2 possible events because we have filters by type
+    for await (const output of journey.begin({ pulseCount: 100 })) {
       outputs.push(output);
-      if (db.length === 2) {
-        t.deepEqual(db, [1, 2]);
-        break;
-      }
+      if (output.some(data => data === "done " + String(MAX))) break;
     }
 
-    t.deepEqual(outputs, [["done 2"]]);
+    expect(db).toHaveLength(MAX);
 
     // journey.destroy();
   } finally {
-    server.close();
+    console.log("finally");
+    // server.close();
   }
 });
 
 function makeTestStore(transform) {
   const db = [];
   let listeners = [];
+  let isRunning = false;
 
   const store = {
     name: "test_store",
@@ -58,9 +62,19 @@ function makeTestStore(transform) {
       };
     },
     async handleEvent(events) {
-      await sleep(1000 * events.length);
-      db.push(...events.map(transform));
+      if (isRunning) {
+        throw new Error("handleEvent should be called once at a time");
+      }
+      isRunning = true;
+
+      await sleep(50 * events.length);
+      const latest = last(db) ? last(db) : 0;
+      // console.log("latest in db", latest);
+      const rows = events.filter(e => e.id > latest).map(transform);
+      // console.log("inserting rows", rows);
+      db.push(...rows);
       listeners.forEach(fn => fn(last(events).id));
+      isRunning = false;
       return `done ${last(events).id}`;
     },
 

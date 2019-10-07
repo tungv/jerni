@@ -13,10 +13,14 @@
     "brighten": "^0.0.1",
     "heq-server": "^2.2.6",
     "jerni-dev": "^0.9.7",
+    "jest": "^24.9.0",
     "micro": "^9.3.2",
     "tcp-proxy.js": "^1.2.0"
   },
   "dependencies": {
+    "@async-generator/buffer-time-count": "^1.0.3",
+    "@async-generator/map": "^1.0.1",
+    "@async-generator/subject": "^1.0.1",
     "arrify": "^1.0.1",
     "buffer-time-count-generator": "^1.0.0",
     "got": "^9.0.0",
