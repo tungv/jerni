@@ -186,7 +186,7 @@ module.exports = function createJourney({ writeTo, stores }) {
       for await (const batch of batch$) {
         const outputs = await Promise.all(
           stores.map(async store => {
-            return store.handleEvent(batch);
+            return store.handleEvents(batch);
           }),
         );
 

@@ -61,9 +61,9 @@ function makeTestStore(transform) {
         listeners = listeners.filter(fn => fn !== listener);
       };
     },
-    async handleEvent(events) {
+    async handleEvents(events) {
       if (isRunning) {
-        throw new Error("handleEvent should be called once at a time");
+        throw new Error("handleEvents should be called once at a time");
       }
       isRunning = true;
 

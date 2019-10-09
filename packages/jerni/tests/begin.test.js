@@ -57,7 +57,7 @@ function makeTestStore(transform) {
         listeners = listeners.filter(fn => fn !== listener);
       };
     },
-    async handleEvent(events) {
+    async handleEvents(events) {
       db.push(...events.map(transform));
       listeners.forEach(fn => fn(last(events).id));
       return `done ${last(events).id}`;
