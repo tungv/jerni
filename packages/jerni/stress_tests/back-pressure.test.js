@@ -1,5 +1,5 @@
 const createJourney = require("../lib/createJourney2");
-const makeServer = require("./makeServer");
+const makeServer = require("../tests/makeServer");
 
 let server;
 

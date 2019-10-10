@@ -1,12 +1,11 @@
 module.exports = function makeTestStore(transform) {
   const db = [];
   let listeners = [];
+  let checkpoint = 0;
 
   const store = {
     name: "test_store",
-    meta: {
-      includes: ["type_1", "type_2"],
-    },
+    meta: {},
     registerModels(map) {},
     subscribe(listener) {
       listeners.push(listeners);
@@ -16,8 +15,9 @@ module.exports = function makeTestStore(transform) {
       };
     },
     async handleEvents(events) {
-      db.push(...events.map(transform));
+      db.push(...events.filter(event => event.id > checkpoint).map(transform));
       listeners.forEach(fn => fn(last(events).id));
+      checkpoint = last(events).id;
       return `done ${last(events).id}`;
     },
 
@@ -26,11 +26,11 @@ module.exports = function makeTestStore(transform) {
     },
 
     async getLastSeenId() {
-      const event = last(db);
-      if (event) return event.id;
-      return 0;
+      return checkpoint;
     },
   };
 
   return store;
 };
+
+const last = array => (array.length >= 1 ? array[array.length - 1] : null);

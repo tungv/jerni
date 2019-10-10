@@ -30,6 +30,7 @@
     "sade": "^1.4.1"
   },
   "scripts": {
-    "test": "NODE_ENV=production jest"
+    "test": "NODE_ENV=production jest tests/*",
+    "e2e": "NODE_ENV=production jest stress_tests/*"
   }
 }
