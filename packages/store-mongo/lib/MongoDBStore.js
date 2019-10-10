@@ -14,14 +14,11 @@ const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 const flatten = arrayDeep => [].concat(...arrayDeep);
 
 const connect = async url => {
-  const client = await MongoClient.connect(
-    url,
-    {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-      reconnectTries: Number.MAX_VALUE,
-    }
-  );
+  const client = await MongoClient.connect(url, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    reconnectTries: Number.MAX_VALUE,
+  });
   return client;
 };
 
@@ -111,7 +108,7 @@ module.exports = class MongoDBStore extends Store {
             { $setOnInsert: { __v: 0 } },
             {
               upsert: true,
-            }
+            },
           );
         }
         return 0;
@@ -155,7 +152,7 @@ module.exports = class MongoDBStore extends Store {
       };
 
       promises.push(
-        db.collection(SNAPSHOT_COLLECTION_NAME).deleteMany(condition)
+        db.collection(SNAPSHOT_COLLECTION_NAME).deleteMany(condition),
       );
 
       try {
@@ -218,7 +215,7 @@ module.exports = class MongoDBStore extends Store {
                 } catch (ex) {
                   return [];
                 }
-              })
+              }),
             );
 
             let changes = {
@@ -247,7 +244,7 @@ module.exports = class MongoDBStore extends Store {
               },
               {
                 $set: { __v: events[events.length - 1].id },
-              }
+              },
             );
 
             return changes;
@@ -260,7 +257,7 @@ module.exports = class MongoDBStore extends Store {
                   source: this.name,
                   models: this.models,
                   event_id: latestId,
-                })
+                }),
               )
               .then(() => {
                 resolve({

@@ -1,6 +1,6 @@
-const { applyInsertOne, applyInsertMany } = require('./optimistic/insert');
-const { applyUpdateMany, applyUpdateOne } = require('./optimistic/update');
-const { applyDeleteMany, applyDeleteOne } = require('./optimistic/remove');
+const { applyInsertOne, applyInsertMany } = require("./optimistic/insert");
+const { applyUpdateMany, applyUpdateOne } = require("./optimistic/update");
+const { applyDeleteMany, applyDeleteOne } = require("./optimistic/remove");
 
 const transform = (transformFn, event) => {
   const rawOps = transformFn(event);
@@ -14,7 +14,7 @@ const transform = (transformFn, event) => {
         nextOpId: nextOpId + ret.nextOpId,
       };
     },
-    { ops: [], nextOpId: 0 }
+    { ops: [], nextOpId: 0 },
   );
 
   return enhancedOps.ops;
