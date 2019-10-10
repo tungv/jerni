@@ -13,20 +13,16 @@
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
   "dependencies": {
-    "@jerni/base": "^0.1.5",
-    "kefir": "^3.8.3",
     "mongo-heartbeat": "^1.1.0",
     "mongodb": "^3.1.1",
-    "p-lazy": "^1.0.0",
     "saslprep": "^1.0.3"
   },
   "devDependencies": {
     "@sindresorhus/is": "^0.11.0",
-    "ava": "^0.25.0",
     "jest": "^24.9.0"
   },
   "scripts": {
-    "test": "ava",
+    "test": "jest",
     "prebundle": "yarn test && yarn pack -f store-mongo.tgz",
     "bundle": "tar -xvf store-mongo.tgz && node -p \"require('./package')\" && node -p \"require('./package/Model')\" && node -p \"require('./package/Store')\"",
     "postbundle": "rm -r package store-mongo.tgz",

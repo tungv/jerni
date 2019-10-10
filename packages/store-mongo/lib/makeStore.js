@@ -7,6 +7,7 @@ const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 module.exports = async function makeStore(config = {}) {
   const { name, url, dbName, models, dev = false } = config;
   let listeners = [];
+  const lock = locker();
 
   const client = await connect(url);
   const db = client.db(dbName);
@@ -29,12 +30,17 @@ module.exports = async function makeStore(config = {}) {
   return store;
 
   async function handleEvents(events) {
-    const allPromises = models.map(model =>
-      executeOpsOnOneModel(model, events),
-    );
+    const release = lock();
+    try {
+      const allPromises = models.map(model =>
+        executeOpsOnOneModel(model, events),
+      );
 
-    const output = await Promise.all(allPromises);
-    return output;
+      const output = await Promise.all(allPromises);
+      return output;
+    } finally {
+      release();
+    }
   }
 
   async function getDriver(model) {
@@ -166,3 +172,18 @@ async function connect(url) {
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+function locker() {
+  let on = false;
+
+  return () => {
+    if (on) {
+      throw new Error("this function is locked and cannot run");
+    }
+    on = true;
+
+    return () => {
+      on = false;
+    };
+  };
+}
