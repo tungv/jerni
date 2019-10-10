@@ -6,6 +6,7 @@
     "lib",
     "index.js",
     "Store.js",
+    "makeStore.js",
     "Model.js",
     "yarn.lock"
   ],
@@ -18,8 +19,10 @@
     "saslprep": "^1.0.3"
   },
   "devDependencies": {
-    "@sindresorhus/is": "^0.11.0",
     "jest": "^24.9.0"
+  },
+  "peerDependencies": {
+    "jerni": "^1.0.0-rc.0"
   },
   "scripts": {
     "test": "jest",
