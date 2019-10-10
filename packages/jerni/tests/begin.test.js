@@ -1,9 +1,7 @@
-const test = require("ava");
-
 const createJourney = require("../lib/createJourney2");
 const makeServer = require("./makeServer");
 
-test("#begin() should push events to stores", async t => {
+test("#begin() should push events to stores", async () => {
   const { server } = await makeServer({
     ns: "test-begin-method",
     port: 19080,
@@ -27,12 +25,12 @@ test("#begin() should push events to stores", async t => {
       // only 2 possible events because we have filters by type
       outputs.push(output);
       if (db.length === 2) {
-        t.deepEqual(db, [1, 2]);
+        expect(db).toEqual([1, 2]);
         break;
       }
     }
 
-    t.deepEqual(outputs, [["done 2"]]);
+    expect(outputs).toEqual([["done 2"]]);
 
     // journey.destroy();
   } finally {

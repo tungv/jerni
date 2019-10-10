@@ -1,5 +1,4 @@
 const mitt = require("mitt");
-const test = require("ava");
 
 const { Model: DummyModel, Store: DummyStore } = require("./DummyStore");
 
@@ -7,7 +6,7 @@ const { version, name } = require("../package.json");
 const createJourney = require("../lib/createJourney2");
 const makeServer = require("./makeServer");
 
-test("createJourney to return a journey", t => {
+test("createJourney to return a journey", async () => {
   const dummyStore = new DummyStore({});
 
   const journey = createJourney({
@@ -15,12 +14,12 @@ test("createJourney to return a journey", t => {
     stores: [dummyStore],
   });
 
-  t.true(typeof journey.getReader === "function");
-  t.true(typeof journey.commit === "function");
-  t.true(typeof journey.waitFor === "function");
+  expect(typeof journey.getReader === "function").toBe(true);
+  expect(typeof journey.commit === "function").toBe(true);
+  expect(typeof journey.waitFor === "function").toBe(true);
 });
 
-test("journey should be able to commit event", async t => {
+test("journey should be able to commit event", async () => {
   const { server } = await makeServer({
     ns: "test_commit",
     port: 18080,
@@ -43,19 +42,21 @@ test("journey should be able to commit event", async t => {
     meta: { some: "meta" },
   });
 
-  t.truthy(event.id);
-  t.deepEqual(event.type, "TEST");
-  t.deepEqual(event.payload, { key: "value" });
-  t.deepEqual(event.meta.some, "meta");
-  t.deepEqual(event.meta.client, name);
-  t.deepEqual(event.meta.clientVersion, version);
+  expect(event.id).toBeTruthy();
+  expect(event.type).toEqual("TEST");
+  expect(event.payload).toEqual({ key: "value" });
+  expect(event.meta.some).toEqual("meta");
+  expect(event.meta.client).toEqual(name);
+  expect(event.meta.clientVersion).toEqual(version);
 
-  t.true(event.meta.occurred_at - now >= 0 && event.meta.occurred_at - now < 5);
+  expect(
+    event.meta.occurred_at - now >= 0 && event.meta.occurred_at - now < 5,
+  ).toBe(true);
 
   server.close();
 });
 
-test("journey should return specific driver instance", async t => {
+test("journey should return specific driver instance", async () => {
   const model1 = new DummyModel({ name: "internal_1" });
   const model2 = new DummyModel({ name: "internal_2" });
   const model3 = new DummyModel({ name: "internal_3" });
@@ -70,13 +71,13 @@ test("journey should return specific driver instance", async t => {
     stores: [conn],
   });
 
-  t.is(await journey.getReader(model1), "internal_1@conn_1");
-  t.is(await journey.getReader(model2), "internal_2@conn_1");
-  t.is(await journey.getReader(model3), "internal_3@conn_1");
-  t.is(await journey.getReader(model4), "internal_4@conn_1");
+  expect(await journey.getReader(model1)).toBe("internal_1@conn_1");
+  expect(await journey.getReader(model2)).toBe("internal_2@conn_1");
+  expect(await journey.getReader(model3)).toBe("internal_3@conn_1");
+  expect(await journey.getReader(model4)).toBe("internal_4@conn_1");
 });
 
-test("journey should waitFor all models", async t => {
+test("journey should waitFor all models", async () => {
   const emitter1 = mitt();
   const emitter2 = mitt();
 
@@ -114,10 +115,10 @@ test("journey should waitFor all models", async t => {
   emitter2.emit("event", { id: 5 });
 
   await waitPromise;
-  t.true(duration > 100 && duration <= 120);
+  expect(duration > 100 && duration <= 120).toBe(true);
 });
 
-test("should throw if some models don't have a meta", t => {
+test("should throw if some models don't have a meta", () => {
   const model1 = new DummyModel({ name: "internal_1" });
   const model2 = new DummyModel({
     name: "internal_2",
@@ -128,7 +129,7 @@ test("should throw if some models don't have a meta", t => {
   const model3 = new DummyModel({ name: "internal_3" });
   const model4 = new DummyModel({ name: "internal_4" });
 
-  t.throws(() => {
+  expect(() => {
     const conn = new DummyStore({
       name: "conn_1",
       models: [model1, model2, model3, model4],
@@ -137,10 +138,10 @@ test("should throw if some models don't have a meta", t => {
       writeTo: "http://localhost:8080",
       stores: [conn],
     });
-  });
+  }).toThrow();
 });
 
-test("should throw if the last model doesn't have a meta", t => {
+test("should throw if the last model doesn't have a meta", () => {
   const model1 = new DummyModel({ name: "internal_1" });
   const model2 = new DummyModel({
     name: "internal_2",
@@ -149,7 +150,7 @@ test("should throw if the last model doesn't have a meta", t => {
     },
   });
 
-  t.notThrows(() => {
+  expect(() => {
     const connWithoutMeta = new DummyStore({
       name: "conn_1",
       models: [model1],
@@ -167,7 +168,7 @@ test("should throw if the last model doesn't have a meta", t => {
       writeTo: "http://localhost:8080",
       stores: [connWithMeta],
     });
-  });
+  }).not.toThrow();
 });
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));

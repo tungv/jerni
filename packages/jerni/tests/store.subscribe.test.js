@@ -1,11 +1,10 @@
 const brighten = require("brighten");
 const subscribe = require("../lib/subscribe");
 const createJourney = require("../lib/createJourney");
-const test = require("ava");
 const makeServer = require("./makeServer");
 const { Model: DummyModel, Store: DummyStore } = require("./DummyStore");
 
-test("should subscribe", async t => {
+test("should subscribe", async () => {
   brighten();
   const { queue, server } = await makeServer({
     ns: "test_subscribe_1",
@@ -58,10 +57,10 @@ test("should subscribe", async t => {
 
   await sleep(100);
   const length = events.length;
-  t.true(length === 20);
+  expect(length === 20).toBe(true);
 });
 
-test("should subscribe with filter", async t => {
+test("should subscribe with filter", async () => {
   brighten();
   const { queue, server } = await makeServer({
     ns: "test_subscribe_2",
@@ -115,8 +114,8 @@ test("should subscribe with filter", async t => {
 
   await sleep(100);
   const length = events.length;
-  t.true(length === 10);
-  t.deepEqual(events.map(event => event.id), [
+  expect(length === 10).toBe(true);
+  expect(events.map(event => event.id)).toEqual([
     2,
     4,
     6,
@@ -130,7 +129,7 @@ test("should subscribe with filter", async t => {
   ]);
 });
 
-test("await store.subscribe()", async t => {
+test("await store.subscribe()", async () => {
   brighten();
   const { queue, server } = await makeServer({
     ns: "test_subscribe_3",
@@ -188,15 +187,15 @@ test("await store.subscribe()", async t => {
   // 3. id:16
   // 4. id:20
 
-  t.true(outputs.length === 4);
-  t.deepEqual(outputs.map(out => out.source), [
+  expect(outputs.length === 4).toBe(true);
+  expect(outputs.map(out => out.source)).toEqual([
     dummyConnection,
     dummyConnection,
     dummyConnection,
     dummyConnection,
   ]);
 
-  t.deepEqual(outputs.map(out => out.output.events.map(event => event.id)), [
+  expect(outputs.map(out => out.output.events.map(event => event.id))).toEqual([
     [4, 8],
     [12],
     [16],
