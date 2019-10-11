@@ -1,0 +1,13 @@
+{
+  "name": "jerni-demo",
+  "version": "1.0.0",
+  "description": "demo how to work with jerni",
+  "main": "index.js",
+  "author": "Tung Vu <me@tungv.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@jerni/store-mongo": "^0.5.9",
+    "jerni": "^0.9.8"
+  }
+}
