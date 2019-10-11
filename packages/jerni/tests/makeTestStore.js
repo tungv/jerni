@@ -6,11 +6,16 @@ module.exports = function makeTestStore(transform) {
   const store = {
     name: "test_store",
     meta: {},
+    getListenersCount() {
+      return listeners.length;
+    },
     registerModels(map) {},
     subscribe(listener) {
-      listeners.push(listeners);
+      console.log("subscribe");
+      listeners.push(listener);
 
       return () => {
+        console.log("notifying");
         listeners = listeners.filter(fn => fn !== listener);
       };
     },

@@ -2,14 +2,15 @@ const bufferTimeCount = require("@async-generator/buffer-time-count");
 const got = require("got");
 const map = require("@async-generator/map");
 const subject = require("@async-generator/subject");
+const JerniPersistenceTimeout = require("./JerniPersistenceTimeout");
 
 const backoff = require("./backoff");
 const commitEventToHeqServer = require("./commit");
 const makeRacer = require("./racer");
 
-const dev = process.env.NODE_ENV !== "production";
+// const dev = process.env.NODE_ENV !== "production";
 
-module.exports = function createJourney({ writeTo, stores }) {
+module.exports = function createJourney({ writeTo, stores, dev = false }) {
   const journey = {
     getReader,
     commit,
@@ -50,7 +51,7 @@ module.exports = function createJourney({ writeTo, stores }) {
 
   function startWatching() {
     watcherCount++;
-    if (watcherCount >= 1) return;
+    if (watcherCount > 1) return;
 
     listeners = stores.map((store, index) =>
       store.subscribe(id => racer.bump(index, id)),
@@ -59,8 +60,7 @@ module.exports = function createJourney({ writeTo, stores }) {
 
   function stopWatching() {
     watcherCount--;
-    if (watcherCount <= 0) return;
-
+    if (watcherCount > 0) return;
     listeners.forEach(unsubscribe => unsubscribe());
   }
 
@@ -113,13 +113,7 @@ module.exports = function createJourney({ writeTo, stores }) {
           require("./dev-aware").waitTooLongExplain({ event, stores });
         }
 
-        const err = new Error();
-        err.name = "JerniPersistenceTimeout";
-        err.message = `Timeout: wait too long for #${event.id} - ${event.type}`;
-        err.data = {
-          id: event.id,
-          type: event.type,
-        };
+        const err = new JerniPersistenceTimeout(event);
         reject(err);
       }, maxWait);
     }).finally(() => {
@@ -144,7 +138,7 @@ module.exports = function createJourney({ writeTo, stores }) {
         count: pulseCount,
         time: pulseTime,
       });
-      console.log("connected!");
+      console.log("INFO: connected!");
       const incoming$ = bufferTimeCount(event$, pulseCount, pulseTime);
 
       async function waitForOverflow() {
@@ -245,7 +239,7 @@ module.exports = function createJourney({ writeTo, stores }) {
       });
 
       resp$.once("data", () => {
-        console.log("start receiving data");
+        console.log("INFO: start receiving data");
         reconnectBackoff.reset();
       });
 
