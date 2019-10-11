@@ -9,5 +9,8 @@
   "dependencies": {
     "@jerni/store-mongo": "^0.5.9",
     "jerni": "^0.9.8"
+  },
+  "scripts": {
+    "start": "npx -p node@12 jerni my-journey.js"
   }
 }
