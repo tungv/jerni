@@ -1,8 +1,9 @@
-const got = require("got");
 const bufferTimeCount = require("@async-generator/buffer-time-count");
-const subject = require("@async-generator/subject");
+const got = require("got");
 const map = require("@async-generator/map");
+const subject = require("@async-generator/subject");
 
+const backoff = require("./backoff");
 const commitEventToHeqServer = require("./commit");
 const makeRacer = require("./racer");
 
@@ -16,6 +17,7 @@ module.exports = function createJourney({ writeTo, stores }) {
     waitFor,
   };
   let currentWriteTo = writeTo;
+  const reconnectBackoff = backoff({ seed: 10, max: 3000 });
 
   // request these event.type only
   const includes = [];
@@ -172,7 +174,7 @@ module.exports = function createJourney({ writeTo, stores }) {
     }
 
     async function scheduleResume() {
-      await sleep(100);
+      await sleep(reconnectBackoff.next());
       if (buffer.length <= MIN) {
         connect();
       } else {
@@ -208,29 +210,62 @@ module.exports = function createJourney({ writeTo, stores }) {
   async function requestEvents() {
     const parseChunk = makeChunkParser();
     const [http$, emit] = subject();
+    let forcedStop = false;
 
     const checkpoint = await getLatestSuccessfulCheckPoint();
 
-    const resp$ = got.stream(`${currentWriteTo}/subscribe`, {
-      headers: {
-        "last-event-id": String(checkpoint),
-        includes: includes.join(","),
-      },
-    });
+    async function reconnect() {
+      const delay = reconnectBackoff.next();
 
-    const requestPromise = new Promise(resolve => {
-      resp$.on("request", r => {
-        resolve(r);
+      console.log("reconnection scheduled after %dms", delay);
+
+      await sleep(delay);
+      request = await connectHeqServer();
+    }
+
+    async function connectHeqServer() {
+      console.log("sending http request");
+      const resp$ = got.stream(`${currentWriteTo}/subscribe`, {
+        headers: {
+          "last-event-id": String(checkpoint),
+          includes: includes.join(","),
+        },
       });
-    });
 
-    resp$.on("data", chunk => {
-      const maybeComplete = parseChunk(chunk);
+      const requestPromise = new Promise(resolve => {
+        resp$.on("request", r => {
+          resolve(r);
+        });
+      });
 
-      if (maybeComplete) emit(maybeComplete);
-    });
+      resp$.on("error", error => {
+        console.log("Error", error.message);
+        // make sure we reconnect
+        reconnect();
+      });
 
-    const request = await requestPromise;
+      resp$.once("data", () => {
+        console.log("start receiving data");
+        reconnectBackoff.reset();
+      });
+
+      resp$.on("data", chunk => {
+        const maybeComplete = parseChunk(chunk);
+
+        if (maybeComplete) emit(maybeComplete);
+      });
+
+      resp$.on("end", () => {
+        // make sure we reconnect
+        if (!forcedStop) {
+          reconnect();
+        }
+      });
+
+      return requestPromise;
+    }
+
+    let request = await connectHeqServer();
     const event$ = filter(
       map(flatten(http$), function(httpEvent) {
         if (httpEvent.event === "INCMSG") {
@@ -242,12 +277,12 @@ module.exports = function createJourney({ writeTo, stores }) {
 
     function abort() {
       console.log("aborting");
+      forcedStop = true;
       request && request.abort();
-      resp$.end();
     }
 
     // return [spy(event$, "event"), abort];
-    return [event$, abort];
+    return [dedupe(event$, (a, b) => a.id === b.id), abort];
   }
 };
 
@@ -326,5 +361,18 @@ async function* sizeEffect(iter, fn) {
   for await (const item of iter) {
     fn(item);
     yield item;
+  }
+}
+
+const NO_ITEM = {};
+
+async function* dedupe(iter, isEqual = (a, b) => a === b) {
+  let lastItem = NO_ITEM;
+  for await (const item of iter) {
+    if (!isEqual(item, lastItem)) {
+      yield item;
+    }
+
+    lastItem = item;
   }
 }
