@@ -29,5 +29,8 @@
   "scripts": {
     "test": "NODE_ENV=production jest tests/*",
     "e2e": "NODE_ENV=production jest stress_tests/*"
+  },
+  "engines": {
+    "node": "^12"
   }
 }
