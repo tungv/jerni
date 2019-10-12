@@ -1,7 +1,9 @@
 const { createServer } = require("http");
+const prettyMs = require("pretty-ms");
 const args = process.argv.slice(2);
 
 const port = args[0];
+const startTime = Date.now();
 
 let latest = {};
 
@@ -38,15 +40,19 @@ process.on("message", msg => {
 
 function aggregate(report) {
   const { performance, latestServer, latestClient, timestamp } = report;
+  const uptime = Date.now() - startTime;
   const progress = {
     server: latestServer,
     client: latestClient,
     distance: latestServer - latestClient,
     eta: latestServer - latestClient === 0 ? 0 : null,
+    eta_text: latestServer - latestClient === 0 ? "now" : "N/A",
   };
   if (performance.last10.length === 0) {
     return {
       updated_at: timestamp,
+      uptime,
+      uptime_text: prettyMs(uptime),
       progress,
       live: null,
     };
@@ -54,17 +60,20 @@ function aggregate(report) {
 
   const live = performance.last10.reduce((a, b) => {
     return {
-      from: a.from,
-      to: b.to,
+      from: b.from,
+      to: a.to,
       count: a.count + b.count,
       durationMs: a.durationMs + b.durationMs,
     };
   });
 
   progress.eta = (progress.distance / live.count) * live.durationMs;
+  progress.eta_text = prettyMs(progress.eta);
 
   return {
     updated_at: timestamp,
+    uptime,
+    uptime_text: prettyMs(uptime),
     progress,
     live,
   };

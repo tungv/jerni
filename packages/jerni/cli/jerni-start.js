@@ -21,15 +21,14 @@ module.exports = async function startJerniJob(filepath, opts) {
   forkReportingServer(journey, opts);
 
   logger.debug("journey.begin()");
-  for await (const output of journey.begin({ logger })) {
+  for await (const output of journey.begin({ logger, pulseTime: 10 })) {
     logger.debug("output: %j", output);
   }
 };
 
 async function forkReportingServer(journey, opts) {
+  const worker = await createReportServer(opts.http);
   try {
-    const worker = await createReportServer(opts.http);
-
     for await (const report of journey.monitor({ interval: opts.interval })) {
       logger.info({
         label: "report",
@@ -39,7 +38,8 @@ async function forkReportingServer(journey, opts) {
       worker.send({ label: "report", report });
     }
   } catch (err) {
-    logger.debug("jerni failed to start report server. Reason: %s", err);
+    logger.debug("jerni failed to start report server. Reason: %o", err);
+    worker.kill();
     process.exit(1);
   }
 }
@@ -48,6 +48,12 @@ async function createReportServer(port) {
   const worker = fork(path.resolve(__dirname, "./background.js"), [
     String(port),
   ]);
+
+  process.on("SIGINT", function() {
+    logger.info("terminated");
+    worker.kill();
+    process.exit(0);
+  });
 
   return new Promise((resolve, reject) => {
     function onMessage(msg) {
@@ -64,6 +70,7 @@ async function createReportServer(port) {
             label: "report-server-failed",
             error: msg.err,
           });
+          worker.kill();
           reject(msg.err);
         }
       }
@@ -71,62 +78,3 @@ async function createReportServer(port) {
     worker.on("message", onMessage);
   });
 }
-
-// module.exports = async (filepath, opts) => {
-//   console.log("MASTER: start");
-//   console.time("MASTER: ready");
-//   const latest = {
-//     id: 0,
-//     time: Date.now(),
-//   };
-
-//   const server = createServer((req, res) => {
-//     res.statusCode = 200;
-//     res.setHeader("content-type", "application/json");
-//     res.end(JSON.stringify(latest));
-//   });
-//   server.listen(Number(opts.http), err => {
-//     if (err) {
-//       console.error(
-//         "cannot start http server on port %s. Exitting...",
-//         opts.http,
-//       );
-//       process.exit(1);
-//       return;
-//     }
-//     console.log("monitoring server is listening on port", opts.http);
-//   });
-
-//   const worker = fork(path.resolve(__dirname, "./background.js"));
-
-//   worker.on("message", msg => {
-//     if (msg.cmd === "initial") {
-//       console.timeEnd("MASTER: ready");
-//       latest.id = msg.value;
-//       latest.time = Date.now();
-//       return;
-//     }
-
-//     if (msg.cmd === "reply") {
-//       const stream$ = deserializeStream(worker, msg.token);
-
-//       stream$.observe(
-//         lastEvent => {
-//           logger.info(`event #${lastEvent.id} ${lastEvent.type} has arrived`);
-
-//           latest.id = lastEvent.id;
-//           latest.time = Date.now();
-//         },
-//         err => {
-//           logger.error(`unknown error ${err.name}`, err.stack);
-//         },
-//         () => {
-//           logger.info(`subscription ends`);
-//         },
-//       );
-//       return;
-//     }
-//   });
-
-//   worker.send({ cmd: "start", filepath, opts });
-// };

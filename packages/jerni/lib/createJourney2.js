@@ -25,6 +25,14 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
   let currentWriteTo = writeTo;
   const reconnectBackoff = backoff({ seed: 10, max: 3000 });
 
+  // register models
+  const STORE_BY_MODELS = new Map();
+  stores.forEach((store, index) => {
+    // register every models in each read source to STORE_BY_MODELS map
+    // so we can retrieve them later in `#getReader(model)`
+    store.registerModels(STORE_BY_MODELS);
+  });
+
   // request these event.type only
   const includes = [];
   const racer = makeRacer(stores.map(() => 0));
@@ -41,14 +49,6 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
   }
 
   getLatestSuccessfulCheckPoint().then(id => (latestClient = id));
-
-  // register models
-  const STORE_BY_MODELS = new Map();
-  stores.forEach((store, index) => {
-    // register every models in each read source to STORE_BY_MODELS map
-    // so we can retrieve them later in `#getReader(model)`
-    store.registerModels(STORE_BY_MODELS);
-  });
 
   // handle watch
   let watcherCount = 0;
@@ -142,8 +142,8 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
     logger.debug("journey.begin({ %o })", { pulseCount, pulseTime });
 
     const buffer = [];
-    const MAX = ~~(1000 / pulseCount);
-    const MIN = ~~(500 / pulseCount);
+    const MAX = ~~(10000 / pulseCount);
+    const MIN = ~~(5000 / pulseCount);
 
     const [batch$, emit] = subject(buffer);
 
@@ -158,7 +158,7 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
       async function waitForOverflow() {
         if (buffer.length >= MAX) {
           logger.warn(
-            "WARN: buffer overflow. %d over maximum %d",
+            "buffer overflow. %d over maximum %d",
             buffer.length,
             MAX,
           );
@@ -216,12 +216,15 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
         last10.length = Math.min(last10.length, 10);
 
         latestClient = last(batch).id;
-
+        logger.debug("done");
         yield outputs;
       }
+    } catch (ex) {
+      console.log(ex);
+      logger.error({ ex });
     } finally {
-      logger.info("stop processing events. exit(1)");
-      process.exit(1);
+      logger.info("stop processing events");
+      // process.exit(1);
     }
   }
 
@@ -305,7 +308,7 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
     );
 
     function abort() {
-      console.log("aborting");
+      logger.info("aborting");
       forcedStop = true;
       request && request.abort();
     }
