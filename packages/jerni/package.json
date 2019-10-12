@@ -23,7 +23,8 @@
     "got": "^9.0.0",
     "log4js": "^3.0.5",
     "read-pkg-up": "^4.0.0",
-    "sade": "^1.4.1"
+    "sade": "^1.4.1",
+    "winston": "^3.2.1"
   },
   "scripts": {
     "test": "NODE_ENV=production jest tests/*",

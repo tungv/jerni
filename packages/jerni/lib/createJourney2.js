@@ -11,12 +11,17 @@ const makeRacer = require("./racer");
 // const dev = process.env.NODE_ENV !== "production";
 
 module.exports = function createJourney({ writeTo, stores, dev = false }) {
+  let logger = console;
   const journey = {
     getReader,
     commit,
     begin,
     waitFor,
+    monitor,
   };
+  const last10 = [];
+  let latestServer = null;
+  let latestClient = null;
   let currentWriteTo = writeTo;
   const reconnectBackoff = backoff({ seed: 10, max: 3000 });
 
@@ -34,6 +39,8 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
       }
     }
   }
+
+  getLatestSuccessfulCheckPoint().then(id => (latestClient = id));
 
   // register models
   const STORE_BY_MODELS = new Map();
@@ -127,6 +134,13 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
       pulseTime = 10, // default maximum wait time = 10ms
     } = config;
 
+    if (config.logger) {
+      logger.debug("=== SWITCH TO NEW LOGGER PROVIDED BY begin() ===");
+      logger = config.logger;
+    }
+
+    logger.debug("journey.begin({ %o })", { pulseCount, pulseTime });
+
     const buffer = [];
     const MAX = ~~(1000 / pulseCount);
     const MIN = ~~(500 / pulseCount);
@@ -138,12 +152,12 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
         count: pulseCount,
         time: pulseTime,
       });
-      console.log("INFO: connected!");
-      const incoming$ = bufferTimeCount(event$, pulseCount, pulseTime);
+      logger.info("connected!");
+      const incoming$ = bufferTimeCount(event$, pulseTime, pulseCount);
 
       async function waitForOverflow() {
         if (buffer.length >= MAX) {
-          console.log(
+          logger.warn(
             "WARN: buffer overflow. %d over maximum %d",
             buffer.length,
             MAX,
@@ -157,7 +171,7 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
 
       waitForOverflow()
         .then(() => {
-          console.log("Pausing subscription because client is slow");
+          logger.debug("Pausing subscription because client is slow");
           return abort();
         })
         .then(scheduleResume);
@@ -180,16 +194,34 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
 
     try {
       for await (const batch of batch$) {
+        logger.debug("handling events #%d - #%d", batch[0].id, last(batch).id);
+        const start = process.hrtime.bigint();
         const outputs = await Promise.all(
           stores.map(async store => {
             return store.handleEvents(batch);
           }),
         );
+        const end = process.hrtime.bigint();
+        const durationMs = Number((end - start).toString(10)) / 1e6;
+
+        const report = {
+          ts: Date.now(),
+          from: batch[0].id,
+          to: last(batch).id,
+          count: batch.length,
+          durationMs,
+        };
+
+        last10.unshift(report);
+        last10.length = Math.min(last10.length, 10);
+
+        latestClient = last(batch).id;
 
         yield outputs;
       }
     } finally {
-      // abort();
+      logger.info("stop processing events. exit(1)");
+      process.exit(1);
     }
   }
 
@@ -198,7 +230,7 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
       stores.map(source => source.getLastSeenId()),
     );
 
-    return Math.min(0, ...latestEventIdArray);
+    return Math.min(latestEventIdArray);
   }
 
   async function requestEvents() {
@@ -206,25 +238,25 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
     const [http$, emit] = subject();
     let forcedStop = false;
 
-    const checkpoint = await getLatestSuccessfulCheckPoint();
-
     async function reconnect() {
       const delay = reconnectBackoff.next();
 
-      console.log("reconnection scheduled after %dms", delay);
+      logger.debug("reconnection scheduled after %dms", delay);
 
       await sleep(delay);
       request = await connectHeqServer();
     }
 
     async function connectHeqServer() {
-      console.log("sending http request");
-      const resp$ = got.stream(`${currentWriteTo}/subscribe`, {
-        headers: {
-          "last-event-id": String(checkpoint),
-          includes: includes.join(","),
-        },
-      });
+      const url = `${currentWriteTo}/subscribe`;
+      const headers = {
+        "last-event-id": String(await getLatestSuccessfulCheckPoint()),
+        includes: includes.join(","),
+      };
+      logger.debug("sending http request to: %s", url);
+      logger.debug("headers %o", headers);
+
+      const resp$ = got.stream(url, { headers });
 
       const requestPromise = new Promise(resolve => {
         resp$.on("request", r => {
@@ -233,13 +265,16 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
       });
 
       resp$.on("error", error => {
-        console.log("Error", error.message);
+        logger.error({
+          message: error.message,
+          name: error.name,
+        });
         // make sure we reconnect
         reconnect();
       });
 
       resp$.once("data", () => {
-        console.log("INFO: start receiving data");
+        logger.info("start receiving data");
         reconnectBackoff.reset();
       });
 
@@ -277,6 +312,46 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
 
     // return [spy(event$, "event"), abort];
     return [dedupe(event$, (a, b) => a.id === b.id), abort];
+  }
+
+  async function* monitor(config = {}) {
+    const { interval = 5000 } = config;
+    let lastReport = null;
+    await updateLatestServer();
+    yield {
+      timestamp: Date.now(),
+      performance: { last10 },
+      latestServer,
+      latestClient,
+    };
+    do {
+      await sleep(interval);
+      if (!last10[0]) {
+        continue;
+      }
+
+      const report = last10[0];
+      if (report === lastReport) {
+        continue;
+      }
+
+      lastReport = report;
+
+      await updateLatestServer();
+
+      yield {
+        timestamp: Date.now(),
+        performance: { last10 },
+        latestServer,
+        latestClient,
+      };
+    } while (true);
+  }
+
+  async function updateLatestServer() {
+    const url = `${currentWriteTo}/events/latest`;
+    const { body } = await got(url, { json: true });
+    latestServer = body.id;
   }
 };
 

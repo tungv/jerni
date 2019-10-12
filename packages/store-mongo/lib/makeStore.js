@@ -14,6 +14,7 @@ module.exports = async function makeStore(config = {}) {
   const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
 
   const store = {
+    meta: {},
     name,
     registerModels,
     subscribe,
@@ -32,12 +33,13 @@ module.exports = async function makeStore(config = {}) {
   async function handleEvents(events) {
     const release = lock();
     try {
-      const allPromises = models.map(model =>
-        executeOpsOnOneModel(model, events),
-      );
+      const allPromises = models.map(async model => [
+        getCollectionName(model),
+        await executeOpsOnOneModel(model, events),
+      ]);
 
-      const output = await Promise.all(allPromises);
-      return output;
+      const pairs = await Promise.all(allPromises);
+      return Object.fromEntries(pairs.filter(([collName, changes]) => changes));
     } finally {
       release();
     }
@@ -75,21 +77,15 @@ module.exports = async function makeStore(config = {}) {
       }),
     );
 
-    let changes = {
-      model,
-      added: 0,
-      modified: 0,
-      removed: 0,
-    };
+    let changes = null;
 
     if (ops.length > 0) {
       const coll = db.collection(getCollectionName(model));
       const modelOpsResult = await coll.bulkWrite(ops);
       changes = {
-        model,
-        added: modelOpsResult.nUpserted,
-        modified: modelOpsResult.nModified,
-        removed: modelOpsResult.nRemoved,
+        added: modelOpsResult.nUpserted || undefined,
+        modified: modelOpsResult.nModified || undefined,
+        removed: modelOpsResult.nRemoved || undefined,
       };
     }
 

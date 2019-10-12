@@ -1,1 +1,1 @@
-module.exports = require("./lib/createJourney");
+module.exports = require("./lib/createJourney2");
