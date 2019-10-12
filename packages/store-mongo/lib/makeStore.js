@@ -61,9 +61,30 @@ module.exports = async function makeStore(config = {}) {
     };
   }
   function registerModels(map) {
+    let includes = new Set();
+    let includesAll = false;
     models.forEach(model => {
       map.set(store, model);
+
+      // handle meta.includes
+      const modelSpecificMeta = model.meta || model.transform.meta;
+      if (
+        !modelSpecificMeta ||
+        !modelSpecificMeta.includes ||
+        modelSpecificMeta.includes.length === 0
+      ) {
+        includesAll = true;
+        return;
+      }
+
+      includes.add(...modelSpecificMeta.includes);
     });
+
+    if (includesAll) {
+      store.meta.includes = [];
+    } else {
+      store.meta.includes = Array.from(includes);
+    }
   }
 
   async function executeOpsOnOneModel(model, events) {
