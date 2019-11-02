@@ -8,14 +8,8 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 });
 
 const logger = createLogger({
-  level: "debug",
   format: combine(timestamp(), json()),
-  defaultMeta: { service: "jerni" },
   transports: [
-    //
-    // - Write to all logs with level `info` and below to `combined.log`
-    // - Write all logs error (and below) to `error.log`.
-    //
     new transports.File({ filename: "error.log", level: "error" }),
     new transports.File({ filename: "combined.log", level: "info" }),
   ],

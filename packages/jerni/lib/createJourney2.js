@@ -78,7 +78,7 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
       return source.getDriver(model);
     }
 
-    throw new Error(`trying to read an unregistered model`);
+    throw new Error(`trying to read an unregistered model [${model.name}]`);
   }
 
   async function commit(event) {

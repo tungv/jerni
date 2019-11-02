@@ -63,8 +63,9 @@ module.exports = async function makeStore(config = {}) {
   function registerModels(map) {
     let includes = new Set();
     let includesAll = false;
+
     models.forEach(model => {
-      map.set(store, model);
+      map.set(model, store);
 
       // handle meta.includes
       const modelSpecificMeta = model.meta || model.transform.meta;
