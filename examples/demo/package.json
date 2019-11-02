@@ -1,6 +1,6 @@
 {
   "name": "jerni-demo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "demo how to work with jerni",
   "main": "index.js",
   "author": "Tung Vu <me@tungv.com>",
