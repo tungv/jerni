@@ -12,6 +12,7 @@
     "heq-server": "^2.2.6",
     "jest": "^24.9.0",
     "micro": "^9.3.2",
+    "pkg": "^4.4.0",
     "server-destroy": "^1.0.1"
   },
   "dependencies": {
@@ -29,9 +30,13 @@
   },
   "scripts": {
     "test": "NODE_ENV=production jest tests/*",
-    "e2e": "NODE_ENV=production jest stress_tests/*"
+    "e2e": "NODE_ENV=production jest stress_tests/*",
+    "binary:build": "pkg --out-path=binaries ."
   },
   "engines": {
     "node": "^12"
+  },
+  "pkg": {
+    "scripts": "cli/**/*.js"
   }
 }
