@@ -8,9 +8,11 @@ const backoff = require("./backoff");
 const commitEventToHeqServer = require("./commit");
 const makeRacer = require("./racer");
 
-// const dev = process.env.NODE_ENV !== "production";
-
-module.exports = function createJourney({ writeTo, stores, dev = false }) {
+module.exports = function createJourney({
+  writeTo,
+  stores,
+  dev = process.env.NODE_ENV !== "production",
+}) {
   let logger = console;
   const journey = {
     getReader,
@@ -19,6 +21,24 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
     waitFor,
     monitor,
   };
+
+  // add dev APIs
+  if (dev) {
+    journey.dev__replaceServer = function(newServer) {
+      if (!newServer) {
+        throw new Error(
+          `Cannot replace heq-server address to ${JSON.stringify(newServer)}`,
+        );
+      }
+      logger.info(
+        "replace heq-server address from %s to %s",
+        currentWriteTo,
+        newServer,
+      );
+      currentWriteTo = newServer;
+    };
+  }
+
   const last10 = [];
   let latestServer = null;
   let latestClient = null;
@@ -193,39 +213,43 @@ module.exports = function createJourney({ writeTo, stores, dev = false }) {
     connect();
 
     try {
-      for await (const batch of batch$) {
-        logger.debug("handling events #%d - #%d", batch[0].id, last(batch).id);
-        const start = process.hrtime.bigint();
-        const outputs = await Promise.all(
-          stores.map(async store => {
-            return store.handleEvents(batch);
-          }),
-        );
-        const end = process.hrtime.bigint();
-        const durationMs = Number((end - start).toString(10)) / 1e6;
-
-        const report = {
-          ts: Date.now(),
-          from: batch[0].id,
-          to: last(batch).id,
-          count: batch.length,
-          durationMs,
-        };
-
-        last10.unshift(report);
-        last10.length = Math.min(last10.length, 10);
-
-        latestClient = last(batch).id;
-        logger.debug("done");
-        yield outputs;
+      for await (const events of batch$) {
+        yield await handleBatch(events);
       }
     } catch (ex) {
       console.log(ex);
       logger.error({ ex });
     } finally {
       logger.info("stop processing events");
-      // process.exit(1);
     }
+  }
+
+  async function handleBatch(events) {
+    logger.debug("handling events #%d - #%d", events[0].id, last(events).id);
+    const start = process.hrtime.bigint();
+    const outputs = await Promise.all(
+      stores.map(async store => {
+        return store.handleEvents(events);
+      }),
+    );
+    const end = process.hrtime.bigint();
+    const durationMs = Number((end - start).toString(10)) / 1e6;
+
+    const report = {
+      ts: Date.now(),
+      from: events[0].id,
+      to: last(events).id,
+      count: events.length,
+      durationMs,
+    };
+
+    last10.unshift(report);
+    last10.length = Math.min(last10.length, 10);
+
+    latestClient = last(events).id;
+    logger.debug("done");
+
+    return outputs;
   }
 
   async function getLatestSuccessfulCheckPoint() {
