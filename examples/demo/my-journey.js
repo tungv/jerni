@@ -7,7 +7,6 @@ module.exports = async function initialize() {
     name: "my_test_mongo_store",
     url: "mongodb://localhost:27017",
     dbName: "my_app",
-    dev: process.env.NODE_ENV !== "production",
     models: [users],
   });
 
