@@ -37,6 +37,12 @@ module.exports = function createJourney({
       );
       currentWriteTo = newServer;
     };
+
+    journey.dev__clean = async function() {
+      for (const store of stores) {
+        await store.DEV_clean();
+      }
+    };
   }
 
   const last10 = [];
