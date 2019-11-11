@@ -319,7 +319,7 @@ module.exports = function createJourney({
         if (maybeComplete) emit(maybeComplete);
       });
 
-      resp$.on("end", () => {
+      resp$.once("end", () => {
         // make sure we reconnect
         if (!forcedStop) {
           reconnect();
