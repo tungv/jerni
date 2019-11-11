@@ -8,9 +8,13 @@
   "private": true,
   "dependencies": {
     "@jerni/store-mongo": "^0.5.9",
-    "jerni": "^0.9.8"
+    "jerni": "^0.9.8",
+    "lodash": "^4.17.15"
   },
   "scripts": {
     "start": "npx -p node@12 jerni my-journey.js"
+  },
+  "devDependencies": {
+    "jerni-dev": "^0.9.7"
   }
 }
