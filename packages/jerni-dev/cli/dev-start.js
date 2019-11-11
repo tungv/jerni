@@ -23,11 +23,7 @@ module.exports = async function(filepath, opts) {
   const dataPath = opts.dataPath;
 
   const [current, original] = checksumFile(dataPath);
-  await startServer({
-    port: opts.http,
-    dataPath,
-    verbose: opts.verbose,
-  });
+  await startServer();
 
   if (current !== original) {
     writeChecksum(dataPath, current);
@@ -37,30 +33,43 @@ module.exports = async function(filepath, opts) {
 
   // listen
   // watch data file
+  let corrupted = false;
   onFileChange(dataPath, async () => {
-    const [current, original] = checksumFile(dataPath);
+    try {
+      const [current, original] = checksumFile(dataPath);
 
-    if (current === original) {
-      logger.debug("organic change");
-      return;
+      if (!corrupted && current === original) {
+        logger.debug("organic change");
+        return;
+      }
+
+      if (corrupted) {
+        logger.info("attemp to recover from corrupted data file");
+        corrupted = false;
+      } else {
+        logger.warn("non-organic change detected!");
+        logger.debug("  original checksum %s", original);
+        logger.debug("   current checksum %s", current);
+      }
+
+      logger.debug("stopping heq-server");
+      killServer();
+
+      logger.debug("stopping jerni");
+      stopJourney();
+
+      // rewrite checksum
+      logger.debug("overwrite checksum with %s", current);
+      writeChecksum(dataPath, current);
+
+      await startJerni({ cleanStart: true });
+      await startServer();
+    } catch (ex) {
+      killServer();
+      stopJourney();
+      corrupted = true;
+      // process.exit(1);
     }
-
-    logger.warn("non-organic change detected!");
-    logger.debug("  original checksum %s", original);
-    logger.debug("   current checksum %s", current);
-
-    logger.debug("stopping heq-server");
-    killServer();
-
-    logger.debug("stopping jerni");
-    stopJourney();
-
-    // rewrite checksum
-    logger.debug("overwrite checksum with %s", current);
-    writeChecksum(dataPath, current);
-
-    await startJerni({ cleanStart: true });
-    await startServer();
   });
 
   async function startServer() {

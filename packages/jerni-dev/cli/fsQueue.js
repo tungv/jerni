@@ -1,3 +1,4 @@
+const parseJson = require("json-parse-better-errors");
 const hash = require("object-hash");
 const fs = require("fs");
 const getLogger = require("./dev-logger");
@@ -37,12 +38,15 @@ exports.checksumFile = function checksumFile(filePath) {
     // skip non data rows
     if (!rows[i].startsWith('{"')) continue;
 
-    const event = JSON.parse(rows[i]);
-    events.push(event);
-
-    const calculatedChecksum = hash.MD5({ event, lastHash });
-
-    lastHash = calculatedChecksum;
+    try {
+      const event = parseJson(rows[i]);
+      events.push(event);
+      const calculatedChecksum = hash.MD5({ event, lastHash });
+      lastHash = calculatedChecksum;
+    } catch (ex) {
+      logger.error("JSON data corrupted at line: %d\n%s", i + 1, ex.message);
+      throw new Error("Cannot parse data file");
+    }
   }
 
   return [lastHash, checksum, events];
