@@ -305,9 +305,9 @@ module.exports = function createJourney({
           });
         } else {
           logger.error("repeating connection error", {
-          message: error.message,
-          name: error.name,
-        });
+            message: error.message,
+            name: error.name,
+          });
         }
 
         // make sure we reconnect
@@ -454,23 +454,9 @@ async function* flatten(iter) {
   }
 }
 
-async function* spy(iter, label) {
-  for await (const item of iter) {
-    console.log("[%s]: %o", label, item);
-    yield item;
-  }
-}
-
 async function* filter(iter, predicate) {
   for await (const item of iter) {
     if (predicate(item)) yield* item;
-  }
-}
-
-async function* sizeEffect(iter, fn) {
-  for await (const item of iter) {
-    fn(item);
-    yield item;
   }
 }
 
