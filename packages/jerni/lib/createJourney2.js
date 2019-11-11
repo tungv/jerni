@@ -31,7 +31,7 @@ module.exports = function createJourney({
         );
       }
       logger.info(
-        "replace heq-server address from %s to %s",
+        "\nreplace heq-server address from %s to %s\n",
         currentWriteTo,
         newServer,
       );
@@ -155,7 +155,7 @@ module.exports = function createJourney({
     } = config;
 
     if (config.logger) {
-      logger.debug("=== SWITCH TO NEW LOGGER PROVIDED BY begin() ===");
+      logger.debug("\n=== SWITCH TO NEW LOGGER PROVIDED BY begin() ===\n");
       logger = config.logger;
     }
 
