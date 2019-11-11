@@ -41,6 +41,5 @@ exports.wrap = function(fn) {
       process.exit(ex.code || 1);
     }
   }
-
   main();
 };

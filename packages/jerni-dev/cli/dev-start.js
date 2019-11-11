@@ -1,5 +1,6 @@
 const { watch } = require("chokidar");
 const path = require("path");
+const fs = require("fs");
 const debounce = require("debounce");
 const getLogger = require("./dev-logger");
 
@@ -7,10 +8,12 @@ const { checksumFile, writeChecksum } = require("./fsQueue");
 const { start } = require("./background");
 
 const cwd = process.cwd();
+const pkgDir = require("pkg-dir");
 
 module.exports = async function(filepath, opts) {
   let address, killServer, deps, stopJourney;
   const absolutePath = path.resolve(cwd, filepath);
+  const rootDir = pkgDir.sync(absolutePath);
   const logger = getLogger({ service: " cli ", verbose: opts.verbose });
   logger.info("jerni-dev.start");
   logger.info("source file: %s", absolutePath);
@@ -23,6 +26,14 @@ module.exports = async function(filepath, opts) {
   const dataPath = opts.dataPath;
 
   const [current, original] = checksumFile(dataPath);
+
+  process.on("SIGINT", () => {
+    logger.warn("interuptted! cleaning up…");
+    if (killServer) killServer();
+    if (stopJourney) stopJourney();
+    logger.info("exiting…");
+  });
+
   await startServer();
 
   if (current !== original) {
@@ -80,7 +91,16 @@ module.exports = async function(filepath, opts) {
       verbose: opts.verbose,
     });
     address = output[0];
-    killServer = output[1];
+    const lockfilePath = path.resolve(rootDir, ".jerni-dev");
+
+    logger.info("writing lockfile to %s", path.relative(cwd, lockfilePath));
+    fs.writeFileSync(lockfilePath, String(address.port));
+    killServer = function() {
+      logger.info("stopping heq-server subprocess…");
+      output[1]();
+      logger.info("removing lockfile at %s", lockfilePath);
+      fs.unlinkSync(lockfilePath);
+    };
     logger.info("heq-server is listening on port %d", address.port);
   }
 
@@ -94,7 +114,10 @@ module.exports = async function(filepath, opts) {
     });
 
     deps = output[0];
-    stopJourney = output[1];
+    stopJourney = function() {
+      logger.info("stopping jerni subprocess…");
+      output[1]();
+    };
     logger.info("worker ready");
 
     logger.debug("watching %d files:", deps.length);
