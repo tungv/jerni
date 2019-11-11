@@ -11,7 +11,6 @@ exports.start = async function(file, ...args) {
     function onMessage(msg) {
       if (msg.cmd === "ok") {
         resolve([msg.value, kill]);
-        worker.removeListener("message", onMessage);
       } else if (msg.cmd === "error") {
         worker.kill();
         reject(new Error(msg.error));
