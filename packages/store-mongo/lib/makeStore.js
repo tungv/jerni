@@ -5,7 +5,13 @@ const MongoClient = require("mongodb").MongoClient;
 const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 
 module.exports = async function makeStore(config = {}) {
-  const { name, url, dbName, models, dev = false } = config;
+  const {
+    name,
+    url,
+    dbName,
+    models,
+    dev = process.env.NODE_ENV !== "production",
+  } = config;
   let listeners = [];
   const lock = locker();
 
