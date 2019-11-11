@@ -217,7 +217,7 @@ module.exports = function createJourney({
         yield await handleBatch(events);
       }
     } catch (ex) {
-      console.log(ex);
+      logger.debug(ex);
       logger.error({ ex });
     } finally {
       logger.info("stop processing events");
@@ -271,10 +271,10 @@ module.exports = function createJourney({
       logger.debug("reconnection scheduled after %dms", delay);
 
       await sleep(delay);
-      request = await connectHeqServer();
+      request = await connectHeqServer({ delay });
     }
 
-    async function connectHeqServer() {
+    async function connectHeqServer({ delay }) {
       const url = `${currentWriteTo}/subscribe`;
       const headers = {
         "last-event-id": String(await getLatestSuccessfulCheckPoint()),
@@ -291,11 +291,19 @@ module.exports = function createJourney({
         });
       });
 
-      resp$.on("error", error => {
-        logger.error({
+      resp$.once("error", error => {
+        if (delay < 500) {
+          logger.debug("sub 500ms reconnection… %o", {
+            message: error.message,
+            name: error.name,
+          });
+        } else {
+          logger.error("repeating connection error", {
           message: error.message,
           name: error.name,
         });
+        }
+
         // make sure we reconnect
         reconnect();
       });
@@ -321,7 +329,7 @@ module.exports = function createJourney({
       return requestPromise;
     }
 
-    let request = await connectHeqServer();
+    let request = await connectHeqServer({ delay: 0 });
     const event$ = filter(
       map(flatten(http$), function(httpEvent) {
         if (httpEvent.event === "INCMSG") {
