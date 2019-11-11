@@ -5,13 +5,7 @@ const MongoClient = require("mongodb").MongoClient;
 const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 
 module.exports = async function makeStore(config = {}) {
-  const {
-    name,
-    url,
-    dbName,
-    models,
-    dev = process.env.NODE_ENV !== "production",
-  } = config;
+  const { name, url, dbName, models } = config;
   let listeners = [];
   const lock = locker();
 
@@ -28,11 +22,8 @@ module.exports = async function makeStore(config = {}) {
     handleEvents,
     getLastSeenId,
     listen,
+    clean,
   };
-
-  if (dev) {
-    store.DEV_clean = clean;
-  }
 
   return store;
 
@@ -180,8 +171,8 @@ module.exports = async function makeStore(config = {}) {
 
     try {
       await Promise.all(promises);
-    } finally {
-      console.info("cleaning [completed]");
+    } catch (ex) {
+      console.error(ex);
     }
   }
 };

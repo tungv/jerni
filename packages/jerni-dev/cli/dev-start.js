@@ -1,5 +1,6 @@
 const { watch } = require("chokidar");
 const path = require("path");
+const debounce = require("debounce");
 const getLogger = require("./dev-logger");
 
 const { checksumFile, writeChecksum } = require("./fsQueue");
@@ -7,48 +8,44 @@ const { start } = require("./background");
 
 const cwd = process.cwd();
 
-const DATAPATH = "./.eventsrc";
-
 module.exports = async function(filepath, opts) {
+  let address, killServer, deps, stopJourney;
   const absolutePath = path.resolve(cwd, filepath);
-  const essentialOpts = { http: opts.http, verbose: opts.verbose };
   const logger = getLogger({ service: " cli ", verbose: opts.verbose });
-  logger.info('jerni-dev.start("%s", %j)', absolutePath, essentialOpts);
+  logger.info("jerni-dev.start");
+  logger.info("source file: %s", absolutePath);
+  logger.info("options %o", {
+    http: opts.http,
+    verbose: opts.verbose,
+    dataPath: opts.dataPath,
+  });
 
-  const [current, original] = checksumFile(DATAPATH);
-  let [address, killServer] = await startServer({
-    port: 9999,
-    dataPath: DATAPATH,
+  const dataPath = opts.dataPath;
+
+  const [current, original] = checksumFile(dataPath);
+  await startServer({
+    port: opts.http,
+    dataPath,
     verbose: opts.verbose,
   });
 
   if (current !== original) {
-    writeChecksum(DATAPATH, current);
+    writeChecksum(dataPath, current);
   }
 
-  let [deps, stopJourney] = await start(
-    path.resolve(__dirname, "./worker-jerni"),
-    {
-      absolutePath,
-      cleanStart: current !== original,
-      heqServerAddress: `http://localhost:${address.port}`,
-      verbose: opts.verbose,
-    },
-  );
-
-  logger.info("worker ready", deps);
+  await startJerni({ cleanStart: current !== original });
 
   // listen
   // watch data file
-  onFileChange(DATAPATH, async () => {
-    const [current, original] = checksumFile(DATAPATH);
+  onFileChange(dataPath, async () => {
+    const [current, original] = checksumFile(dataPath);
 
     if (current === original) {
       logger.debug("organic change");
       return;
     }
 
-    logger.info("non-organic change");
+    logger.warn("non-organic change detected!");
     logger.debug("  original checksum %s", original);
     logger.debug("   current checksum %s", current);
 
@@ -60,33 +57,57 @@ module.exports = async function(filepath, opts) {
 
     // rewrite checksum
     logger.debug("overwrite checksum with %s", current);
-    writeChecksum(DATAPATH, current);
+    writeChecksum(dataPath, current);
 
-    logger.info("clean start new journey");
-    let _2 = await start(path.resolve(__dirname, "./worker-jerni"), {
-      absolutePath,
-      cleanStart: true,
-      heqServerAddress: `http://localhost:${address.port}`,
-    });
-
-    deps = _2[0];
-    stopJourney = _2[1];
-    logger.debug("worker ready", deps);
-
-    const _1 = await startServer({ port: 9999, dataPath: DATAPATH });
-    address = _1[0];
-    killServer = _1[1];
+    await startJerni({ cleanStart: true });
+    await startServer();
   });
 
-  async function startServer({ port, dataPath, verbose }) {
+  async function startServer() {
     logger.debug("starting heq-server…");
-    const [address, killServer] = await start(
-      path.resolve(__dirname, "./worker-heq-server"),
-      { port, dataPath, verbose },
-    );
+    const output = await start(path.resolve(__dirname, "./worker-heq-server"), {
+      port: opts.http,
+      dataPath,
+      verbose: opts.verbose,
+    });
+    address = output[0];
+    killServer = output[1];
     logger.info("heq-server is listening on port %d", address.port);
+  }
 
-    return [address, killServer];
+  async function startJerni({ cleanStart }) {
+    if (cleanStart) logger.info("clean start new journey");
+    let output = await start(path.resolve(__dirname, "./worker-jerni"), {
+      absolutePath,
+      cleanStart,
+      heqServerAddress: `http://localhost:${address.port}`,
+      verbose: opts.verbose,
+    });
+
+    deps = output[0];
+    stopJourney = output[1];
+    logger.info("worker ready");
+
+    logger.debug("watching %d files:", deps.length);
+    deps.slice(0, 20).forEach((file, index) => {
+      logger.debug("%d. %s", index + 1, path.relative(process.cwd(), file));
+    });
+    if (deps.length >= 20) {
+      logger.debug("and %d more…", deps.length - 20);
+    }
+
+    const close = onFileChange(
+      deps,
+      debounce(async file => {
+        logger.debug("file changed: %s", path.relative(process.cwd(), file));
+        logger.info("hot reloading…");
+
+        await close();
+        stopJourney();
+
+        startJerni({ cleanStart: true });
+      }, 300),
+    );
   }
 };
 
@@ -95,4 +116,6 @@ function onFileChange(paths, handler) {
   watcher.on("change", file => {
     handler(file);
   });
+
+  return () => watcher.close();
 }

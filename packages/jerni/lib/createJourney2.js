@@ -22,29 +22,6 @@ module.exports = function createJourney({
     monitor,
   };
 
-  // add dev APIs
-  if (dev) {
-    journey.dev__replaceServer = function(newServer) {
-      if (!newServer) {
-        throw new Error(
-          `Cannot replace heq-server address to ${JSON.stringify(newServer)}`,
-        );
-      }
-      logger.info(
-        "\nreplace heq-server address from %s to %s\n",
-        currentWriteTo,
-        newServer,
-      );
-      currentWriteTo = newServer;
-    };
-
-    journey.dev__clean = async function() {
-      for (const store of stores) {
-        await store.DEV_clean();
-      }
-    };
-  }
-
   const last10 = [];
   let latestServer = null;
   let latestClient = null;
@@ -158,14 +135,44 @@ module.exports = function createJourney({
     const {
       pulseCount = 200, // default maximum pulse size = 200 events
       pulseTime = 10, // default maximum wait time = 10ms
+      serverUrl,
+      cleanStart = false,
     } = config;
 
     if (config.logger) {
-      logger.debug("\n=== SWITCH TO NEW LOGGER PROVIDED BY begin() ===\n");
       logger = config.logger;
+      logger.info("=== SWITCH TO NEW LOGGER PROVIDED BY begin() ===");
     }
 
-    logger.debug("journey.begin({ %o })", { pulseCount, pulseTime });
+    logger.debug("journey.begin({%o})", {
+      pulseCount,
+      pulseTime,
+      serverUrl,
+      cleanStart,
+    });
+
+    if (serverUrl) {
+      if (!dev) {
+        throw new Error("Cannot change server address in production mode");
+      }
+      logger.debug(
+        "replace heq-server address from %s to %s",
+        currentWriteTo,
+        serverUrl,
+      );
+      currentWriteTo = serverUrl;
+    }
+
+    if (cleanStart) {
+      if (!dev) {
+        throw new Error("Cannot clean up stores in production mode");
+      }
+      logger.debug("cleaning %d store(s)", stores.length);
+      for (const store of stores) {
+        await store.clean();
+      }
+      logger.debug("cleaning complete");
+    }
 
     const buffer = [];
     const MAX = ~~(10000 / pulseCount);
@@ -231,7 +238,11 @@ module.exports = function createJourney({
   }
 
   async function handleBatch(events) {
-    logger.debug("handling events #%d - #%d", events[0].id, last(events).id);
+    if (events.length === 1) {
+      logger.debug("handling event #%d", events[0].id);
+    } else {
+      logger.debug("handling events #%d - #%d", events[0].id, last(events).id);
+    }
     const start = process.hrtime.bigint();
     const outputs = await Promise.all(
       stores.map(async store => {
@@ -299,7 +310,7 @@ module.exports = function createJourney({
 
       resp$.once("error", error => {
         if (delay < 500) {
-          logger.debug("sub 500ms reconnection… %o", {
+          logger.debug("sub 500ms reconnection… %j", {
             message: error.message,
             name: error.name,
           });

@@ -71,7 +71,7 @@ exports.makeQueue = async function(dataPath, verbose) {
     // clone
     const finalEvent = { ...event };
     lastHash = nextChecksum;
-    logger.debug(">> %s", nextChecksum);
+    logger.debug("checksum: %s", nextChecksum);
     const json = JSON.stringify(finalEvent);
     events.push(finalEvent);
 

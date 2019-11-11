@@ -6,21 +6,19 @@ module.exports = wrap(async function start({
   absolutePath,
   cleanStart,
   heqServerAddress,
+  verbose,
 }) {
   const [journey, deps] = await requireJourneyAndDeps(absolutePath);
 
-  journey.dev__replaceServer(heqServerAddress);
-
-  if (cleanStart) {
-    console.log("cleaning");
-    await journey.dev__clean();
-  }
-
-  const logger = getLogger({ service: "jerni", verbose: false });
+  const logger = getLogger({ service: "jerni", verbose });
 
   (async function() {
-    for await (const output of journey.begin({ pulseTime: 10, logger })) {
-      console.log(output);
+    for await (const output of journey.begin({
+      logger,
+      serverUrl: heqServerAddress,
+      cleanStart,
+    })) {
+      logger.info(output);
     }
   })();
 
