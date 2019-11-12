@@ -1,10 +1,33 @@
 const { fork } = require("child_process");
 
+let workers = [];
+
+process.on("exit", () => {
+  workers.forEach(worker => {
+    if (!worker.connected) {
+      worker.send("kill");
+    }
+  });
+});
+
 exports.start = async function(file, ...args) {
   const worker = fork(file, args.map(obj => JSON.stringify(obj)));
 
-  function kill() {
-    worker.kill();
+  async function kill() {
+    if (!worker.connected) {
+      console.warn("worker not connected");
+      workers = workers.filter(w => w !== worker);
+      return;
+    }
+    // console.log("sending kill");
+    worker.send("kill");
+
+    return new Promise(resolve => {
+      worker.on("close", () => {
+        workers = workers.filter(w => w !== worker);
+        resolve();
+      });
+    });
   }
 
   return new Promise((resolve, reject) => {
@@ -12,7 +35,7 @@ exports.start = async function(file, ...args) {
       if (msg.cmd === "ok") {
         resolve([msg.value, kill]);
       } else if (msg.cmd === "error") {
-        worker.kill();
+        worker.send("kill");
         reject(new Error(msg.error));
 
         worker.removeListener("message", onMessage);
@@ -41,5 +64,12 @@ exports.wrap = function(fn) {
       process.exit(ex.code || 1);
     }
   }
+
+  process.once("message", function(msg) {
+    if (msg === "kill") {
+      process.exit();
+    }
+  });
+
   main();
 };

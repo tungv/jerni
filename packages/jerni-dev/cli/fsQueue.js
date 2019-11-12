@@ -55,11 +55,7 @@ exports.checksumFile = function checksumFile(filePath) {
 exports.makeQueue = async function(dataPath, verbose) {
   const logger = getLogger({ service: "queue", verbose });
   // parse raw data
-  const [current, original, events] = exports.checksumFile(dataPath);
-
-  if (current !== original) {
-    logger.info("non-organic file detected");
-  }
+  const [current, , events] = exports.checksumFile(dataPath);
 
   let id = events.length;
   let lastHash = current;
