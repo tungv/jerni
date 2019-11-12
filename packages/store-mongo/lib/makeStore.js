@@ -6,7 +6,6 @@ const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 
 module.exports = async function makeStore(config = {}) {
   const { name, url, dbName, models } = config;
-  let listeners = [];
   const lock = locker();
 
   const client = await connect(url);
@@ -17,12 +16,14 @@ module.exports = async function makeStore(config = {}) {
     meta: {},
     name,
     registerModels,
-    subscribe,
     getDriver,
     handleEvents,
     getLastSeenId,
     listen,
     clean,
+    toString() {
+      return url;
+    },
   };
 
   return store;
@@ -50,13 +51,6 @@ module.exports = async function makeStore(config = {}) {
     return `${model.name}_v${model.version}`;
   }
 
-  function subscribe(listener) {
-    listeners.push(listeners);
-
-    return () => {
-      listeners = listeners.filter(fn => fn !== listener);
-    };
-  }
   function registerModels(map) {
     let includes = new Set();
     let includesAll = false;
@@ -151,9 +145,14 @@ module.exports = async function makeStore(config = {}) {
   }
 
   async function* listen() {
+    let checkpoint = 0;
     while (true) {
-      yield await getLastSeenId();
-      await sleep(500);
+      const next = await getLastSeenId();
+      if (next > checkpoint) {
+        checkpoint = next;
+        yield checkpoint;
+      }
+      await sleep(300);
     }
   }
 

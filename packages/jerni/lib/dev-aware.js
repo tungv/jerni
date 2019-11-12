@@ -17,3 +17,11 @@ exports.waitTooLongExplain = ({ stores, event }) => {
 
   return require("jerni-dev").waitTooLongExplain({ stores, event });
 };
+
+exports.getLogger = () => {
+  if (!__DEVTOOL__) return console;
+
+  const getLogger = require("jerni-dev/cli/dev-logger");
+
+  return getLogger({ service: "jerni", verbose: false });
+};

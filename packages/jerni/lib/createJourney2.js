@@ -8,12 +8,17 @@ const backoff = require("./backoff");
 const commitEventToHeqServer = require("./commit");
 const makeRacer = require("./racer");
 
+function getLogger(dev) {
+  if (!dev) return console;
+  return require("./dev-aware").getLogger();
+}
+
 module.exports = function createJourney({
   writeTo,
   stores,
   dev = process.env.NODE_ENV !== "production",
 }) {
-  let logger = console;
+  let logger = getLogger(dev);
   const journey = {
     getReader,
     commit,
@@ -30,10 +35,23 @@ module.exports = function createJourney({
 
   // register models
   const STORE_BY_MODELS = new Map();
-  stores.forEach((store, index) => {
+  stores.forEach(async (store, index) => {
     // register every models in each read source to STORE_BY_MODELS map
     // so we can retrieve them later in `#getReader(model)`
     store.registerModels(STORE_BY_MODELS);
+
+    function logBump(checkpoint) {
+      logger.info(
+        "bumping checkpoint for stores[%d] to #%d",
+        index,
+        checkpoint,
+      );
+    }
+
+    for await (const checkpoint of store.listen()) {
+      logBump(checkpoint);
+      racer.bump(index, checkpoint);
+    }
   });
 
   // request these event.type only
@@ -52,27 +70,7 @@ module.exports = function createJourney({
   }
 
   getLatestSuccessfulCheckPoint().then(id => (latestClient = id));
-
-  // handle watch
-  let watcherCount = 0;
-  let listeners = [];
-
   return journey;
-
-  function startWatching() {
-    watcherCount++;
-    if (watcherCount > 1) return;
-
-    listeners = stores.map((store, index) =>
-      store.subscribe(id => racer.bump(index, id)),
-    );
-  }
-
-  function stopWatching() {
-    watcherCount--;
-    if (watcherCount > 0) return;
-    listeners.forEach(unsubscribe => unsubscribe());
-  }
 
   async function getReader(model) {
     const source = STORE_BY_MODELS.get(model);
@@ -103,7 +101,6 @@ module.exports = function createJourney({
       return;
     }
 
-    startWatching();
     return new Promise((resolve, reject) => {
       let resolved = false;
       let timeoutId;
@@ -126,8 +123,6 @@ module.exports = function createJourney({
         const err = new JerniPersistenceTimeout(event);
         reject(err);
       }, maxWait);
-    }).finally(() => {
-      stopWatching();
     });
   }
 
@@ -141,7 +136,7 @@ module.exports = function createJourney({
 
     if (config.logger) {
       logger = config.logger;
-      logger.info("=== SWITCH TO NEW LOGGER PROVIDED BY begin() ===");
+      logger.debug("=== SWITCH TO NEW LOGGER PROVIDED BY begin() ===");
     }
 
     logger.debug("journey.begin({%o})", {
