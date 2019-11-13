@@ -8,6 +8,32 @@ const backoff = require("./backoff");
 const commitEventToHeqServer = require("./commit");
 const makeRacer = require("./racer");
 
+function listening() {
+  let $ = defer();
+
+  let counter = 0;
+
+  return {
+    start() {
+      counter++;
+      if (counter === 1) {
+        $.resolve();
+      }
+    },
+
+    stop() {
+      counter--;
+      if (counter === 0) {
+        $ = defer();
+      }
+    },
+
+    async waitForFirstListen() {
+      return $.promise;
+    },
+  };
+}
+
 function getLogger(dev) {
   if (!dev) return console;
   return require("./dev-aware").getLogger();
@@ -33,6 +59,8 @@ module.exports = function createJourney({
   let currentWriteTo = writeTo;
   const reconnectBackoff = backoff({ seed: 10, max: 3000 });
 
+  const listener = listening();
+
   // register models
   const STORE_BY_MODELS = new Map();
   stores.forEach(async (store, index) => {
@@ -40,17 +68,9 @@ module.exports = function createJourney({
     // so we can retrieve them later in `#getReader(model)`
     store.registerModels(STORE_BY_MODELS);
 
-    function logBump(checkpoint) {
-      logger.info(
-        "bumping checkpoint for stores[%d] to #%d",
-        index,
-        checkpoint,
-      );
-    }
-
     for await (const checkpoint of store.listen()) {
-      logBump(checkpoint);
       racer.bump(index, checkpoint);
+      await listener.waitForFirstListen();
     }
   });
 
@@ -101,6 +121,8 @@ module.exports = function createJourney({
       return;
     }
 
+    listener.start();
+
     return new Promise((resolve, reject) => {
       let resolved = false;
       let timeoutId;
@@ -123,6 +145,8 @@ module.exports = function createJourney({
         const err = new JerniPersistenceTimeout(event);
         reject(err);
       }, maxWait);
+    }).finally(() => {
+      listener.stop();
     });
   }
 
@@ -477,4 +501,18 @@ async function* dedupe(iter, isEqual = (a, b) => a === b) {
 
     lastItem = item;
   }
+}
+
+function defer() {
+  let resolve, reject;
+
+  const promise = new Promise((_1, _2) => {
+    resolve = _1;
+    reject = _2;
+  });
+  return {
+    promise,
+    resolve,
+    reject,
+  };
 }

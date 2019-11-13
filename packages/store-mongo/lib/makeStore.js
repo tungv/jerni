@@ -145,13 +145,9 @@ module.exports = async function makeStore(config = {}) {
   }
 
   async function* listen() {
-    let checkpoint = 0;
     while (true) {
       const next = await getLastSeenId();
-      if (next > checkpoint) {
-        checkpoint = next;
-        yield checkpoint;
-      }
+      yield next;
       await sleep(300);
     }
   }
