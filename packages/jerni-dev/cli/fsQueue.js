@@ -9,9 +9,9 @@ exports.checksumFile = function checksumFile(filePath) {
   const logger = getLogger({ service: "queue", verbose: true });
 
   if (!fs.existsSync(filePath)) {
-    logger.info("data file does NOT exist");
+    logger.info("creating new data file");
     fs.writeFileSync(filePath, `### BEGIN checksum: ${initialChecksum} ###`);
-    return [initialChecksum, "", []];
+    return [initialChecksum, initialChecksum, []];
   }
 
   const data = String(fs.readFileSync(filePath));

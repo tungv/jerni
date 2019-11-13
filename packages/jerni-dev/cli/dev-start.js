@@ -44,7 +44,7 @@ module.exports = async function(filepath, opts) {
   });
 
   logger.info("checking integrity of data file since last start");
-  const [current, original] = checksumFile(dataPath);
+  const [current, original, events] = checksumFile(dataPath);
   if (current !== original) {
     logger.warn("non-organic changes detected");
   }
@@ -56,7 +56,7 @@ module.exports = async function(filepath, opts) {
     writeChecksum(dataPath, current);
   }
 
-  await startJerni({ cleanStart: current !== original });
+  await startJerni({ cleanStart: events.length === 0 || current !== original });
 
   async function startServer() {
     logger.debug("starting heq-server…");

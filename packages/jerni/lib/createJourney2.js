@@ -102,18 +102,40 @@ module.exports = function createJourney({
     throw new Error(`trying to read an unregistered model [${model.name}]`);
   }
 
+  function onRestarted() {
+    racer.reset();
+  }
+
   async function commit(event) {
+    if (dev) {
+      const version = require("../package.json").version;
+      await require("./dev-aware").connectDevServer(
+        {
+          version,
+          stores,
+          writeTo,
+        },
+        onRestarted,
+      );
+    }
     const serverUrl = dev
-      ? await require("./dev-aware").getDevServerUrl(currentWriteTo)
+      ? await require("./dev-aware").getDevServerUrl(
+          currentWriteTo,
+          onRestarted,
+        )
       : currentWriteTo;
 
-    return commitEventToHeqServer(`${serverUrl}/commit`, event).then(evt => {
-      if (dev) {
-        evt.meta.sent_to = serverUrl;
-      }
+    const eventWithId = await commitEventToHeqServer(
+      `${serverUrl}/commit`,
+      event,
+    );
 
-      return evt;
-    });
+    if (dev) {
+      eventWithId.meta.sent_to = serverUrl;
+      require("./dev-aware").logCommitted(serverUrl, eventWithId);
+    }
+
+    return eventWithId;
   }
 
   async function waitFor(event, maxWait = 3000) {
