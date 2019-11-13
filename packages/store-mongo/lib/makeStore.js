@@ -95,11 +95,10 @@ module.exports = async function makeStore(config = {}) {
     if (ops.length > 0) {
       const coll = db.collection(getCollectionName(model));
       const modelOpsResult = await coll.bulkWrite(ops);
-      changes = {
-        added: modelOpsResult.nUpserted || undefined,
-        modified: modelOpsResult.nModified || undefined,
-        removed: modelOpsResult.nRemoved || undefined,
-      };
+      changes = {};
+      if (modelOpsResult.nUpserted) changes.added = modelOpsResult.nUpserted;
+      if (modelOpsResult.nModified) changes.modified = modelOpsResult.nModified;
+      if (modelOpsResult.nRemoved) changes.removed = modelOpsResult.nRemoved;
     }
 
     await snapshotsCol.findOneAndUpdate(
