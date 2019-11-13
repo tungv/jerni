@@ -5,11 +5,12 @@ module.exports = new Model({
   name: "users",
   version: "1",
   transform: mapEvents({
-    "USER:REGISTERED"(event) {
+    USER_REGISTERED(event) {
       return {
         insertOne: {
+          id: event.payload.id,
           email: event.payload.email,
-          fullName: event.payload.fullname,
+          fullName: event.payload.fullName,
         },
       };
     },
