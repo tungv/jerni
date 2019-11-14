@@ -2,7 +2,7 @@
 
 `jerni` provides a foundation to build a lowly coupled, highly cohesive umbrella of software systems that process a same high-dimensional data space.
 
-![logo](./logo.svg)
+![logo](./logo.svg | width=100)
 
 # Design goals
 
