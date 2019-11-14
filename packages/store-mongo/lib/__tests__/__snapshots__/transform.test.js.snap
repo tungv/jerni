@@ -1,0 +1,142 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`transform 1`] = `
+Array [
+  Object {
+    "updateOne": Object {
+      "filter": Object {
+        "$or": Array [
+          Object {
+            "__v": Object {
+              "$gt": 10,
+            },
+          },
+          Object {
+            "__op": Object {
+              "$gte": 0,
+            },
+            "__v": 10,
+          },
+        ],
+      },
+      "update": Object {
+        "$setOnInsert": Object {
+          "__op": 0,
+          "__v": 10,
+          "born_at": 1533632235302,
+          "full_name": "child_1",
+          "id": "11",
+        },
+      },
+      "upsert": true,
+    },
+  },
+  Object {
+    "updateOne": Object {
+      "filter": Object {
+        "$or": Array [
+          Object {
+            "__v": Object {
+              "$gt": 10,
+            },
+          },
+          Object {
+            "__op": Object {
+              "$gte": 1,
+            },
+            "__v": 10,
+          },
+        ],
+      },
+      "update": Object {
+        "$setOnInsert": Object {
+          "__op": 1,
+          "__v": 10,
+          "born_at": 1533632235302,
+          "full_name": "child_2",
+          "id": "12",
+        },
+      },
+      "upsert": true,
+    },
+  },
+  Object {
+    "updateOne": Object {
+      "filter": Object {
+        "$or": Array [
+          Object {
+            "__v": Object {
+              "$gt": 10,
+            },
+          },
+          Object {
+            "__op": Object {
+              "$gte": 2,
+            },
+            "__v": 10,
+          },
+        ],
+      },
+      "update": Object {
+        "$setOnInsert": Object {
+          "__op": 2,
+          "__v": 10,
+          "born_at": 1533632235302,
+          "full_name": "child_3",
+          "id": "13",
+        },
+      },
+      "upsert": true,
+    },
+  },
+  Object {
+    "updateMany": Object {
+      "filter": Object {
+        "$and": Array [
+          Object {
+            "id": Object {
+              "$in": Array [
+                Array [
+                  "1",
+                  "2",
+                ],
+              ],
+            },
+          },
+          Object {
+            "$or": Array [
+              Object {
+                "__v": Object {
+                  "$lt": 10,
+                },
+              },
+              Object {
+                "__op": Object {
+                  "$lt": 3,
+                },
+                "__v": 10,
+              },
+            ],
+          },
+        ],
+      },
+      "update": Object {
+        "$push": Object {
+          "children": Object {
+            "$each": Array [
+              "11",
+              "12",
+              "13",
+            ],
+          },
+        },
+        "$set": Object {
+          "__op": 3,
+          "__v": 10,
+        },
+      },
+      "upsert": false,
+    },
+  },
+]
+`;

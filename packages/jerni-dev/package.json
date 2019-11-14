@@ -3,55 +3,29 @@
   "version": "0.9.7",
   "description": "CLI tool for develop clients of `heq-server` instances",
   "main": "index.js",
-  "bin": "cli.js",
+  "bin": "cli/index.js",
   "scripts": {
-    "dev:web": "NODE_ENV=heq_development node --trace-warnings index",
-    "dev:cli": "node --trace-warnings index",
-    "dev:clean": "rm *.db && mongo examples --eval \"db.dropDatabase()\"",
-    "prepare": "next build"
+    "dev": "node"
   },
   "author": "Tung Vu <me@tungv.com>",
   "repository": "https://github.com/tungv/jerni",
   "license": "ISC",
-  "devDependencies": {
-    "ava": "^0.25.0"
-  },
   "dependencies": {
-    "@heq/server-lokijs": "^2.0.1",
-    "ansi-colors": "^3.0.5",
+    "ansi-colors": "^4.1.1",
     "boxen": "^1.3.0",
     "brighten": "^0.0.1",
     "chokidar": "^2.0.4",
-    "classnames": "^2.2.6",
-    "cross-spawn": "^6.0.5",
-    "date-fns": "^1.29.0",
     "debounce": "^1.2.0",
-    "got": "^9.2.0",
     "heq-server": "^2.2.6",
-    "isomorphic-fetch": "^2.2.1",
-    "kefir": "^3.8.3",
-    "kefir-proxy-stream": "^0.2.0",
-    "listr": "^0.14.1",
-    "log4js": "^3.0.5",
-    "lokijs": "^1.5.5",
+    "json-parse-better-errors": "^1.0.2",
     "micro": "^9.3.2",
-    "microrouter": "^3.1.3",
-    "mkdirp": "^0.5.1",
     "ms": "^2.1.1",
-    "next": "^6.1.1",
-    "next-redux-wrapper": "^2.0.0",
-    "opn": "^5.3.0",
-    "pkg-dir": "^3.0.0",
-    "polished": "^1.9.3",
-    "react": "^16.4.1",
-    "react-dom": "^16.4.1",
-    "react-json-editor-ajrm": "^2.5.1",
-    "react-redux": "^5.0.7",
-    "redux": "^4.0.0",
-    "redux-array-middleware": "^1.0.1",
-    "rimraf": "^2.6.2",
+    "object-hash": "^2.0.0",
+    "pkg-dir": "^4.2.0",
     "sade": "^1.4.1",
-    "socket.io": "^2.1.1",
-    "tempfile": "^2.0.0"
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "jest": "^24.9.0"
   }
 }

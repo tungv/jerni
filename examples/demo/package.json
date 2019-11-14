@@ -1,0 +1,24 @@
+{
+  "name": "jerni-demo",
+  "version": "1.0.1",
+  "description": "demo how to work with jerni",
+  "main": "index.js",
+  "author": "Tung Vu <me@tungv.com>",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@jerni/store-mongo": "^0.5.9",
+    "express": "^4.17.1",
+    "jerni": "^0.9.8",
+    "lodash": "^4.17.15",
+    "nanoid": "^2.1.6"
+  },
+  "scripts": {
+    "jerni": "npx -p node@12 jerni start my-journey.js",
+    "jerni-dev": "npx -p node@12 jerni-dev start my-journey.js",
+    "webserver": "node index"
+  },
+  "devDependencies": {
+    "jerni-dev": "^0.9.7"
+  }
+}

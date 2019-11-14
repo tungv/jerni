@@ -1,5 +1,5 @@
-const makeDefer = require('./makeDefer');
-const partition = require('./partition');
+const makeDefer = require("./makeDefer");
+const partition = require("./partition");
 
 const makeRacer = initialArray => {
   let buffer = [];
@@ -31,7 +31,12 @@ const makeRacer = initialArray => {
     },
     versions(index) {
       return initialArray[index];
-    }
+    },
+    reset() {
+      for (let i = 0; i < initialArray.length; ++i) {
+        initialArray[i] = 0;
+      }
+    },
   };
 };
 

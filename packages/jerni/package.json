@@ -1,6 +1,6 @@
 {
   "name": "jerni",
-  "version": "0.9.8",
+  "version": "1.0.0-alpha.1",
   "description": "Server-side Flux architecture framework",
   "main": "index.js",
   "bin": "cli/index.js",
@@ -9,23 +9,34 @@
   "license": "MIT",
   "devDependencies": {
     "@jerni/base": "^0.1.5",
-    "ava": "^1.4.1",
-    "brighten": "^0.0.1",
     "heq-server": "^2.2.6",
-    "jerni-dev": "^0.9.7",
+    "jest": "^24.9.0",
     "micro": "^9.3.2",
-    "tcp-proxy.js": "^1.2.0"
+    "pkg": "^4.4.0",
+    "server-destroy": "^1.0.1"
   },
   "dependencies": {
+    "@async-generator/buffer-time-count": "^1.0.3",
+    "@async-generator/map": "^1.0.1",
+    "@async-generator/subject": "^1.0.1",
     "arrify": "^1.0.1",
+    "buffer-time-count-generator": "^1.0.0",
     "got": "^9.0.0",
-    "kefir": "^3.8.3",
-    "kefir-proxy-stream": "^0.2.0",
     "log4js": "^3.0.5",
+    "pretty-ms": "^5.0.0",
     "read-pkg-up": "^4.0.0",
-    "sade": "^1.4.1"
+    "sade": "^1.4.1",
+    "winston": "^3.2.1"
   },
   "scripts": {
-    "test": "NODE_ENV=production ava"
+    "test": "NODE_ENV=production jest tests/*",
+    "e2e": "NODE_ENV=production jest stress_tests/*",
+    "binary:build": "pkg --out-path=binaries ."
+  },
+  "engines": {
+    "node": "^12"
+  },
+  "pkg": {
+    "scripts": "cli/**/*.js"
   }
 }
