@@ -53,6 +53,8 @@ New engineers can get onboard more quickly because they don't need to learn abou
                               | Business domain   |   push         |
                               | Subscription Job  +<---------------+
                               |                   |
+                              | (jerni)           |
+                              |                   |
                               +-------------------+
 ```
 
