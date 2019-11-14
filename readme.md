@@ -1,8 +1,8 @@
+![logo](./logo.png)
+
 # jerni - accessible event-sourcing for everyone
 
 `jerni` provides a foundation to build a lowly coupled, highly cohesive umbrella of software systems that process a same high-dimensional data space.
-
-![logo](./logo.png)
 
 # Design goals
 
