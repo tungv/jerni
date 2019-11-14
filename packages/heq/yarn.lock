@@ -48,9 +48,9 @@
   dependencies:
     arrify "^1.0.1"
 
-"@heq/server-redis@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.2.tgz#0f9c7cbeaf10b20044fb34b0b3069f755b34b467"
+"@heq/server-redis@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.4.tgz#ed2837913ddfae55845f2c6ff4f9bfa3a8a0e53e"
   dependencies:
     kefir "^3.8.3"
     redis "^2.8.0"
@@ -1374,8 +1374,8 @@ extend-shallow@^3.0.0, extend-shallow@^3.0.2:
     is-extendable "^1.0.1"
 
 extend@~3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.1.tgz#a755ea7bc1adfcc5a31ce7e762dbaadc5e636444"
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.2.tgz#f8b1136b4071fbd8eb140aff858b1019ec2915fa"
 
 extglob@^0.3.1:
   version "0.3.2"
@@ -1754,9 +1754,9 @@ hawk@~6.0.2:
     hoek "4.x.x"
     sntp "2.x.x"
 
-heq-server@^2.2.4:
-  version "2.2.4"
-  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.2.4.tgz#a3f3e8aad752674464c4a83e026b0bf1c39c1596"
+heq-server@^2.2.6:
+  version "2.2.6"
+  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.2.6.tgz#32751bda2c6b4bece89a69cba3f7bc0111401d5d"
   dependencies:
     ip "^1.1.5"
     kefir "^3.8.3"
