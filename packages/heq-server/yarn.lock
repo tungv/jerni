@@ -139,10 +139,10 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@heq/server-redis@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.3.tgz#7b1a6c7233264d7d83dd18deecbdcd3c7013752e"
-  integrity sha512-Ee6bjNIHajjydPRu7BZbnjYBepfb8OJak6DAnNI+hOFsKNi9qfMQ7FAdh9C0euFf9AS8BZQ1IJpCFVp+Siuy6A==
+"@heq/server-redis@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.4.tgz#ed2837913ddfae55845f2c6ff4f9bfa3a8a0e53e"
+  integrity sha512-Z9QE1hZapDDbtrXM/3JkuZmPQQwtxvE8M224WgHmehpGvIu/33DmHe3ePjWyiSlIRtmV8nou0W2KF7yIWAG/ug==
   dependencies:
     kefir "^3.8.3"
     redis "^2.8.0"
@@ -1219,8 +1219,9 @@ extend-shallow@^3.0.0, extend-shallow@^3.0.2:
     is-extendable "^1.0.1"
 
 extend@~3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.1.tgz#a755ea7bc1adfcc5a31ce7e762dbaadc5e636444"
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/extend/-/extend-3.0.2.tgz#f8b1136b4071fbd8eb140aff858b1019ec2915fa"
+  integrity sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==
 
 extglob@^2.0.4:
   version "2.0.4"
