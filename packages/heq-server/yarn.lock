@@ -139,10 +139,10 @@
     exec-sh "^0.3.2"
     minimist "^1.2.0"
 
-"@heq/server-redis@^2.0.3":
-  version "2.0.3"
-  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.3.tgz#7b1a6c7233264d7d83dd18deecbdcd3c7013752e"
-  integrity sha512-Ee6bjNIHajjydPRu7BZbnjYBepfb8OJak6DAnNI+hOFsKNi9qfMQ7FAdh9C0euFf9AS8BZQ1IJpCFVp+Siuy6A==
+"@heq/server-redis@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.4.tgz#ed2837913ddfae55845f2c6ff4f9bfa3a8a0e53e"
+  integrity sha512-Z9QE1hZapDDbtrXM/3JkuZmPQQwtxvE8M224WgHmehpGvIu/33DmHe3ePjWyiSlIRtmV8nou0W2KF7yIWAG/ug==
   dependencies:
     kefir "^3.8.3"
     redis "^2.8.0"
@@ -2430,14 +2430,10 @@ lodash.sortby@^4.7.0:
   version "4.7.0"
   resolved "https://registry.yarnpkg.com/lodash.sortby/-/lodash.sortby-4.7.0.tgz#edd14c824e2cc9c1e0b0a1b42bb5210516a42438"
 
-lodash@^4.13.1, lodash@^4.17.4:
-  version "4.17.5"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.5.tgz#99a92d65c0272debe8c96b6057bc8fbfa3bed511"
-
-lodash@^4.17.11:
-  version "4.17.11"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.11.tgz#b39ea6229ef607ecd89e2c8df12536891cac9b8d"
-  integrity sha512-cQKh8igo5QUhZ7lg38DYWAxMvjSAKG0A8wGSVimP07SIUEK2UO+arSRKbRZWtelMtN5V0Hkwh5ryOto/SshYIg==
+lodash@^4.13.1, lodash@^4.17.11, lodash@^4.17.4:
+  version "4.17.15"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
+  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
 
 longest@^1.0.1:
   version "1.0.1"
