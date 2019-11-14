@@ -2,6 +2,8 @@
 
 `jerni` provides a foundation to build a lowly coupled, highly cohesive umbrella of software systems that process a same high-dimensional data space.
 
+![logo](./logo.svg)
+
 # Design goals
 
 `jerni` is designed to help teams build software systems that are:
