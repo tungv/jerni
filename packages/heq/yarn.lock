@@ -48,9 +48,9 @@
   dependencies:
     arrify "^1.0.1"
 
-"@heq/server-redis@^2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.2.tgz#0f9c7cbeaf10b20044fb34b0b3069f755b34b467"
+"@heq/server-redis@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@heq/server-redis/-/server-redis-2.0.4.tgz#ed2837913ddfae55845f2c6ff4f9bfa3a8a0e53e"
   dependencies:
     kefir "^3.8.3"
     redis "^2.8.0"
@@ -1754,9 +1754,9 @@ hawk@~6.0.2:
     hoek "4.x.x"
     sntp "2.x.x"
 
-heq-server@^2.2.4:
-  version "2.2.4"
-  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.2.4.tgz#a3f3e8aad752674464c4a83e026b0bf1c39c1596"
+heq-server@^2.2.6:
+  version "2.2.6"
+  resolved "https://registry.yarnpkg.com/heq-server/-/heq-server-2.2.6.tgz#32751bda2c6b4bece89a69cba3f7bc0111401d5d"
   dependencies:
     ip "^1.1.5"
     kefir "^3.8.3"
@@ -2579,8 +2579,8 @@ mitt@^1.1.3:
   resolved "https://registry.yarnpkg.com/mitt/-/mitt-1.1.3.tgz#528c506238a05dce11cd914a741ea2cc332da9b8"
 
 mixin-deep@^1.2.0:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/mixin-deep/-/mixin-deep-1.3.1.tgz#a49e7268dce1a0d9698e45326c5626df3543d0fe"
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/mixin-deep/-/mixin-deep-1.3.2.tgz#1120b43dc359a785dce65b55b82e257ccf479566"
   dependencies:
     for-in "^1.0.2"
     is-extendable "^1.0.1"
