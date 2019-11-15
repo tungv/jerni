@@ -1,4 +1,6 @@
-![logo](./logo.png)
+<div align="center">
+    <img src="https://github.com/tungv/jerni/raw/master/logo.png" height="128">
+</div>
 
 # jerni - accessible event-sourcing for everyone
 
