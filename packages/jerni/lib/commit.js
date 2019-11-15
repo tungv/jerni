@@ -1,5 +1,5 @@
-const readPkgUp = require('read-pkg-up');
-const got = require('got');
+const readPkgUp = require("read-pkg-up");
+const got = require("got");
 const { pkg: packageJSON } = readPkgUp.sync();
 
 module.exports = async (endpoint, event) => {

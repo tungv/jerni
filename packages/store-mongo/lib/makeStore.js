@@ -24,9 +24,14 @@ module.exports = async function makeStore(config = {}) {
     toString() {
       return url;
     },
+    dispose,
   };
 
   return store;
+
+  async function dispose() {
+    await client.close();
+  }
 
   async function handleEvents(events) {
     const release = lock();
