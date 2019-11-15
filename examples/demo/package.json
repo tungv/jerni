@@ -9,7 +9,7 @@
   "dependencies": {
     "@jerni/store-mongo": "^0.5.9",
     "express": "^4.17.1",
-    "jerni": "^0.9.8",
+    "jerni": "^1.0.0-alpha.1",
     "lodash": "^4.17.15",
     "nanoid": "^2.1.6"
   },

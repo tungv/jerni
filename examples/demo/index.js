@@ -1,5 +1,8 @@
-const generate = require("nanoid/generate");
 const express = require("express");
+
+const getUsersCollection = require("./getUsersCollection");
+const registerUser = require("./registerUser");
+
 const app = express();
 
 app.use(express.json());
@@ -7,40 +10,8 @@ app.use(express.json());
 const initializer = require("./my-journey");
 const journeyPromise = initializer();
 
-async function getUsersCollection() {
-  const journey = await journeyPromise;
-  const Users = await journey.getReader(require("./models/users"));
-  return Users;
-}
-
-async function registerUser(user) {
-  const journey = await journeyPromise;
-  const userId = generate(
-    "0123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
-    12,
-  );
-
-  if (!user.email || !user.fullName) {
-    throw new Error("invalid user");
-  }
-
-  const event = await journey.commit({
-    type: "USER_REGISTERED",
-    payload: {
-      id: userId,
-      email: user.email,
-      fullName: user.fullName,
-    },
-  });
-
-  await journey.waitFor(event);
-
-  const Users = await getUsersCollection();
-  return Users.findOne({ id: userId });
-}
-
 async function getAllUsers() {
-  const Users = await getUsersCollection();
+  const Users = await getUsersCollection(await journeyPromise);
   const users = await Users.find({}).toArray();
 
   return users.map(user => ({
@@ -56,25 +27,24 @@ app.get("/api/users", function(req, res) {
   });
 });
 
-app.post("/api/users", function(req, res) {
+app.post("/api/users", async function(req, res) {
   const body = req.body;
-  registerUser(body)
-    .then(user => {
-      res.json({
-        status: "created",
-        data: user,
-      });
-    })
-    .catch(ex => {
-      if (ex.name === "JerniPersistanceTimeout") {
-        res.status(202);
-        res.json({ status: "accepted", data: null });
-      } else {
-        console.error(ex);
-        res.status(400);
-        res.json({ status: "failed", data: ex });
-      }
+  try {
+    const user = await registerUser(await journeyPromise, body);
+    return res.json({
+      status: "created",
+      data: user,
     });
+  } catch (ex) {
+    if (ex.name === "JerniPersistanceTimeout") {
+      res.status(202);
+      res.json({ status: "accepted", data: null });
+    } else {
+      console.error(ex);
+      res.status(400);
+      res.json({ status: "failed", data: ex });
+    }
+  }
 });
 
 app.listen(3000);

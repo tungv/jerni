@@ -5,8 +5,8 @@ const users = require("./models/users");
 module.exports = async function initialize() {
   const mongoStore = await makeStore({
     name: "my_test_mongo_store",
-    url: "mongodb://localhost:27017",
-    dbName: "my_app",
+    url: process.env.MONGODB_URL,
+    dbName: process.env.MONGODB_DBNAME,
     models: [users],
   });
 
