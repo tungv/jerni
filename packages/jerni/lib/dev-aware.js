@@ -30,7 +30,11 @@ exports.getLogger = () => {
 
   const getLogger = require("jerni-dev/cli/dev-logger");
 
-  return getLogger({ service: "jerni", verbose: false });
+  return getLogger({
+    service: "jerni",
+    verbose:
+      process.env.DEBUG_JERNI_DEV && process.env.DEBUG_JERNI_DEV !== "false",
+  });
 };
 
 let watched = false;

@@ -53,9 +53,11 @@ module.exports = function createJourney({
     monitor,
 
     // composite methods
-    handleEvents,
     clean,
     dispose,
+
+    // dev-mode
+    handleEvents,
   };
 
   const last10 = [];
