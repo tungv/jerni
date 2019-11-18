@@ -51,6 +51,13 @@ module.exports = function createJourney({
     begin,
     waitFor,
     monitor,
+
+    // composite methods
+    clean,
+    dispose,
+
+    // dev-mode
+    handleEvents,
   };
 
   const last10 = [];
@@ -205,14 +212,7 @@ module.exports = function createJourney({
     }
 
     if (cleanStart) {
-      if (!dev) {
-        throw new Error("Cannot clean up stores in production mode");
-      }
-      logger.debug("cleaning %d store(s)", stores.length);
-      for (const store of stores) {
-        await store.clean();
-      }
-      logger.debug("cleaning complete");
+      await clean();
     }
 
     const buffer = [];
@@ -268,7 +268,7 @@ module.exports = function createJourney({
 
     try {
       for await (const events of batch$) {
-        yield await handleBatch(events);
+        yield await handleEvents(events);
       }
     } catch (ex) {
       logger.debug(ex);
@@ -278,7 +278,7 @@ module.exports = function createJourney({
     }
   }
 
-  async function handleBatch(events) {
+  async function handleEvents(events) {
     if (events.length === 1) {
       logger.debug("handling event #%d", events[0].id);
     } else {
@@ -445,6 +445,25 @@ module.exports = function createJourney({
     const url = `${currentWriteTo}/events/latest`;
     const { body } = await got(url, { json: true });
     latestServer = body.id;
+  }
+
+  async function clean() {
+    if (!dev) {
+      throw new Error("Cannot clean up stores in production mode");
+    }
+    logger.debug("cleaning %d store(s)", stores.length);
+    for (const store of stores) {
+      await store.clean();
+    }
+    logger.debug("cleaning complete");
+  }
+
+  async function dispose() {
+    logger.debug("disposing %d store(s)", stores.length);
+    for (const store of stores) {
+      await store.dispose();
+    }
+    logger.debug("disposing complete");
   }
 };
 
