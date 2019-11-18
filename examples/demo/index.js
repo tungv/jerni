@@ -1,6 +1,6 @@
 const express = require("express");
 
-const getUsersCollection = require("./getUsersCollection");
+const getAllUsers = require("./getAllUsers");
 const registerUser = require("./registerUser");
 
 const app = express();
@@ -10,21 +10,10 @@ app.use(express.json());
 const initializer = require("./my-journey");
 const journeyPromise = initializer();
 
-async function getAllUsers() {
-  const Users = await getUsersCollection(await journeyPromise);
-  const users = await Users.find({}).toArray();
+app.get("/api/users", async function(req, res) {
+  const users = await getAllUsers(await journeyPromise);
 
-  return users.map(user => ({
-    id: user.id,
-    fullName: user.fullName,
-    email: user.email,
-  }));
-}
-
-app.get("/api/users", function(req, res) {
-  getAllUsers().then(users => {
-    res.json(users);
-  });
+  return users;
 });
 
 app.post("/api/users", async function(req, res) {

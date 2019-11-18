@@ -16,7 +16,8 @@
   "scripts": {
     "jerni": "npx -p node@12 jerni start my-journey.js",
     "jerni-dev": "npx -p node@12 jerni-dev start my-journey.js",
-    "webserver": "node index"
+    "webserver": "node index",
+    "test": "jest"
   },
   "devDependencies": {
     "jerni-dev": "^0.9.7"
