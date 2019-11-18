@@ -1,6 +1,6 @@
 {
   "name": "jerni-dev",
-  "version": "1.0.0-alpha.0",
+  "version": "1.0.0-alpha.3",
   "description": "CLI tool for develop clients of `heq-server` instances",
   "main": "index.js",
   "bin": "cli/index.js",
