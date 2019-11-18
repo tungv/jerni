@@ -2,7 +2,7 @@ const makeStore = require("../makeStore");
 const { MongoClient } = require("mongodb");
 
 describe("Dev mode", () => {
-  it("should include DEV_clean method in DEV mode", async () => {
+  it("should include clean method", async () => {
     await clean("test_dev_1");
     const model = simpleModel();
     const store = await makeStore({
@@ -10,11 +10,10 @@ describe("Dev mode", () => {
       url: "mongodb://localhost:27017",
       dbName: "test_dev_1",
       models: [model],
-      dev: true,
     });
 
     await store.handleEvents([{ id: 1 }, { id: 2 }]);
-    await store.DEV_clean();
+    await store.clean();
     const coll = await store.getDriver(model);
 
     expect(await coll.countDocuments({})).toBe(0);
