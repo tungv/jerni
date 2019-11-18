@@ -1,12 +1,22 @@
 const JerniPersistenceTimeout = require("jerni/lib/JerniPersistenceTimeout");
 
-module.exports = function getJerniDevInstance(originalJourney, initial = []) {
+module.exports = async function getJerniDevInstance(
+  originalJourney,
+  initial = [],
+) {
   const buffer = [];
   const committed = [];
   let write = 0;
   let read = 0;
 
-  const ready$ = originalJourney.clean();
+  await originalJourney.clean();
+  if (initial.length > 0) {
+    for (let i = 0; i < initial.length; ++i) {
+      buffer[i] = initial[i];
+      buffer[i].id = ++write;
+    }
+    await flush();
+  }
 
   async function flush() {
     const count = buffer.length;
@@ -21,7 +31,6 @@ module.exports = function getJerniDevInstance(originalJourney, initial = []) {
       switch (property) {
         case "commit":
           return async function wrappedCommit(event) {
-            await ready$;
             committed.push({ ...event });
             event.id = ++write;
             buffer.push(event);
