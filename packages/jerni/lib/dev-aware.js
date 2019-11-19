@@ -38,14 +38,11 @@ exports.getLogger = () => {
 };
 
 let watched = false;
-exports.connectDevServer = async function connectDevServer(
-  config,
-  onRestarted,
-) {
+exports.connectDevServer = async function connectDevServer(config) {
   if (watched) {
     return;
   }
 
-  await require("jerni-dev").connectDevServer(config, onRestarted);
+  await require("jerni-dev").connectDevServer(config);
   watched = true;
 };

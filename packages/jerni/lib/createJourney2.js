@@ -3,7 +3,7 @@ const got = require("got");
 const map = require("@async-generator/map");
 const subject = require("@async-generator/subject");
 const JerniPersistenceTimeout = require("./JerniPersistenceTimeout");
-
+const version = require("../package.json").version;
 const backoff = require("./backoff");
 const commitEventToHeqServer = require("./commit");
 const makeRacer = require("./racer");
@@ -97,6 +97,7 @@ module.exports = function createJourney({
   }
 
   getLatestSuccessfulCheckPoint().then(id => (latestClient = id));
+
   return journey;
 
   async function getReader(model) {
@@ -109,27 +110,18 @@ module.exports = function createJourney({
     throw new Error(`trying to read an unregistered model [${model.name}]`);
   }
 
-  function onRestarted() {
-    racer.reset();
-  }
-
   async function commit(event) {
     if (dev) {
-      const version = require("../package.json").version;
-      await require("./dev-aware").connectDevServer(
-        {
-          version,
-          stores,
-          writeTo,
-        },
-        onRestarted,
-      );
+      racer.reset();
+
+      require("./dev-aware").connectDevServer({
+        version,
+        stores,
+        writeTo,
+      });
     }
     const serverUrl = dev
-      ? await require("./dev-aware").getDevServerUrl(
-          currentWriteTo,
-          onRestarted,
-        )
+      ? await require("./dev-aware").getDevServerUrl(currentWriteTo)
       : currentWriteTo;
 
     const eventWithId = await commitEventToHeqServer(
