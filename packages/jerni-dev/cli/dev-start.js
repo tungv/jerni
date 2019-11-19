@@ -108,7 +108,7 @@ module.exports = async function(filepath, opts) {
         }
 
         if (corrupted) {
-          logger.info("attemp to recover from corrupted data file");
+          logger.info("attempt to recover from corrupted data file");
           corrupted = false;
         } else {
           logger.warn("non-organic change detected!");
