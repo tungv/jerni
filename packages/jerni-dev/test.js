@@ -15,11 +15,24 @@ module.exports = async function getJerniDevInstance(
       buffer[i] = initial[i];
       buffer[i].id = ++write;
     }
+    await scheduleFlush();
+  }
+
+  let flushing = false;
+  async function scheduleFlush() {
+    if (flushing) {
+      await sleep(10);
+      return scheduleFlush();
+    }
+
+    flushing = true;
     await flush();
+    flushing = false;
   }
 
   async function flush() {
     const count = buffer.length;
+    if (count === 0) return;
     await originalJourney.handleEvents(buffer);
     buffer.length = 0;
 
@@ -35,7 +48,7 @@ module.exports = async function getJerniDevInstance(
             event.id = ++write;
             buffer.push(event);
 
-            process.nextTick(flush);
+            process.nextTick(scheduleFlush);
 
             return event;
           };
