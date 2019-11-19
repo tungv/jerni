@@ -14,7 +14,7 @@ const { version } = require("../package.json");
 module.exports = async function(filepath, opts) {
   let address, killServer, deps, stopJourney;
   const absolutePath = path.resolve(cwd, filepath);
-  const rootDir = pkgDir.sync(absolutePath);
+  const rootDir = pkgDir.sync(cwd);
   const logger = getLogger({ service: " cli ", verbose: opts.verbose });
   logger.info("jerni-dev.start(%o)", { version });
   logger.info(" * source file: %s", absolutePath);
