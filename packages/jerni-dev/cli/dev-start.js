@@ -11,8 +11,15 @@ const cwd = process.cwd();
 const pkgDir = require("pkg-dir");
 const { version } = require("../package.json");
 
+const readline = require("readline");
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+  prompt: "jerni-dev> ",
+});
+
 module.exports = async function(filepath, opts) {
-  let address, killServer, deps, stopJourney;
+  let address, stopServer, deps, stopJourney;
   const absolutePath = path.resolve(cwd, filepath);
   const rootDir = pkgDir.sync(cwd);
   const logger = getLogger({ service: " cli ", verbose: opts.verbose });
@@ -24,10 +31,36 @@ module.exports = async function(filepath, opts) {
     dataPath: opts.dataPath,
   });
 
+  rl.on("line", async line => {
+    rl.pause();
+    try {
+      switch (line.trim()) {
+        case "r":
+          logger.info("you requested to reload.");
+          await stopJourney();
+          await stopServer();
+          await startServer();
+          await startJerni({ cleanStart: true });
+          await sleep(100);
+          break;
+        default:
+          console.log(`Say what? I might have heard '${line.trim()}'`);
+          break;
+      }
+    } finally {
+      rl.resume();
+      rl.prompt();
+    }
+  }).on("close", () => {
+    console.log("");
+    logger.warn("interuptted! cleaning up…");
+    cleanUp();
+  });
+
   const dataPath = opts.dataPath;
 
   async function cleanUp() {
-    if (killServer) await killServer();
+    if (stopServer) await stopServer();
     if (stopJourney) await stopJourney();
     logger.info("exiting…");
     process.exit(0);
@@ -57,7 +90,8 @@ module.exports = async function(filepath, opts) {
   }
 
   await startJerni({ cleanStart: events.length === 0 || current !== original });
-
+  await sleep(1000);
+  rl.prompt();
   async function startServer() {
     logger.debug("starting heq-server…");
 
@@ -93,7 +127,7 @@ module.exports = async function(filepath, opts) {
 
     // MUTATION: keep track of the current address
     address = `http://localhost:${port}`;
-    killServer = kill;
+    stopServer = kill;
 
     // start watching
     // watch data file
@@ -120,7 +154,7 @@ module.exports = async function(filepath, opts) {
         stopWatching();
 
         logger.debug("stopping heq-server");
-        await killServer();
+        await stopServer();
 
         logger.debug("stopping jerni");
         await stopJourney();
@@ -132,7 +166,7 @@ module.exports = async function(filepath, opts) {
         await startJerni({ cleanStart: true });
         await startServer();
       } catch (ex) {
-        await killServer();
+        await stopServer();
         await stopJourney();
         corrupted = true;
         // process.exit(1);
@@ -190,3 +224,5 @@ function onFileChange(paths, handler) {
 
   return () => watcher.close();
 }
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));

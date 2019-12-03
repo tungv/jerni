@@ -22,5 +22,9 @@ module.exports = wrap(async function start({
     }
   })();
 
+  // while (!journey.isLive()) await sleep(100);
+
   return deps;
 });
+
+// const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));

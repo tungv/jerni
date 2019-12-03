@@ -218,7 +218,7 @@ module.exports = function createJourney({
         count: pulseCount,
         time: pulseTime,
       });
-      logger.info("connected!");
+
       const incoming$ = bufferTimeCount(event$, pulseTime, pulseCount);
 
       async function waitForOverflow() {
@@ -336,44 +336,47 @@ module.exports = function createJourney({
       const resp$ = got.stream(url, { headers });
 
       const requestPromise = new Promise(resolve => {
+        let request = null;
         resp$.on("request", r => {
-          resolve(r);
+          request = r;
+          logger.info("connected!");
         });
-      });
 
-      resp$.once("error", error => {
-        if (delay < 500) {
-          logger.debug("sub 500ms reconnection… %j", {
-            message: error.message,
-            name: error.name,
-          });
-        } else {
-          logger.error("repeating connection error", {
-            message: error.message,
-            name: error.name,
-          });
-        }
+        resp$.once("error", error => {
+          if (delay < 500) {
+            logger.debug("sub 500ms reconnection… %j", {
+              message: error.message,
+              name: error.name,
+            });
+          } else {
+            logger.error("repeating connection error", {
+              message: error.message,
+              name: error.name,
+            });
+          }
 
-        // make sure we reconnect
-        reconnect();
-      });
-
-      resp$.once("data", () => {
-        logger.info("start receiving data");
-        reconnectBackoff.reset();
-      });
-
-      resp$.on("data", chunk => {
-        const maybeComplete = parseChunk(chunk);
-
-        if (maybeComplete) emit(maybeComplete);
-      });
-
-      resp$.once("end", () => {
-        // make sure we reconnect
-        if (!forcedStop) {
+          // make sure we reconnect
           reconnect();
-        }
+        });
+
+        resp$.once("data", () => {
+          logger.info("start receiving data");
+          reconnectBackoff.reset();
+          resolve(request);
+        });
+
+        resp$.on("data", chunk => {
+          const maybeComplete = parseChunk(chunk);
+
+          if (maybeComplete) emit(maybeComplete);
+        });
+
+        resp$.once("end", () => {
+          // make sure we reconnect
+          if (!forcedStop) {
+            reconnect();
+          }
+        });
       });
 
       return requestPromise;
