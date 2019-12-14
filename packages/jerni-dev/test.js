@@ -69,6 +69,9 @@ module.exports = async function getJerniDevInstance(
         case "committed":
           return committed;
 
+        case "isPending":
+          return write > read;
+
         default:
           return target[property];
       }
