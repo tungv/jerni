@@ -6,6 +6,7 @@ module.exports = async function getJerniDevInstance(
 ) {
   const buffer = [];
   const committed = [];
+  let flushing = false;
   let write = 0;
   let read = 0;
 
@@ -18,7 +19,6 @@ module.exports = async function getJerniDevInstance(
     await scheduleFlush();
   }
 
-  let flushing = false;
   async function scheduleFlush() {
     if (flushing) {
       await sleep(10);
