@@ -180,7 +180,6 @@ async function connect(url) {
   const client = await MongoClient.connect(url, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
-    reconnectTries: Number.MAX_VALUE,
   });
   return client;
 }
