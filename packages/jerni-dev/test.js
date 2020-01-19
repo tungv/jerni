@@ -59,7 +59,8 @@ module.exports = async function getJerniDevInstance(
             if (timeout < 0) {
               throw new JerniPersistenceTimeout(event);
             }
-            if (read >= event.id) return;
+            const id = event.id || committed.indexOf(event) + 1;
+            if (read >= id) return;
 
             await sleep(10);
             const elapsed = Date.now() - start;
