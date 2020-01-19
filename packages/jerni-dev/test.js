@@ -39,6 +39,19 @@ module.exports = async function getJerniDevInstance(
     read += count;
   }
 
+  async function wrappedWaitFor(event, timeout = 3000) {
+    const start = Date.now();
+    if (timeout < 0) {
+      throw new JerniPersistenceTimeout(event);
+    }
+    const id = event.id || committed.indexOf(event) + 1;
+    if (read >= id) return;
+
+    await sleep(10);
+    const elapsed = Date.now() - start;
+    return wrappedWaitFor(event, timeout - elapsed);
+  }
+
   const wrappedJourney = new Proxy(originalJourney, {
     get(target, property) {
       switch (property) {
@@ -54,24 +67,23 @@ module.exports = async function getJerniDevInstance(
           };
 
         case "waitFor":
-          return async function wrappedWaitFor(event, timeout = 3000) {
-            const start = Date.now();
-            if (timeout < 0) {
-              throw new JerniPersistenceTimeout(event);
-            }
-            const id = event.id || committed.indexOf(event) + 1;
-            if (read >= id) return;
-
-            await sleep(10);
-            const elapsed = Date.now() - start;
-            return wrappedWaitFor(event, timeout - elapsed);
-          };
+          return wrappedWaitFor;
 
         case "committed":
           return committed;
 
         case "isPending":
           return write > read;
+
+        case "waitAll":
+          return async function() {
+            if (committed.length === 0) {
+              console.warn("journey.waitAll() without any committed events");
+              return;
+            }
+
+            return wrappedWaitFor({ id: committed.length });
+          };
 
         default:
           return target[property];
