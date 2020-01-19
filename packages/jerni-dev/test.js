@@ -44,7 +44,7 @@ module.exports = async function getJerniDevInstance(
     if (timeout < 0) {
       throw new JerniPersistenceTimeout(event);
     }
-    const id = event.id || committed.indexOf(event) + 1;
+    const id = event.id || initial.length + committed.indexOf(event) + 1;
     if (read >= id) return;
 
     await sleep(10);
@@ -82,7 +82,7 @@ module.exports = async function getJerniDevInstance(
               return;
             }
 
-            return wrappedWaitFor({ id: committed.length });
+            return wrappedWaitFor({ id: initial.length + committed.length });
           };
 
         default:
