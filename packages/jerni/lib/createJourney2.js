@@ -304,7 +304,7 @@ module.exports = function createJourney({
 
   async function getLatestSuccessfulCheckPoint() {
     const latestEventIdArray = await Promise.all(
-      stores.map(source => source.getLastSeenId()),
+      stores.map(source => source.getLastSeenId().catch(() => 0)),
     );
 
     return Math.min(latestEventIdArray);
