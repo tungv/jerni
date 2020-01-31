@@ -6,6 +6,7 @@ module.exports = async function getJerniDevInstance(
 ) {
   const buffer = [];
   const committed = [];
+  let hasStopped = false;
   let flushing = false;
   let write = 0;
   let read = 0;
@@ -32,8 +33,17 @@ module.exports = async function getJerniDevInstance(
 
   async function flush() {
     const count = buffer.length;
-    if (count === 0) return;
-    await originalJourney.handleEvents(buffer);
+    if (hasStopped || count === 0) return;
+    try {
+      await originalJourney.handleEvents(buffer);
+    } catch (ex) {
+      if (hasStopped) {
+        // journey has stopped so we don't need to care about any error
+        return;
+      }
+
+      throw ex;
+    }
     buffer.length = 0;
 
     read += count;
@@ -83,6 +93,12 @@ module.exports = async function getJerniDevInstance(
             }
 
             return wrappedWaitFor({ id: initial.length + committed.length });
+          };
+
+        case "dispose":
+          return async function() {
+            hasStopped = true;
+            return target.dispose();
           };
 
         default:
