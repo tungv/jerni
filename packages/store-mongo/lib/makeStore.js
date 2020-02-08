@@ -74,7 +74,7 @@ module.exports = async function makeStore(config = {}) {
         return;
       }
 
-      includes.add(...modelSpecificMeta.includes);
+      modelSpecificMeta.includes.forEach(type => includes.add(type));
     });
 
     if (includesAll) {
