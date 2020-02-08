@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.6](https://github.com/tungv/jerni/compare/@jerni/store-mongo@1.0.0-alpha.5...@jerni/store-mongo@1.0.0-alpha.6) (2020-02-08)
+
+
+### Bug Fixes
+
+* includes all types instead of the first one ([a94249a](https://github.com/tungv/jerni/commit/a94249a))
+
+
+
+
+
 ## [0.5.9](https://github.com/tungv/jerni/compare/@jerni/store-mongo@0.5.8...@jerni/store-mongo@0.5.9) (2019-09-21)
 
 **Note:** Version bump only for package @jerni/store-mongo

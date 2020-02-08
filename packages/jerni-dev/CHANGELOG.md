@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.9](https://github.com/tungv/jerni/compare/jerni-dev@1.0.0-alpha.8...jerni-dev@1.0.0-alpha.9) (2020-02-08)
+
+
+### Bug Fixes
+
+* do not run event handling if journey has stopped ([704b03e](https://github.com/tungv/jerni/commit/704b03e))
+
+
+
+
+
 ## [0.9.7](https://github.com/tungv/jerni/compare/jerni-dev@0.9.5...jerni-dev@0.9.7) (2019-09-19)
 
 
