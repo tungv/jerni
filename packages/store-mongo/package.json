@@ -1,6 +1,6 @@
 {
   "name": "@jerni/store-mongo",
-  "version": "1.0.0-alpha.7",
+  "version": "1.0.0-alpha.8",
   "main": "index.js",
   "files": [
     "lib",
