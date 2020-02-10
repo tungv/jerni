@@ -93,8 +93,12 @@ module.exports = async function(filepath, opts) {
   await sleep(1000);
   rl.prompt();
   async function startServer() {
+    if (isServerRunning) {
+      logger.warn("server is running. Cannot start 2 instances of heq server");
+      return;
+    }
     logger.debug("starting heq-server…");
-
+    isServerRunning = true;
     // start background process
     const [{ port }, stop] = await start(
       path.resolve(__dirname, "./worker-heq-server"),
@@ -122,6 +126,8 @@ module.exports = async function(filepath, opts) {
         logger.info("lockfile %s removed!", path.relative(cwd, lockfilePath));
       } catch {
         logger.warn("cannot unlink %s", lockfilePath);
+      } finally {
+        isServerRunning = false;
       }
     }
 
@@ -175,6 +181,13 @@ module.exports = async function(filepath, opts) {
   }
 
   async function startJerni({ cleanStart }) {
+    if (isJourneyRunning) {
+      logger.warn(
+        "journey is running. Cannot start 2 instances at a same time",
+      );
+      return;
+    }
+    isJourneyRunning = true;
     if (cleanStart) logger.info("clean start new journey");
     let output = await start(path.resolve(__dirname, "./worker-jerni"), {
       absolutePath,
@@ -190,6 +203,7 @@ module.exports = async function(filepath, opts) {
       logger.info("jerni subprocess stopped!");
       close();
       logger.info("stopped watching journey source code!");
+      isJourneyRunning = false;
     };
     logger.info("worker ready");
 
@@ -201,28 +215,35 @@ module.exports = async function(filepath, opts) {
       logger.debug("and %d more…", deps.length - 20);
     }
 
-    const close = onFileChange(
-      deps,
-      debounce(async file => {
-        logger.debug("file changed: %s", path.relative(process.cwd(), file));
-        logger.info("hot reloading…");
+    const close = onFileChange(deps, async file => {
+      logger.debug("file changed: %s", path.relative(process.cwd(), file));
+      logger.info("hot reloading…");
 
-        await close();
-        await stopJourney();
+      await close();
+      await stopJourney();
 
-        await startJerni({ cleanStart: true });
-      }, 300),
-    );
+      await startJerni({ cleanStart: true });
+    });
   }
 };
 
 function onFileChange(paths, handler) {
   const watcher = watch(paths);
-  watcher.on("change", file => {
-    handler(file);
-  });
+  let stopped = false;
+  watcher.on(
+    "change",
+    debounce(file => {
+      !stopped && handler(file);
+    }, 300),
+  );
 
-  return () => watcher.close();
+  return () => {
+    stopped = true;
+    watcher.close();
+  };
 }
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+let isJourneyRunning = false;
+let isServerRunning = false;

@@ -314,11 +314,17 @@ module.exports = function createJourney({
     const parseChunk = makeChunkParser();
     const [http$, emit] = subject();
     let forcedStop = false;
+    let request = null;
+
+    request = await connectHeqServer({ delay: 0 });
 
     async function reconnect() {
+      if (request) {
+        request.abort();
+      }
       const delay = reconnectBackoff.next();
 
-      logger.debug("reconnection scheduled after %dms", delay);
+      logger.info("reconnection scheduled after %dms", delay);
 
       await sleep(delay);
       request = await connectHeqServer({ delay });
@@ -336,10 +342,10 @@ module.exports = function createJourney({
       const resp$ = got.stream(url, { headers });
 
       const requestPromise = new Promise(resolve => {
-        let request = null;
+        let currentRequest = null;
         resp$.on("request", r => {
-          request = r;
-          logger.info("connected!");
+          currentRequest = r;
+          logger.debug("socket opened!");
         });
 
         resp$.once("error", error => {
@@ -362,7 +368,7 @@ module.exports = function createJourney({
         resp$.once("data", () => {
           logger.info("start receiving data");
           reconnectBackoff.reset();
-          resolve(request);
+          resolve(currentRequest);
         });
 
         resp$.on("data", chunk => {
@@ -382,7 +388,6 @@ module.exports = function createJourney({
       return requestPromise;
     }
 
-    let request = await connectHeqServer({ delay: 0 });
     const event$ = filter(
       map(flatten(http$), function(httpEvent) {
         if (httpEvent.event === "INCMSG") {
