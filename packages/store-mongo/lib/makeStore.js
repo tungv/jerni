@@ -11,6 +11,7 @@ module.exports = async function makeStore(config = {}) {
   const client = await connect(url);
   const db = client.db(dbName);
   const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
+  let hasStopped = false;
 
   const store = {
     meta: {},
@@ -30,10 +31,12 @@ module.exports = async function makeStore(config = {}) {
   return store;
 
   async function dispose() {
+    hasStopped = true;
     await client.close();
   }
 
   async function handleEvents(events) {
+    if (hasStopped) return {};
     const release = lock();
     try {
       const allPromises = models.map(async model => [
@@ -42,6 +45,7 @@ module.exports = async function makeStore(config = {}) {
       ]);
 
       const pairs = await Promise.all(allPromises);
+      if (hasStopped) return {};
       return Object.fromEntries(pairs.filter(([collName, changes]) => changes));
     } finally {
       release();
@@ -85,6 +89,7 @@ module.exports = async function makeStore(config = {}) {
   }
 
   async function executeOpsOnOneModel(model, events) {
+    if (hasStopped) return {};
     const ops = [].concat(
       ...events.map(event => {
         try {
@@ -100,6 +105,7 @@ module.exports = async function makeStore(config = {}) {
     if (ops.length > 0) {
       const coll = db.collection(getCollectionName(model));
       const modelOpsResult = await coll.bulkWrite(ops);
+      if (hasStopped) return {};
       changes = {};
       if (modelOpsResult.nUpserted) changes.added = modelOpsResult.nUpserted;
       if (modelOpsResult.nModified) changes.modified = modelOpsResult.nModified;
@@ -121,12 +127,14 @@ module.exports = async function makeStore(config = {}) {
   }
 
   async function getLastSeenId() {
+    if (hasStopped) return 0;
     const condition = {
       $or: models.map(m => ({ name: m.name, version: m.version })),
     };
 
     const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
     const resp = await snapshotsCol.find(condition).toArray();
+    if (hasStopped) return 0;
 
     if (resp.length < models.length) {
       for (const model of models) {
@@ -140,6 +148,7 @@ module.exports = async function makeStore(config = {}) {
             upsert: true,
           },
         );
+        if (hasStopped) return 0;
       }
       return 0;
     }
@@ -149,7 +158,7 @@ module.exports = async function makeStore(config = {}) {
   }
 
   async function* listen() {
-    while (true) {
+    while (!hasStopped) {
       const next = await getLastSeenId();
       yield next;
       await sleep(300);
@@ -157,6 +166,7 @@ module.exports = async function makeStore(config = {}) {
   }
 
   async function clean() {
+    if (hasStopped) return;
     const promises = models.map(m => {
       const col = db.collection(getCollectionName(m));
       return col.deleteMany({});
@@ -170,6 +180,7 @@ module.exports = async function makeStore(config = {}) {
 
     try {
       await Promise.all(promises);
+      if (hasStopped) return;
     } catch (ex) {
       console.error(ex);
     }
