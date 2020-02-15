@@ -324,7 +324,7 @@ module.exports = function createJourney({
       }
       const delay = reconnectBackoff.next();
 
-      logger.info("reconnection scheduled after %dms", delay);
+      logger.debug("reconnection scheduled after %dms", delay);
 
       await sleep(delay);
       request = await connectHeqServer({ delay });

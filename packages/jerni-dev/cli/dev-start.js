@@ -154,23 +154,20 @@ module.exports = async function(filepath, opts) {
           logger.warn("non-organic change detected!");
           logger.debug("  original checksum %s", original);
           logger.debug("   current checksum %s", current);
+          // rewrite checksum
+          logger.debug("overwrite checksum with %s", current);
+          writeChecksum(dataPath, current);
         }
 
         logger.info("stop watching data file");
         stopWatching();
 
-        logger.debug("stopping heq-server");
-        await stopServer();
-
         logger.debug("stopping jerni");
         await stopJourney();
-
-        // rewrite checksum
-        logger.debug("overwrite checksum with %s", current);
-        writeChecksum(dataPath, current);
-
-        await startJerni({ cleanStart: true });
+        logger.debug("stopping heq-server");
+        await stopServer();
         await startServer();
+        await startJerni({ cleanStart: true });
       } catch (ex) {
         await stopServer();
         await stopJourney();
