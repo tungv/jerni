@@ -1,5 +1,8 @@
 const createJourney = require("../lib/createJourney2");
+const mapEvents = require("../lib/mapEvents");
 const makeServer = require("./makeServer");
+const makeTestStore = require("./makeTestStore");
+const makeTestLogger = require("./makeTestLogger");
 
 test("#begin() should push events to stores", async () => {
   const { server } = await makeServer({
@@ -7,8 +10,15 @@ test("#begin() should push events to stores", async () => {
     port: 19080,
   });
 
+  const [logger, logs] = makeTestLogger();
+
   try {
-    const store = makeTestStore(event => event.id);
+    const store = makeTestStore(
+      mapEvents({
+        type_1: event => event.id,
+        type_2: event => event.id,
+      }),
+    );
 
     const journey = createJourney({
       writeTo: "http://localhost:19080",
@@ -21,8 +31,9 @@ test("#begin() should push events to stores", async () => {
 
     const db = await store.getDriver();
     const outputs = [];
-    for await (const output of journey.begin()) {
+    for await (const output of journey.begin({ logger })) {
       // only 2 possible events because we have filters by type
+      console.log(output);
       outputs.push(output);
       if (db.length === 2) {
         expect(db).toEqual([1, 2]);
@@ -35,44 +46,6 @@ test("#begin() should push events to stores", async () => {
     // journey.destroy();
   } finally {
     server.close();
+    expect(logs.join("\n")).toMatchSnapshot();
   }
 });
-
-function makeTestStore(transform) {
-  const db = [];
-  let listeners = [];
-
-  const store = {
-    name: "test_store",
-    meta: {
-      includes: ["type_1", "type_2"],
-    },
-    registerModels(map) {},
-    subscribe(listener) {
-      listeners.push(listeners);
-
-      return () => {
-        listeners = listeners.filter(fn => fn !== listener);
-      };
-    },
-    async handleEvents(events) {
-      db.push(...events.map(transform));
-      listeners.forEach(fn => fn(last(events).id));
-      return `done ${last(events).id}`;
-    },
-
-    async getDriver() {
-      return db;
-    },
-
-    async getLastSeenId() {
-      const event = last(db);
-      if (event) return event.id;
-      return 0;
-    },
-  };
-
-  return store;
-}
-
-const last = array => (array.length >= 1 ? array[array.length - 1] : null);

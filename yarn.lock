@@ -10,6 +10,13 @@
     "@async-generator/interval-with-reset" "^1.0.3"
     "@async-generator/merge" "^1.0.3"
 
+"@async-generator/emitter-on@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@async-generator/emitter-on/-/emitter-on-1.0.0.tgz#72dbc601d38f2cdd247185fa5e5f386db16e18c0"
+  integrity sha512-tdewKGciAGzZcKWGYqrEAAWNWnKJAvsLoAougusLD+TZMwVawudDPa8WkRNE7MCAYGoLq/7vv57LLlWTnBYB/g==
+  dependencies:
+    "@async-generator/subject" "^1.0.1"
+
 "@async-generator/interval-with-reset@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@async-generator/interval-with-reset/-/interval-with-reset-1.0.3.tgz#92dbe05d6eaee065cad2abb861ad7a13f87ae761"

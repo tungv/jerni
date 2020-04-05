@@ -277,29 +277,34 @@ module.exports = function createJourney({
       logger.debug("handling events #%d - #%d", events[0].id, last(events).id);
     }
     const start = process.hrtime.bigint();
-    const outputs = await Promise.all(
-      stores.map(async store => {
-        return store.handleEvents(events);
-      }),
-    );
-    const end = process.hrtime.bigint();
-    const durationMs = Number((end - start).toString(10)) / 1e6;
+    try {
+      const outputs = await Promise.all(
+        stores.map(async store => {
+          return store.handleEvents(events);
+        }),
+      );
+      return outputs;
+    } catch (ex) {
+      // error while handling events
+      console.error(ex);
+    } finally {
+      const end = process.hrtime.bigint();
+      const durationMs = Number((end - start).toString(10)) / 1e6;
 
-    const report = {
-      ts: Date.now(),
-      from: events[0].id,
-      to: last(events).id,
-      count: events.length,
-      durationMs,
-    };
+      const report = {
+        ts: Date.now(),
+        from: events[0].id,
+        to: last(events).id,
+        count: events.length,
+        durationMs,
+      };
 
-    last10.unshift(report);
-    last10.length = Math.min(last10.length, 10);
+      last10.unshift(report);
+      last10.length = Math.min(last10.length, 10);
 
-    latestClient = last(events).id;
-    logger.debug("done");
-
-    return outputs;
+      latestClient = last(events).id;
+      logger.debug("done");
+    }
   }
 
   async function getLatestSuccessfulCheckPoint() {
