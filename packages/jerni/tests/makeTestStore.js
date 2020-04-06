@@ -1,4 +1,5 @@
-const { on, EventEmitter } = require("events");
+const { EventEmitter } = require("events");
+const on = require("@async-generator/emitter-on");
 
 module.exports = function makeTestStore(transform) {
   const db = [];
