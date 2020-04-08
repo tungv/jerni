@@ -1,0 +1,44 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`IO error handling should recover when connection to heq-server fails 1`] = `
+"[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})
+[DBG] sending http request to: http://localhost:19070/subscribe
+[DBG] headers { 'last-event-id': '0', includes: '' }
+[DBG] socket opened!
+[INF] start receiving data
+[DBG] handling event #1
+[DBG] done
+[DBG] reconnection scheduled after 10ms
+[DBG] sending http request to: http://localhost:19070/subscribe
+[DBG] headers { 'last-event-id': '1', includes: '' }
+[DBG] socket opened!
+[DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
+[DBG] reconnection scheduled after 10ms
+[DBG] sending http request to: http://localhost:19070/subscribe
+[DBG] headers { 'last-event-id': '1', includes: '' }
+[DBG] socket opened!
+[DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
+[DBG] reconnection scheduled after 20ms
+[DBG] sending http request to: http://localhost:19070/subscribe
+[DBG] headers { 'last-event-id': '1', includes: '' }
+[DBG] socket opened!
+[DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
+[DBG] reconnection scheduled after 30ms
+[DBG] sending http request to: http://localhost:19070/subscribe
+[DBG] headers { 'last-event-id': '1', includes: '' }
+[DBG] socket opened!
+[DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
+[DBG] reconnection scheduled after 50ms
+[DBG] sending http request to: http://localhost:19070/subscribe
+[DBG] headers { 'last-event-id': '1', includes: '' }
+[DBG] socket opened!
+[INF] start receiving data
+[DBG] handling event #2
+[DBG] done
+[INF] stop processing events"
+`;

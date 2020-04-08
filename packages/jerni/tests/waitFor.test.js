@@ -55,20 +55,18 @@ describe("#waitFor", () => {
       });
 
       (async function() {
+        // eslint-disable-next-line no-unused-vars
         for await (const item of subInstance.begin({ pulseTime: 1, logger })) {
-          console.log(item);
         }
       })();
 
-      await sleep(500);
-
+      await sleep(100);
       const event = await journey.commit({ type: "test" });
-
-      await journey.waitFor(event, 100);
+      await journey.waitFor(event, 500);
       expect(db).toHaveLength(1);
     } finally {
       server.close();
-      console.log(logs.join("\n"));
+      expect(logs.join("\n")).toMatchSnapshot();
     }
   });
 });

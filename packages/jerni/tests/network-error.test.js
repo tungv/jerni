@@ -1,10 +1,12 @@
 const makeTestStore = require("./makeTestStore");
+const createJourney = require("../lib/createJourney2");
+const makeTestLogger = require("./makeTestLogger");
+const makeServer = require("./makeServer");
 
 describe("IO error handling", () => {
   it("should recover when connection to heq-server fails", async () => {
     jest.setTimeout(2000);
-    const createJourney = require("../lib/createJourney2");
-    const makeServer = require("./makeServer");
+    const [logger, logs] = makeTestLogger();
     let { queue, server } = await makeServer({
       ns: "test-begin-method",
       port: 19070,
@@ -16,6 +18,7 @@ describe("IO error handling", () => {
       const journey = createJourney({
         writeTo: "http://localhost:19070",
         stores: [store],
+        logger,
       });
 
       await journey.commit({ type: "event1", payload: {} });
@@ -25,11 +28,13 @@ describe("IO error handling", () => {
         console.log("kill");
         server.destroy();
         await sleep(100);
-        server = (await makeServer({
-          ns: "test-begin-method",
-          port: 19070,
-          queue,
-        })).server;
+        server = (
+          await makeServer({
+            ns: "test-begin-method",
+            port: 19070,
+            queue,
+          })
+        ).server;
         console.log("server restored");
         await journey.commit({ type: "event2", payload: {} });
       })();
@@ -44,6 +49,7 @@ describe("IO error handling", () => {
       // journey.destroy();
     } finally {
       server.close();
+      expect(logs.join("\n")).toMatchSnapshot();
     }
   });
 });

@@ -28,7 +28,7 @@ module.exports = function makeTestStore(transform) {
       );
       listeners.forEach(fn => fn(last(events).id));
       checkpoint = last(events).id;
-      pubsub.emit("persisted", { id: checkpoint });
+      pubsub.emit("persisted", checkpoint);
       return `done ${last(events).id}`;
     },
 
@@ -45,7 +45,6 @@ module.exports = function makeTestStore(transform) {
         if (hasStopped) {
           break;
         }
-        console.log(checkpoint);
         yield checkpoint;
       }
     },

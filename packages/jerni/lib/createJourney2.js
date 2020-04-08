@@ -43,8 +43,8 @@ module.exports = function createJourney({
   writeTo,
   stores,
   dev = process.env.NODE_ENV !== "production",
+  logger = getLogger(dev),
 }) {
-  let logger = getLogger(dev);
   const journey = {
     getReader,
     commit,
