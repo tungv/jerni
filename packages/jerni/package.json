@@ -11,7 +11,7 @@
     "@async-generator/emitter-on": "^1.0.0",
     "@jerni/base": "^0.1.5",
     "heq-server": "^2.2.6",
-    "jest": "^24.9.0",
+    "jest": "^25.2.7",
     "micro": "^9.3.2",
     "pkg": "^4.4.0",
     "server-destroy": "^1.0.1"
