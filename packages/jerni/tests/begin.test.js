@@ -33,7 +33,6 @@ test("#begin() should push events to stores", async () => {
     const outputs = [];
     for await (const output of journey.begin({ logger })) {
       // only 2 possible events because we have filters by type
-      console.log(output);
       outputs.push(output);
       if (db.length === 2) {
         expect(db).toEqual([1, 2]);
