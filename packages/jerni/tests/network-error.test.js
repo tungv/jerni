@@ -45,10 +45,8 @@ describe("IO error handling", () => {
       }
 
       expect(db).toEqual([1, 2]);
-
-      // journey.destroy();
     } finally {
-      server.close();
+      server.destroy();
       expect(logs.join("\n")).toMatchSnapshot();
     }
   });

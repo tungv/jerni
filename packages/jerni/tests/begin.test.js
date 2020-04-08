@@ -41,10 +41,8 @@ test("#begin() should push events to stores", async () => {
     }
 
     expect(outputs).toEqual([["done 2"]]);
-
-    // journey.destroy();
   } finally {
-    server.close();
+    server.destroy();
     expect(logs.join("\n")).toMatchSnapshot();
   }
 });

@@ -34,7 +34,8 @@ describe("#waitFor", () => {
 
   it("should wait until the event is fully committed to stores", async () => {
     jest.setTimeout(1000);
-    const [logger, logs] = makeTestLogger();
+    const [logger1, appLogs] = makeTestLogger();
+    const [logger2, jobLogs] = makeTestLogger();
     const { server } = await makeServer({
       port: 19060,
       ns: "test_wait_for",
@@ -42,21 +43,22 @@ describe("#waitFor", () => {
 
     try {
       const store = makeTestStore(event => event.id);
-      const db = await store.getDriver();
-
       const journey = createJourney({
         writeTo: "http://localhost:19060",
         stores: [store],
+        logger: logger1,
       });
 
       const subInstance = createJourney({
         writeTo: "http://localhost:19060",
         stores: [store],
+        logger: logger2,
       });
+      const db = await store.getDriver();
 
       (async function() {
         // eslint-disable-next-line no-unused-vars
-        for await (const item of subInstance.begin({ pulseTime: 1, logger })) {
+        for await (const item of subInstance.begin({ pulseTime: 1 })) {
         }
       })();
 
@@ -65,8 +67,9 @@ describe("#waitFor", () => {
       await journey.waitFor(event, 500);
       expect(db).toHaveLength(1);
     } finally {
-      server.close();
-      expect(logs.join("\n")).toMatchSnapshot();
+      server.destroy();
+      expect(appLogs.join("\n")).toMatchSnapshot("application logs");
+      expect(jobLogs.join("\n")).toMatchSnapshot("jerni cli logs");
     }
   });
 });

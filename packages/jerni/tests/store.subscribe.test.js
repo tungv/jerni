@@ -50,8 +50,7 @@ test("should subscribe", async () => {
     }
     expect(db).toHaveLength(20);
   } finally {
-    server.close();
-
+    server.destroy();
     expect(logs.join("\n")).toMatchSnapshot();
   }
 });
@@ -96,7 +95,7 @@ test("should subscribe with filter", async () => {
     const db = await store.getDriver();
     expect(db).toHaveLength(20);
   } finally {
-    server.close();
+    server.destroy();
     expect(logs.join("\n")).toMatchSnapshot();
   }
 });

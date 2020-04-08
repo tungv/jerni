@@ -30,8 +30,8 @@
     "winston": "^3.2.1"
   },
   "scripts": {
-    "test": "NODE_ENV=production jest tests/*",
-    "e2e": "NODE_ENV=production jest stress_tests/*",
+    "test": "NODE_ENV=production jest",
+    "e2e": "NODE_ENV=production jest --testMatch **/stress_tests/*.js",
     "binary:build": "pkg --out-path=binaries ."
   },
   "engines": {

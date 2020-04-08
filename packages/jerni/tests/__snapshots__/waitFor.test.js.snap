@@ -1,8 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`#waitFor should wait until the event is fully committed to stores 1`] = `
-"[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===
-[DBG] journey.begin({{
+exports[`#waitFor should wait until the event is fully committed to stores: application logs 1`] = `""`;
+
+exports[`#waitFor should wait until the event is fully committed to stores: jerni cli logs 1`] = `
+"[DBG] journey.begin({{
   pulseCount: 200,
   pulseTime: 1,
   serverUrl: undefined,
