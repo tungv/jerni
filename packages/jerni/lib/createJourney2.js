@@ -75,9 +75,13 @@ module.exports = function createJourney({
     // so we can retrieve them later in `#getReader(model)`
     store.registerModels(STORE_BY_MODELS);
 
+    await listener.waitForFirstListen();
+
+    const lastSeenId = await store.getLastSeenId();
+    racer.bump(index, lastSeenId);
+
     for await (const checkpoint of store.listen()) {
       racer.bump(index, checkpoint);
-      await listener.waitForFirstListen();
     }
   });
 
