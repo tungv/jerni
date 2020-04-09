@@ -1,0 +1,19 @@
+{
+  "name": "integration_tests",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@jerni/store-mongo": "^1.0.0-rc.0",
+    "jerni": "^1.0.0-rc.1"
+  },
+  "devDependencies": {
+    "heq-server": "^2.2.6",
+    "micro": "^9.3.4",
+    "server-destroy": "^1.0.1"
+  },
+  "scripts": {
+    "test": "NODE_ENV=production jest"
+  }
+}
