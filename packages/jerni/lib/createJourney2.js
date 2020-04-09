@@ -86,15 +86,17 @@ module.exports = function createJourney({
   });
 
   // request these event.type only
-  const includes = [];
+  const includes = new Set();
   const racer = makeRacer(stores.map(() => 0));
 
   if (!dev) {
     for (const store of stores) {
       if (store.meta.includes) {
-        includes.push(...store.meta.includes);
+        store.meta.includes.forEach(type => {
+          includes.add(type);
+        });
       } else {
-        includes.length = 0;
+        includes.clear();
         break;
       }
     }
@@ -343,7 +345,7 @@ module.exports = function createJourney({
       const url = `${currentWriteTo}/subscribe`;
       const headers = {
         "last-event-id": String(await getLatestSuccessfulCheckPoint()),
-        includes: includes.join(","),
+        includes: [...includes].join(","),
       };
       logger.debug("sending http request to: %s", url);
       logger.debug("headers %o", headers);
