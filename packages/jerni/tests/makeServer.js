@@ -3,6 +3,8 @@ const factory = require("heq-server");
 const inMemoryAdapter = require("heq-server/src/adapters/in-memory");
 const enableDestroy = require("server-destroy");
 
+const servers = [];
+
 const makeServer = async ({ ns, port, queue: existingQueue }) => {
   const queue =
     existingQueue ||
@@ -20,6 +22,7 @@ const makeServer = async ({ ns, port, queue: existingQueue }) => {
       }
 
       enableDestroy(server);
+      servers.push(server);
 
       return resolve({
         queue,
@@ -28,5 +31,14 @@ const makeServer = async ({ ns, port, queue: existingQueue }) => {
     });
   });
 };
+
+afterAll(() => {
+  // close all
+  servers.forEach(svr => {
+    svr.close();
+    svr.destroy();
+  });
+  servers.length = 0;
+});
 
 module.exports = makeServer;

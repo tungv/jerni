@@ -1,14 +1,22 @@
-module.exports = function makeLogger() {
+function makeLogger(logLevel = makeLogger.LEVEL_DEBUG) {
   const logs = [];
-  const record = level => (...args) => {
-    logs.push(level + require("util").format(...args));
+  const record = (label, level) => (...args) => {
+    if (level < logLevel) return;
+    logs.push(label + require("util").format(...args));
   };
   const logger = {
-    log: record("[LOG] "),
-    info: record("[INF] "),
-    error: record("[ERR] "),
-    debug: record("[DBG] "),
+    debug: record("[DBG] ", makeLogger.LEVEL_DEBUG),
+    log: record("[LOG] ", makeLogger.LEVEL_LOG),
+    info: record("[INF] ", makeLogger.LEVEL_INFO),
+    error: record("[ERR] ", makeLogger.LEVEL_ERROR),
   };
 
   return [logger, logs];
-};
+}
+
+makeLogger.LEVEL_DEBUG = 0;
+makeLogger.LEVEL_LOG = 1;
+makeLogger.LEVEL_INFO = 2;
+makeLogger.LEVEL_ERROR = 3;
+
+module.exports = makeLogger;

@@ -43,8 +43,17 @@ module.exports = function createJourney({
   writeTo,
   stores,
   dev = process.env.NODE_ENV !== "production",
+  onError,
   logger = getLogger(dev),
 }) {
+  if (typeof onError !== "function") {
+    onError = function(error, store, event) {
+      logger.debug("default error handler");
+      logger.error(error);
+      throw error;
+    };
+  }
+
   const journey = {
     getReader,
     commit,
@@ -269,8 +278,13 @@ module.exports = function createJourney({
         yield await handleEvents(events);
       }
     } catch (ex) {
-      logger.debug(ex);
-      logger.error({ ex });
+      if (ex.message === "JerniUnrecoverableError") {
+        logger.error(ex.details.originalError.message);
+        logger.debug(ex.details.originalError.stack);
+      } else {
+        logger.error(ex.name);
+      }
+      logger.debug({ ex });
     } finally {
       logger.info("stop processing events");
     }
@@ -285,14 +299,41 @@ module.exports = function createJourney({
     const start = process.hrtime.bigint();
     try {
       const outputs = await Promise.all(
-        stores.map(async store => {
-          return store.handleEvents(events);
+        stores.map(async (store, index) => {
+          try {
+            return await store.handleEvents(events);
+          } catch (ex) {
+            if (typeof store.recoverFromError === "function") {
+              const [
+                violatingEventIndex,
+                partialOutput,
+              ] = await store.recoverFromError(ex);
+              await onError(ex, {}, store);
+            }
+
+            const violatingEventIndex = await bisect(store, events);
+            const violatingEvent = events[violatingEventIndex];
+            try {
+              await onError(ex, violatingEvent, store);
+              // explicitly no return await
+              return store.handleEvents(events.slice(violatingEventIndex + 1));
+            } catch {
+              // stop the world
+              logger.error(
+                `unrecoverable error happened while processing event #${violatingEvent.id}`,
+              );
+              logger.error(violatingEvent);
+              throw new JerniUnrecoverableError({
+                originalError: ex,
+                event: violatingEvent,
+                store: store,
+                storeIndex: index,
+              });
+            }
+          }
         }),
       );
       return outputs;
-    } catch (ex) {
-      // error while handling events
-      console.error(ex);
     } finally {
       const end = process.hrtime.bigint();
       const durationMs = Number((end - start).toString(10)) / 1e6;
@@ -567,4 +608,30 @@ function defer() {
     resolve,
     reject,
   };
+}
+
+class JerniUnrecoverableError extends Error {
+  constructor(details) {
+    super("JerniUnrecoverableError");
+
+    this.details = details;
+  }
+}
+
+async function bisect(store, events, offset = 0) {
+  const length = events.length;
+
+  // recursive termination point
+  if (length === 1) return offset;
+
+  const mid = Math.ceil(length / 2);
+  const firstHalf = events.slice(0, mid);
+
+  try {
+    await store.handleEvents(firstHalf);
+    // first half is error free?
+    return bisect(store, events.slice(mid), offset + mid);
+  } catch (err) {
+    return bisect(store, firstHalf, offset);
+  }
 }
