@@ -362,7 +362,7 @@ module.exports = function createJourney({
     return Math.min(...latestEventIdArray);
   }
 
-  async function requestEvents() {
+  async function requestEvents({ count, time }) {
     const parseChunk = makeChunkParser();
     const [http$, emit] = subject();
     let forcedStop = false;
@@ -387,6 +387,8 @@ module.exports = function createJourney({
       const headers = {
         "last-event-id": String(await getLatestSuccessfulCheckPoint()),
         includes: [...includes].join(","),
+        "burst-count": count,
+        "burst-time": time,
       };
       logger.debug("sending http request to: %s", url);
       logger.debug("headers %o", headers);
