@@ -2,7 +2,7 @@ const { applyInsertOne, applyInsertMany } = require("./optimistic/insert");
 const { applyUpdateMany, applyUpdateOne } = require("./optimistic/update");
 const { applyDeleteMany, applyDeleteOne } = require("./optimistic/remove");
 
-const transform = (transformFn, event) => {
+const transform = (transformFn, event, threshold = { __v: 0, __op: 0 }) => {
   const rawOps = transformFn(event);
 
   const enhancedOps = rawOps.reduce(
@@ -16,6 +16,10 @@ const transform = (transformFn, event) => {
     },
     { ops: [], nextOpId: 0 },
   );
+
+  if (threshold.__v === event.id) {
+    return enhancedOps.ops.filter((op, index) => index > threshold.__op);
+  }
 
   return enhancedOps.ops;
 };
