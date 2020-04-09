@@ -318,7 +318,7 @@ module.exports = function createJourney({
       stores.map(source => source.getLastSeenId().catch(() => 0)),
     );
 
-    return Math.min(latestEventIdArray);
+    return Math.min(...latestEventIdArray);
   }
 
   async function requestEvents() {
