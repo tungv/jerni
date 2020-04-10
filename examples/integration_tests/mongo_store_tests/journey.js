@@ -3,7 +3,7 @@ const mapEvents = require("jerni/lib/mapEvents");
 const { Model, makeStore } = require("@jerni/store-mongo");
 
 const modelA = new Model({
-  name: "model_a",
+  name: "model_A",
   version: "1",
   transform: mapEvents({
     created: (event) => ({
@@ -37,6 +37,16 @@ const modelB = new Model({
         where: { id: event.payload.id },
         changes: {
           $push: { names: event.payload.name },
+        },
+      },
+    }),
+    emptySetTest: (event) => ({
+      updateOne: {
+        where: { id: event.payload.id },
+        changes: {
+          $set: {
+            "names.null": "abc",
+          },
         },
       },
     }),

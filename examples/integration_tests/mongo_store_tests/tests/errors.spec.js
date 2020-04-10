@@ -122,4 +122,109 @@ describe("error handling", () => {
       await journey.dispose();
     }
   });
+
+  test("invalid mongo update error", async () => {
+    /*
+     * in this test, an unrecoverable error will arise (unqiue constraint)
+     * after hitting the error, onError decides to stop the subscription and will remain frozen
+     * until a bugfix is in effect
+     * the other models will be in an undefined state due to race condition (how far they have processed their logic)
+     * however once the issue is fixed, it should resume without any observable side effect
+     */
+    jest.setTimeout(2000);
+    const { server } = await makeServer({
+      ns: "e2e_mongo_error",
+      port: 19081,
+    });
+
+    const [apiLogger, apiLogs] = makeTestLogger();
+    const [cliLogger, cliLogs] = makeTestLogger(makeTestLogger.LEVEL_INFO);
+
+    // prepare data
+    process.env.NODE_ENV = "development";
+    const dev = await initialize("http://localhost:19081", "e2e_mongo_errors");
+    await dev.clean();
+    await dev.dispose();
+    process.env.NODE_ENV = "production";
+
+    const outputs = [];
+
+    const journey = await initialize(
+      "http://localhost:19081",
+      "e2e_mongo_errors",
+      apiLogger,
+    );
+    try {
+      const ModelA = await journey.getReader(initialize.ModelA);
+      const ModelB = await journey.getReader(initialize.ModelB);
+
+      await journey.commit({
+        type: "created",
+        payload: { id: "1", name: "test_1" },
+        meta: { occurred_at: 16e11 },
+      });
+      await journey.commit({
+        type: "emptySetTest",
+        payload: { id: "1" },
+        meta: { occurred_at: 16e11 },
+      });
+
+      const d = defer();
+
+      // trigger subscription
+      // we know this will eventually stop, so we wait until that moment
+      start(
+        (output) => {
+          outputs.push(output);
+        },
+        initialize,
+        "http://localhost:19081",
+        "e2e_mongo_errors",
+        cliLogger,
+        async function onError(err, event) {
+          expect(err.name).toEqual("BulkWriteError");
+          expect(event.id).toEqual(2);
+          expect(err.code).toEqual(28);
+
+          d.resolve();
+        },
+      );
+
+      await d.promise;
+
+      // event #2 will stop the subscription, so the effected model (collection) will stop at #1
+      expect(await ModelA.find().toArray()).toEqual([
+        expect.objectContaining({
+          id: "1",
+          name: "test_1",
+        }),
+      ]);
+
+      expect(await ModelB.find().toArray()).toEqual([
+        expect.objectContaining({
+          id: "1",
+          names: ["test_1"],
+        }),
+      ]);
+      expect(apiLogs).toHaveLength(0);
+      expect(cliLogs).toMatchSnapshot("cli log");
+    } finally {
+      server.destroy();
+      await journey.dispose();
+    }
+  });
 });
+
+function defer() {
+  let resolve, reject;
+
+  const promise = new Promise((_1, _2) => {
+    resolve = _1;
+    reject = _2;
+  });
+  return {
+    promise,
+    resolve,
+    reject,
+  };
+}

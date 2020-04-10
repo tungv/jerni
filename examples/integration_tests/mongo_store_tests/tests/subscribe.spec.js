@@ -93,10 +93,10 @@ describe("Mongo Basic", () => {
         [
           {
             model_B_vbeta: { added: 2, modified: 2 },
-            model_a_v1: { added: 2, modified: 2 },
+            model_A_v1: { added: 2, modified: 2 },
           },
         ],
-        [{ model_B_vbeta: { modified: 2 }, model_a_v1: { modified: 2 } }],
+        [{ model_B_vbeta: { modified: 2 }, model_A_v1: { modified: 2 } }],
       ]);
 
       expect(apiLogs).toHaveLength(0);
