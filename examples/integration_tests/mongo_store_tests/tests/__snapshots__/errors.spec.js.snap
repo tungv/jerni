@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`error handling invalid mongo update error: cli log 1`] = `
+Array [
+  "[INF] start receiving data",
+  "[INF] skipped offending event #2",
+]
+`;
+
+exports[`error handling on constraints error: cli log 1`] = `
+Array [
+  "[INF] start receiving data",
+  "[ERR] unrecoverable error happened while processing event #2",
+  "[ERR] {
+  type: 'created',
+  payload: { id: '1', name: 'test_2' },
+  meta: {
+    occurred_at: 1600000000000,
+    client: 'integration_tests',
+    clientVersion: '1.0.0'
+  },
+  id: 2
+}",
+  "[ERR] E11000 duplicate key error collection: e2e_mongo_errors.model_A_v1 index: id_1 dup key: { id: \\"1\\" }",
+  "[INF] stop processing events",
+  "[INF] start receiving data",
+  "[INF] stop processing events",
+]
+`;

@@ -8,9 +8,10 @@
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
   "devDependencies": {
+    "@async-generator/emitter-on": "^1.0.0",
     "@jerni/base": "^0.1.5",
     "heq-server": "^2.2.6",
-    "jest": "^24.9.0",
+    "jest": "^25.2.7",
     "micro": "^9.3.2",
     "pkg": "^4.4.0",
     "server-destroy": "^1.0.1"
@@ -29,8 +30,8 @@
     "winston": "^3.2.1"
   },
   "scripts": {
-    "test": "NODE_ENV=production jest tests/*",
-    "e2e": "NODE_ENV=production jest stress_tests/*",
+    "test": "NODE_ENV=production jest",
+    "e2e": "NODE_ENV=production jest --testMatch **/stress_tests/*.js",
     "binary:build": "pkg --out-path=binaries ."
   },
   "engines": {

@@ -90,20 +90,33 @@ module.exports = async function makeStore(config = {}) {
 
   async function executeOpsOnOneModel(model, events) {
     if (hasStopped) return {};
+    const coll = db.collection(getCollectionName(model));
+    const [mostRecentlyUpdated] = await coll
+      .find({}, { __v: 1, __op: 1 })
+      .sort([
+        ["__v", "desc"],
+        ["__op", "desc"],
+      ])
+      .limit(1)
+      .toArray();
+
+    const { __v, __op } = mostRecentlyUpdated || { __v: 0, __op: 0 };
+
     const ops = [].concat(
-      ...events.map(event => {
-        try {
-          return transform(model.transform, event);
-        } catch (ex) {
-          return [];
-        }
-      }),
+      ...events
+        .filter(event => event.id >= __v)
+        .map(event => {
+          try {
+            return transform(model.transform, event, { __v, __op });
+          } catch (ex) {
+            return [];
+          }
+        }),
     );
 
     let changes = null;
 
     if (ops.length > 0) {
-      const coll = db.collection(getCollectionName(model));
       const modelOpsResult = await coll.bulkWrite(ops);
       if (hasStopped) return {};
       changes = {};

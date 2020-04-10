@@ -1,19 +1,15 @@
 const createJourney = require("../lib/createJourney2");
 const makeServer = require("../tests/makeServer");
-
-let server;
-
-afterEach(() => {
-  server.close();
-});
+const makeTestLogger = require("../tests/makeTestLogger");
 
 test("#begin() should terminate subscription if client overflows", async () => {
   const MAX = 500;
   jest.setTimeout(MAX * 50 * 1.2);
-  server = (await makeServer({
+  const [logger, logs] = makeTestLogger();
+  const { server } = await makeServer({
     ns: "test-back-pressure",
     port: 19081,
-  })).server;
+  });
 
   try {
     const store = makeTestStore(event => event.id);
@@ -21,6 +17,7 @@ test("#begin() should terminate subscription if client overflows", async () => {
     const journey = createJourney({
       writeTo: "http://localhost:19081",
       stores: [store],
+      logger,
     });
 
     for (let i = 0; i < MAX; ++i) {
@@ -35,11 +32,9 @@ test("#begin() should terminate subscription if client overflows", async () => {
     }
 
     expect(db).toHaveLength(MAX);
-
-    // journey.destroy();
+    expect(logs.join("\n")).toMatchSnapshot();
   } finally {
-    console.log("finally");
-    // server.close();
+    server.destroy();
   }
 });
 

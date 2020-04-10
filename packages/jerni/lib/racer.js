@@ -1,4 +1,3 @@
-const makeDefer = require("./makeDefer");
 const partition = require("./partition");
 
 const makeRacer = initialArray => {
@@ -41,3 +40,17 @@ const makeRacer = initialArray => {
 };
 
 module.exports = makeRacer;
+
+function makeDefer() {
+  let resolve, reject;
+
+  const promise = new Promise((_1, _2) => {
+    resolve = _1;
+    reject = _2;
+  });
+  return {
+    promise,
+    resolve,
+    reject,
+  };
+}

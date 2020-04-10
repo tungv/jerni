@@ -8,6 +8,8 @@ const backoff = require("./backoff");
 const commitEventToHeqServer = require("./commit");
 const makeRacer = require("./racer");
 
+const SKIP = Symbol.for("@@jerni/skipOnError");
+
 function listening() {
   let $ = defer();
 
@@ -43,8 +45,17 @@ module.exports = function createJourney({
   writeTo,
   stores,
   dev = process.env.NODE_ENV !== "production",
+  onError,
+  logger = getLogger(dev),
 }) {
-  let logger = getLogger(dev);
+  if (typeof onError !== "function") {
+    onError = function (error, store, event) {
+      logger.debug("default error handler");
+      logger.error(error);
+      throw error;
+    };
+  }
+
   const journey = {
     getReader,
     commit,
@@ -75,28 +86,34 @@ module.exports = function createJourney({
     // so we can retrieve them later in `#getReader(model)`
     store.registerModels(STORE_BY_MODELS);
 
+    await listener.waitForFirstListen();
+
+    const lastSeenId = await store.getLastSeenId();
+    racer.bump(index, lastSeenId);
+
     for await (const checkpoint of store.listen()) {
       racer.bump(index, checkpoint);
-      await listener.waitForFirstListen();
     }
   });
 
   // request these event.type only
-  const includes = [];
+  const includes = new Set();
   const racer = makeRacer(stores.map(() => 0));
 
   if (!dev) {
     for (const store of stores) {
       if (store.meta.includes) {
-        includes.push(...store.meta.includes);
+        store.meta.includes.forEach((type) => {
+          includes.add(type);
+        });
       } else {
-        includes.length = 0;
+        includes.clear();
         break;
       }
     }
   }
 
-  getLatestSuccessfulCheckPoint().then(id => (latestClient = id));
+  getLatestSuccessfulCheckPoint().then((id) => (latestClient = id));
 
   return journey;
 
@@ -263,8 +280,13 @@ module.exports = function createJourney({
         yield await handleEvents(events);
       }
     } catch (ex) {
-      logger.debug(ex);
-      logger.error({ ex });
+      if (ex.message === "JerniUnrecoverableError") {
+        logger.error(ex.details.originalError.message);
+        logger.debug(ex.details.originalError.stack);
+      } else {
+        logger.error(ex.name);
+      }
+      logger.debug({ ex });
     } finally {
       logger.info("stop processing events");
     }
@@ -277,40 +299,78 @@ module.exports = function createJourney({
       logger.debug("handling events #%d - #%d", events[0].id, last(events).id);
     }
     const start = process.hrtime.bigint();
-    const outputs = await Promise.all(
-      stores.map(async store => {
-        return store.handleEvents(events);
-      }),
-    );
-    const end = process.hrtime.bigint();
-    const durationMs = Number((end - start).toString(10)) / 1e6;
+    try {
+      const outputs = await Promise.all(
+        stores.map(async (store, index) => {
+          try {
+            return await store.handleEvents(events);
+          } catch (ex) {
+            const offendingEventIndex = await bisect(store, events);
+            const offendingEvent = events[offendingEventIndex];
+            try {
+              const decision = await onError(ex, offendingEvent, store);
 
-    const report = {
-      ts: Date.now(),
-      from: events[0].id,
-      to: last(events).id,
-      count: events.length,
-      durationMs,
-    };
+              if (decision === SKIP) {
+                logger.info(`skipped offending event #${offendingEvent.id}`);
+                // explicitly no return await
+                if (offendingEventIndex === events.length - 1) {
+                  return {};
+                }
+                return store.handleEvents(
+                  events.slice(offendingEventIndex + 1),
+                );
+              }
+            } catch (ex) {
+              logger.error(
+                `onError failed to complete with error=${ex.message}`,
+              );
+              logger.debug(ex);
+            }
 
-    last10.unshift(report);
-    last10.length = Math.min(last10.length, 10);
+            // stop the world
+            logger.error(
+              `unrecoverable error happened while processing event #${offendingEvent.id}`,
+            );
+            logger.error(offendingEvent);
+            throw new JerniUnrecoverableError({
+              originalError: ex,
+              event: offendingEvent,
+              store: store,
+              storeIndex: index,
+            });
+          }
+        }),
+      );
+      return outputs;
+    } finally {
+      const end = process.hrtime.bigint();
+      const durationMs = Number((end - start).toString(10)) / 1e6;
 
-    latestClient = last(events).id;
-    logger.debug("done");
+      const report = {
+        ts: Date.now(),
+        from: events[0].id,
+        to: last(events).id,
+        count: events.length,
+        durationMs,
+      };
 
-    return outputs;
+      last10.unshift(report);
+      last10.length = Math.min(last10.length, 10);
+
+      latestClient = last(events).id;
+      logger.debug("done");
+    }
   }
 
   async function getLatestSuccessfulCheckPoint() {
     const latestEventIdArray = await Promise.all(
-      stores.map(source => source.getLastSeenId().catch(() => 0)),
+      stores.map((source) => source.getLastSeenId().catch(() => 0)),
     );
 
-    return Math.min(latestEventIdArray);
+    return Math.min(...latestEventIdArray);
   }
 
-  async function requestEvents() {
+  async function requestEvents({ count, time }) {
     const parseChunk = makeChunkParser();
     const [http$, emit] = subject();
     let forcedStop = false;
@@ -334,21 +394,23 @@ module.exports = function createJourney({
       const url = `${currentWriteTo}/subscribe`;
       const headers = {
         "last-event-id": String(await getLatestSuccessfulCheckPoint()),
-        includes: includes.join(","),
+        includes: [...includes].join(","),
+        "burst-count": count,
+        "burst-time": time,
       };
       logger.debug("sending http request to: %s", url);
       logger.debug("headers %o", headers);
 
       const resp$ = got.stream(url, { headers });
 
-      const requestPromise = new Promise(resolve => {
+      const requestPromise = new Promise((resolve) => {
         let currentRequest = null;
-        resp$.on("request", r => {
+        resp$.on("request", (r) => {
           currentRequest = r;
           logger.debug("socket opened!");
         });
 
-        resp$.once("error", error => {
+        resp$.once("error", (error) => {
           if (delay < 500) {
             logger.debug("sub 500ms reconnection… %j", {
               message: error.message,
@@ -371,7 +433,7 @@ module.exports = function createJourney({
           resolve(currentRequest);
         });
 
-        resp$.on("data", chunk => {
+        resp$.on("data", (chunk) => {
           const maybeComplete = parseChunk(chunk);
 
           if (maybeComplete) emit(maybeComplete);
@@ -389,12 +451,12 @@ module.exports = function createJourney({
     }
 
     const event$ = filter(
-      map(flatten(http$), function(httpEvent) {
+      map(flatten(http$), function (httpEvent) {
         if (httpEvent.event === "INCMSG") {
           return safeParseArrayFromJSON(httpEvent.data);
         }
       }),
-      x => x,
+      (x) => x,
     );
 
     function abort() {
@@ -483,7 +545,7 @@ function makeChunkParser() {
 
     const firstChunks = (leftover + chunks[0]).split(DOUBLE_NEW_LINE);
 
-    const complete = firstChunks.concat(chunks.slice(1, -1)).map(chunk => {
+    const complete = firstChunks.concat(chunks.slice(1, -1)).map((chunk) => {
       if (!chunk) {
         return {};
       }
@@ -507,9 +569,9 @@ function makeChunkParser() {
   };
 }
 
-const last = array => (array.length >= 1 ? array[array.length - 1] : null);
+const last = (array) => (array.length >= 1 ? array[array.length - 1] : null);
 
-const safeParseArrayFromJSON = str => {
+const safeParseArrayFromJSON = (str) => {
   try {
     return JSON.parse(str);
   } catch (ex) {
@@ -517,7 +579,7 @@ const safeParseArrayFromJSON = str => {
   }
 };
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function* flatten(iter) {
   for await (const item of iter) {
@@ -556,4 +618,30 @@ function defer() {
     resolve,
     reject,
   };
+}
+
+class JerniUnrecoverableError extends Error {
+  constructor(details) {
+    super("JerniUnrecoverableError");
+
+    this.details = details;
+  }
+}
+
+async function bisect(store, events, offset = 0) {
+  const length = events.length;
+
+  // recursive termination point
+  if (length === 1) return offset;
+
+  const mid = Math.ceil(length / 2);
+  const firstHalf = events.slice(0, mid);
+
+  try {
+    await store.handleEvents(firstHalf);
+    // first half is error free?
+    return bisect(store, events.slice(mid), offset + mid);
+  } catch (err) {
+    return bisect(store, firstHalf, offset);
+  }
 }
