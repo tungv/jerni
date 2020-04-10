@@ -23,7 +23,6 @@
     "arrify": "^1.0.1",
     "buffer-time-count-generator": "^1.0.0",
     "got": "^9.0.0",
-    "log4js": "^3.0.5",
     "pretty-ms": "^5.0.0",
     "read-pkg-up": "^4.0.0",
     "sade": "^1.4.1",
