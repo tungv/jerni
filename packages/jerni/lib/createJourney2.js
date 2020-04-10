@@ -303,20 +303,16 @@ module.exports = function createJourney({
           try {
             return await store.handleEvents(events);
           } catch (ex) {
-            if (typeof store.recoverFromError === "function") {
-              const [
-                violatingEventIndex,
-                partialOutput,
-              ] = await store.recoverFromError(ex);
-              await onError(ex, {}, store);
-            }
-
-            const violatingEventIndex = await bisect(store, events);
-            const violatingEvent = events[violatingEventIndex];
+            const offendingEventIndex = await bisect(store, events);
+            const offendingEvent = events[offendingEventIndex];
             try {
-              await onError(ex, violatingEvent, store);
+              await onError(ex, offendingEvent, store);
+              logger.info(`skipped offending event #${offendingEvent.id}`);
               // explicitly no return await
-              return store.handleEvents(events.slice(violatingEventIndex + 1));
+              if (offendingEventIndex === events.length - 1) {
+                return {};
+              }
+              return store.handleEvents(events.slice(offendingEventIndex + 1));
             } catch {
               // stop the world
               logger.error(
