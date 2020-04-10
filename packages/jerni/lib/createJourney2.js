@@ -47,7 +47,7 @@ module.exports = function createJourney({
   logger = getLogger(dev),
 }) {
   if (typeof onError !== "function") {
-    onError = function(error, store, event) {
+    onError = function (error, store, event) {
       logger.debug("default error handler");
       logger.error(error);
       throw error;
@@ -101,7 +101,7 @@ module.exports = function createJourney({
   if (!dev) {
     for (const store of stores) {
       if (store.meta.includes) {
-        store.meta.includes.forEach(type => {
+        store.meta.includes.forEach((type) => {
           includes.add(type);
         });
       } else {
@@ -111,7 +111,7 @@ module.exports = function createJourney({
     }
   }
 
-  getLatestSuccessfulCheckPoint().then(id => (latestClient = id));
+  getLatestSuccessfulCheckPoint().then((id) => (latestClient = id));
 
   return journey;
 
@@ -316,12 +316,12 @@ module.exports = function createJourney({
             } catch {
               // stop the world
               logger.error(
-                `unrecoverable error happened while processing event #${violatingEvent.id}`,
+                `unrecoverable error happened while processing event #${offendingEvent.id}`,
               );
-              logger.error(violatingEvent);
+              logger.error(offendingEvent);
               throw new JerniUnrecoverableError({
                 originalError: ex,
-                event: violatingEvent,
+                event: offendingEvent,
                 store: store,
                 storeIndex: index,
               });
@@ -352,7 +352,7 @@ module.exports = function createJourney({
 
   async function getLatestSuccessfulCheckPoint() {
     const latestEventIdArray = await Promise.all(
-      stores.map(source => source.getLastSeenId().catch(() => 0)),
+      stores.map((source) => source.getLastSeenId().catch(() => 0)),
     );
 
     return Math.min(...latestEventIdArray);
@@ -391,14 +391,14 @@ module.exports = function createJourney({
 
       const resp$ = got.stream(url, { headers });
 
-      const requestPromise = new Promise(resolve => {
+      const requestPromise = new Promise((resolve) => {
         let currentRequest = null;
-        resp$.on("request", r => {
+        resp$.on("request", (r) => {
           currentRequest = r;
           logger.debug("socket opened!");
         });
 
-        resp$.once("error", error => {
+        resp$.once("error", (error) => {
           if (delay < 500) {
             logger.debug("sub 500ms reconnection… %j", {
               message: error.message,
@@ -421,7 +421,7 @@ module.exports = function createJourney({
           resolve(currentRequest);
         });
 
-        resp$.on("data", chunk => {
+        resp$.on("data", (chunk) => {
           const maybeComplete = parseChunk(chunk);
 
           if (maybeComplete) emit(maybeComplete);
@@ -439,12 +439,12 @@ module.exports = function createJourney({
     }
 
     const event$ = filter(
-      map(flatten(http$), function(httpEvent) {
+      map(flatten(http$), function (httpEvent) {
         if (httpEvent.event === "INCMSG") {
           return safeParseArrayFromJSON(httpEvent.data);
         }
       }),
-      x => x,
+      (x) => x,
     );
 
     function abort() {
@@ -533,7 +533,7 @@ function makeChunkParser() {
 
     const firstChunks = (leftover + chunks[0]).split(DOUBLE_NEW_LINE);
 
-    const complete = firstChunks.concat(chunks.slice(1, -1)).map(chunk => {
+    const complete = firstChunks.concat(chunks.slice(1, -1)).map((chunk) => {
       if (!chunk) {
         return {};
       }
@@ -557,9 +557,9 @@ function makeChunkParser() {
   };
 }
 
-const last = array => (array.length >= 1 ? array[array.length - 1] : null);
+const last = (array) => (array.length >= 1 ? array[array.length - 1] : null);
 
-const safeParseArrayFromJSON = str => {
+const safeParseArrayFromJSON = (str) => {
   try {
     return JSON.parse(str);
   } catch (ex) {
@@ -567,7 +567,7 @@ const safeParseArrayFromJSON = str => {
   }
 };
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function* flatten(iter) {
   for await (const item of iter) {
