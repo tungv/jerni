@@ -3,6 +3,8 @@ const makeServer = require("./makeServer");
 const makeTestLogger = require("./makeTestLogger");
 const start = require("./start");
 
+const SKIP = require("jerni/skip");
+
 describe("error handling", () => {
   test("on constraints error", async () => {
     /*
@@ -68,7 +70,6 @@ describe("error handling", () => {
         async function onError(err, event) {
           expect(err.name).toEqual("BulkWriteError");
           expect(event.id).toEqual(2);
-          throw new Error();
         },
       );
       // event #2 will stop the subscription, so the effected model (collection) will stop at #1
@@ -172,7 +173,6 @@ describe("error handling", () => {
       const d = defer();
 
       // trigger subscription
-      // we know this will eventually stop, so we wait until that moment
       start(
         (output) => {
           outputs.push(output);
@@ -185,8 +185,8 @@ describe("error handling", () => {
           expect(err.name).toEqual("BulkWriteError");
           expect(event.id).toEqual(2);
           expect(err.code).toEqual(28);
-
           d.resolve();
+          return SKIP;
         },
       );
 
