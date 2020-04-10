@@ -1,3 +1,4 @@
+const SKIP = require("../skip");
 const createJourney = require("../lib/createJourney2");
 const mapEvents = require("../lib/mapEvents");
 const makeServer = require("./makeServer");
@@ -17,8 +18,8 @@ test("onError without throwing", async () => {
   try {
     const store1 = makeTestStore(
       mapEvents({
-        type_1: event => event.id,
-        type_2: event => {
+        type_1: (event) => event.id,
+        type_2: (event) => {
           throw new Error("inside handler");
         },
       }),
@@ -26,8 +27,8 @@ test("onError without throwing", async () => {
 
     const store2 = makeTestStore(
       mapEvents({
-        type_1: event => event.id,
-        type_2: event => event.id,
+        type_1: (event) => event.id,
+        type_2: (event) => event.id,
       }),
     );
 
@@ -45,7 +46,7 @@ test("onError without throwing", async () => {
           }),
         );
 
-        // no throwing means skipping
+        return SKIP;
       },
     });
 
@@ -85,8 +86,8 @@ test("onError rethrown", async () => {
   try {
     const store = makeTestStore(
       mapEvents({
-        type_1: event => event.id,
-        type_2: event => {
+        type_1: (event) => event.id,
+        type_2: (event) => {
           throw new Error("inside handler");
         },
       }),
@@ -97,7 +98,7 @@ test("onError rethrown", async () => {
       stores: [store],
       logger,
       onError: (error, event, storeWithError) => {
-        throw new Error("cannot recover");
+        // return anything other than SKIP means stop
       },
     });
 

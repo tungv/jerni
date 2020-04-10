@@ -8,6 +8,8 @@ const backoff = require("./backoff");
 const commitEventToHeqServer = require("./commit");
 const makeRacer = require("./racer");
 
+const SKIP = Symbol.for("@@jerni/skipOnError");
+
 function listening() {
   let $ = defer();
 
@@ -306,26 +308,36 @@ module.exports = function createJourney({
             const offendingEventIndex = await bisect(store, events);
             const offendingEvent = events[offendingEventIndex];
             try {
-              await onError(ex, offendingEvent, store);
-              logger.info(`skipped offending event #${offendingEvent.id}`);
-              // explicitly no return await
-              if (offendingEventIndex === events.length - 1) {
-                return {};
+              const decision = await onError(ex, offendingEvent, store);
+
+              if (decision === SKIP) {
+                logger.info(`skipped offending event #${offendingEvent.id}`);
+                // explicitly no return await
+                if (offendingEventIndex === events.length - 1) {
+                  return {};
+                }
+                return store.handleEvents(
+                  events.slice(offendingEventIndex + 1),
+                );
               }
-              return store.handleEvents(events.slice(offendingEventIndex + 1));
-            } catch {
-              // stop the world
+            } catch (ex) {
               logger.error(
-                `unrecoverable error happened while processing event #${offendingEvent.id}`,
+                `onError failed to complete with error=${ex.message}`,
               );
-              logger.error(offendingEvent);
-              throw new JerniUnrecoverableError({
-                originalError: ex,
-                event: offendingEvent,
-                store: store,
-                storeIndex: index,
-              });
+              logger.debug(ex);
             }
+
+            // stop the world
+            logger.error(
+              `unrecoverable error happened while processing event #${offendingEvent.id}`,
+            );
+            logger.error(offendingEvent);
+            throw new JerniUnrecoverableError({
+              originalError: ex,
+              event: offendingEvent,
+              store: store,
+              storeIndex: index,
+            });
           }
         }),
       );

@@ -8,7 +8,12 @@ exports[`should subscribe 1`] = `
   cleanStart: false
 }})
 [DBG] sending http request to: http://localhost:19090/subscribe
-[DBG] headers { 'last-event-id': '0', includes: '' }
+[DBG] headers {
+  'last-event-id': '0',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}
 [DBG] socket opened!
 [INF] start receiving data
 [DBG] handling events #1 - #10
@@ -21,7 +26,12 @@ exports[`should subscribe 1`] = `
   cleanStart: false
 }})
 [DBG] sending http request to: http://localhost:19090/subscribe
-[DBG] headers { 'last-event-id': '10', includes: '' }
+[DBG] headers {
+  'last-event-id': '10',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}
 [DBG] socket opened!
 [INF] start receiving data
 [DBG] handling events #11 - #20
@@ -37,7 +47,12 @@ exports[`should subscribe with filter 1`] = `
   cleanStart: false
 }})
 [DBG] sending http request to: http://localhost:19091/subscribe
-[DBG] headers { 'last-event-id': '0', includes: 'type_1,type_2' }
+[DBG] headers {
+  'last-event-id': '0',
+  includes: 'type_1,type_2',
+  'burst-count': 200,
+  'burst-time': 10
+}
 [DBG] socket opened!
 [INF] start receiving data
 [DBG] handling events #1 - #29
