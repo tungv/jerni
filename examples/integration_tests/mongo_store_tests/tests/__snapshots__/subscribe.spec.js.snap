@@ -5,24 +5,3 @@ Array [
   "[INF] start receiving data",
 ]
 `;
-
-exports[`Mongo Basic on constraints error: cli log 1`] = `
-Array [
-  "[INF] start receiving data",
-  "[ERR] unrecoverable error happened while processing event #2",
-  "[ERR] {
-  type: 'created',
-  payload: { id: '1', name: 'test_2' },
-  meta: {
-    occurred_at: 1600000000000,
-    client: 'integration_tests',
-    clientVersion: '1.0.0'
-  },
-  id: 2
-}",
-  "[ERR] E11000 duplicate key error collection: jerni_e2e_test_basic.model_a_v1 index: id_1 dup key: { id: \\"1\\" }",
-  "[INF] stop processing events",
-  "[INF] start receiving data",
-  "[INF] stop processing events",
-]
-`;

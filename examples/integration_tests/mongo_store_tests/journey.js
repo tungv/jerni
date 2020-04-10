@@ -6,13 +6,13 @@ const modelA = new Model({
   name: "model_a",
   version: "1",
   transform: mapEvents({
-    created: event => ({
+    created: (event) => ({
       insertOne: {
         id: event.payload.id,
         name: event.payload.name,
       },
     }),
-    renamed: event => ({
+    renamed: (event) => ({
       updateOne: {
         where: { id: event.payload.id },
         changes: {
@@ -26,13 +26,13 @@ const modelB = new Model({
   name: "model_B",
   version: "beta",
   transform: mapEvents({
-    created: event => ({
+    created: (event) => ({
       insertOne: {
         id: event.payload.id,
         names: [event.payload.name],
       },
     }),
-    renamed: event => ({
+    renamed: (event) => ({
       updateOne: {
         where: { id: event.payload.id },
         changes: {
@@ -43,11 +43,11 @@ const modelB = new Model({
   }),
 });
 
-module.exports = async function initialize(writeTo, logger, onError) {
+module.exports = async function initialize(writeTo, dbName, logger, onError) {
   const mongoStore = await makeStore({
     name: "test_mongo_basic",
     url: "mongodb://localhost:27017",
-    dbName: "jerni_e2e_test_basic",
+    dbName,
     models: [modelA, modelB],
   });
 
