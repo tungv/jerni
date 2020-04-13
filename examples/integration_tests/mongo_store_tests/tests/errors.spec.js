@@ -44,18 +44,18 @@ describe("error handling", () => {
       await journey.commit({
         type: "created",
         payload: { id: "1", name: "test_1" },
-        meta: { occurred_at: 16e11 },
+        meta: { occurred_at: 16e11, client: "test", clientVersion: "1.0.0" },
       });
       // this will be causing the issue because we've set a unique constraint on id field
       await journey.commit({
         type: "created",
         payload: { id: "1", name: "test_2" },
-        meta: { occurred_at: 16e11 },
+        meta: { occurred_at: 16e11, client: "test", clientVersion: "1.0.0" },
       });
       await journey.commit({
         type: "renamed",
         payload: { id: "1", name: "test_1_renamed" },
-        meta: { occurred_at: 16e11 },
+        meta: { occurred_at: 16e11, client: "test", clientVersion: "1.0.0" },
       });
       // trigger subscription
       // we know this will eventually stop, so we wait until that moment
@@ -68,7 +68,7 @@ describe("error handling", () => {
         "e2e_mongo_errors",
         cliLogger,
         async function onError(err, event) {
-          expect(err.name).toEqual("BulkWriteError");
+          expect(err.name).toEqual("JerniStoreMongoWriteError");
           expect(event.id).toEqual(2);
         },
       );
@@ -162,12 +162,12 @@ describe("error handling", () => {
       await journey.commit({
         type: "created",
         payload: { id: "1", name: "test_1" },
-        meta: { occurred_at: 16e11 },
+        meta: { occurred_at: 16e11, client: "test", clientVersion: "1.0.0" },
       });
       await journey.commit({
         type: "emptySetTest",
         payload: { id: "1" },
-        meta: { occurred_at: 16e11 },
+        meta: { occurred_at: 16e11, client: "test", clientVersion: "1.0.0" },
       });
 
       const d = defer();
@@ -182,7 +182,7 @@ describe("error handling", () => {
         "e2e_mongo_errors",
         cliLogger,
         async function onError(err, event) {
-          expect(err.name).toEqual("BulkWriteError");
+          expect(err.name).toEqual("JerniStoreMongoWriteError");
           expect(event.id).toEqual(2);
           expect(err.code).toEqual(28);
           d.resolve();

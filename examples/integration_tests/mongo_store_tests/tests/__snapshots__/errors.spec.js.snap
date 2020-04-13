@@ -16,7 +16,7 @@ Array [
   payload: { id: '1', name: 'test_2' },
   meta: {
     occurred_at: 1600000000000,
-    client: 'integration_tests',
+    client: 'test',
     clientVersion: '1.0.0'
   },
   id: 2
