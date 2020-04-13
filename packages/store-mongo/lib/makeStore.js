@@ -1,4 +1,5 @@
 const transform = require("./transform");
+const JerniStoreMongoWriteError = require("./JerniStoreMongoWriteError");
 
 const MongoClient = require("mongodb").MongoClient;
 
@@ -39,7 +40,7 @@ module.exports = async function makeStore(config = {}) {
     if (hasStopped) return {};
     const release = lock();
     try {
-      const allPromises = models.map(async model => [
+      const allPromises = models.map(async (model) => [
         getCollectionName(model),
         await executeOpsOnOneModel(model, events),
       ]);
@@ -64,7 +65,7 @@ module.exports = async function makeStore(config = {}) {
     let includes = new Set();
     let includesAll = false;
 
-    models.forEach(model => {
+    models.forEach((model) => {
       map.set(model, store);
 
       // handle meta.includes
@@ -78,7 +79,7 @@ module.exports = async function makeStore(config = {}) {
         return;
       }
 
-      modelSpecificMeta.includes.forEach(type => includes.add(type));
+      modelSpecificMeta.includes.forEach((type) => includes.add(type));
     });
 
     if (includesAll) {
@@ -104,8 +105,8 @@ module.exports = async function makeStore(config = {}) {
 
     const ops = [].concat(
       ...events
-        .filter(event => event.id >= __v)
-        .map(event => {
+        .filter((event) => event.id >= __v)
+        .map((event) => {
           try {
             return transform(model.transform, event, { __v, __op });
           } catch (ex) {
@@ -117,12 +118,17 @@ module.exports = async function makeStore(config = {}) {
     let changes = null;
 
     if (ops.length > 0) {
-      const modelOpsResult = await coll.bulkWrite(ops);
-      if (hasStopped) return {};
-      changes = {};
-      if (modelOpsResult.nUpserted) changes.added = modelOpsResult.nUpserted;
-      if (modelOpsResult.nModified) changes.modified = modelOpsResult.nModified;
-      if (modelOpsResult.nRemoved) changes.removed = modelOpsResult.nRemoved;
+      try {
+        const modelOpsResult = await coll.bulkWrite(ops);
+        if (hasStopped) return {};
+        changes = {};
+        if (modelOpsResult.nUpserted) changes.added = modelOpsResult.nUpserted;
+        if (modelOpsResult.nModified)
+          changes.modified = modelOpsResult.nModified;
+        if (modelOpsResult.nRemoved) changes.removed = modelOpsResult.nRemoved;
+      } catch (bulkWriteError) {
+        throw new JerniStoreMongoWriteError(bulkWriteError, model);
+      }
     }
 
     await snapshotsCol.findOneAndUpdate(
@@ -142,7 +148,7 @@ module.exports = async function makeStore(config = {}) {
   async function getLastSeenId() {
     if (hasStopped) return 0;
     const condition = {
-      $or: models.map(m => ({ name: m.name, version: m.version })),
+      $or: models.map((m) => ({ name: m.name, version: m.version })),
     };
 
     const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
@@ -166,7 +172,7 @@ module.exports = async function makeStore(config = {}) {
       return 0;
     }
 
-    const oldestVersion = Math.min(...resp.map(obj => obj.__v));
+    const oldestVersion = Math.min(...resp.map((obj) => obj.__v));
     return oldestVersion;
   }
 
@@ -180,13 +186,13 @@ module.exports = async function makeStore(config = {}) {
 
   async function clean() {
     if (hasStopped) return;
-    const promises = models.map(m => {
+    const promises = models.map((m) => {
       const col = db.collection(getCollectionName(m));
       return col.deleteMany({});
     });
 
     const condition = {
-      $or: models.map(m => ({ name: m.name, version: m.version })),
+      $or: models.map((m) => ({ name: m.name, version: m.version })),
     };
 
     promises.push(snapshotsCol.deleteMany(condition));
@@ -208,7 +214,7 @@ async function connect(url) {
   return client;
 }
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function locker() {
   let on = false;
