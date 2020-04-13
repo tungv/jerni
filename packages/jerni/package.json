@@ -1,6 +1,6 @@
 {
   "name": "jerni",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "description": "Server-side Flux architecture framework",
   "main": "index.js",
   "bin": "cli/index.js",
