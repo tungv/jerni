@@ -5,7 +5,8 @@
   "license": "MIT",
   "bin": "cli.js",
   "dependencies": {
-    "jerni": "^1.0.0-rc.3"
+    "jerni": "^1.0.0-rc.3",
+    "sade": "^1.7.3"
   },
   "devDependencies": {
     "jest": "^25.3.0"
