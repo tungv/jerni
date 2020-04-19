@@ -7,7 +7,7 @@ Migration tools for [`heq`](npm.im/heq) server
 using `npx`
 
 ```
-$ npx heq-migrate migration.js
+$ npx heq-migrate migration.js --from=http://origin.server --to=http://destination.server
 ```
 
 ```js
