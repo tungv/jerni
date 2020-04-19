@@ -4,11 +4,19 @@
   "main": "index.js",
   "license": "MIT",
   "bin": "cli.js",
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
+    "@async-generator/subject": "^1.0.2",
+    "got": "^10.7.0",
+    "heq-server": "^2.2.6",
     "jerni": "^1.0.0-rc.3",
     "sade": "^1.7.3"
   },
   "devDependencies": {
-    "jest": "^25.3.0"
+    "jest": "^25.3.0",
+    "micro": "^9.3.4",
+    "server-destroy": "^1.0.1"
   }
 }
