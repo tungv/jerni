@@ -1,6 +1,6 @@
 # heq-migrate
 
-Migration tools for [`heq`](npm.im/heq) server
+Migration tools for [`heq`](https://npm.im/heq) server
 
 # Usage
 
