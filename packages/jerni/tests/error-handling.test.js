@@ -105,17 +105,17 @@ test("onError rethrown", async () => {
     await journey.commit({
       type: "type_1",
       payload: {},
-      meta: { occurred_at: 16e11 },
+      meta: { occurred_at: 16e11, clientVersion: "test" },
     });
     await journey.commit({
       type: "type_2",
       payload: {},
-      meta: { occurred_at: 16e11 },
+      meta: { occurred_at: 16e11, clientVersion: "test" },
     });
     await journey.commit({
       type: "type_1",
       payload: {},
-      meta: { occurred_at: 16e11 },
+      meta: { occurred_at: 16e11, clientVersion: "test" },
     });
 
     const db = await store.getDriver();

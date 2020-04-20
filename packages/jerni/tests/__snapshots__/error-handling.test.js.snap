@@ -9,7 +9,7 @@ exports[`onError rethrown 1`] = `
   meta: {
     occurred_at: 1600000000000,
     client: 'jerni',
-    clientVersion: '1.0.0-rc.1'
+    clientVersion: 'test'
   },
   id: 2
 }
