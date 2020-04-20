@@ -1,6 +1,6 @@
 {
   "name": "heq-server",
-  "version": "2.2.6",
+  "version": "2.2.7",
   "description": "",
   "main": "src/factory.js",
   "scripts": {
@@ -16,7 +16,7 @@
     "microrouter": "^3.1.1"
   },
   "devDependencies": {
-    "@heq/server-redis": "^2.0.4",
+    "@heq/server-redis": "^2.0.5",
     "boxen": "^1.3.0",
     "got": "^8.3.0",
     "jest": "^24.7.1",

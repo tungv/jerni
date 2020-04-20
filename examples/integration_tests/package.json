@@ -1,15 +1,15 @@
 {
   "name": "integration_tests",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "main": "index.js",
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@jerni/store-mongo": "^1.0.0-rc.2",
-    "jerni": "^1.0.0-rc.3"
+    "@jerni/store-mongo": "^1.0.0-rc.3",
+    "jerni": "^1.0.0-rc.4"
   },
   "devDependencies": {
-    "heq-server": "^2.2.6",
+    "heq-server": "^2.2.7",
     "micro": "^9.3.4",
     "server-destroy": "^1.0.1"
   },

@@ -3,7 +3,7 @@
   "publishConfig": {
     "tag": "next"
   },
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "CLI tool for develop clients of `heq-server` instances",
   "main": "index.js",
   "bin": "cli/index.js",
@@ -19,7 +19,7 @@
     "brighten": "^0.0.1",
     "chokidar": "^2.0.4",
     "debounce": "^1.2.0",
-    "heq-server": "^2.2.6",
+    "heq-server": "^2.2.7",
     "json-parse-better-errors": "^1.0.2",
     "micro": "^9.3.2",
     "ms": "^2.1.1",

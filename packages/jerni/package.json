@@ -1,6 +1,6 @@
 {
   "name": "jerni",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0-rc.4",
   "publishConfig": {
     "tag": "next"
   },
@@ -13,7 +13,7 @@
   "devDependencies": {
     "@async-generator/emitter-on": "^1.0.0",
     "@jerni/base": "^0.1.5",
-    "heq-server": "^2.2.6",
+    "heq-server": "^2.2.7",
     "jest": "^25.2.7",
     "micro": "^9.3.2",
     "pkg": "^4.4.0",
