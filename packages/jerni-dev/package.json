@@ -1,5 +1,8 @@
 {
   "name": "jerni-dev",
+  "publishConfig": {
+    "tag": "next"
+  },
   "version": "1.0.0-rc.1",
   "description": "CLI tool for develop clients of `heq-server` instances",
   "main": "index.js",
