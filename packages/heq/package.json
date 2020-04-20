@@ -13,7 +13,7 @@
     "pree2e": "yarn build"
   },
   "engine": {
-    "node": "^10"
+    "node": "^>=12.0.0"
   },
   "repository": "https://github.com/tungv/heq",
   "author": "Tung Vu <me@tungv.com>",
