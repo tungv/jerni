@@ -1,6 +1,7 @@
 const createJourney = require("jerni");
 
-module.exports = async function* migrate(fromAddress, toAddress, transform) {
+module.exports = async function* migrate(fromAddress, toAddress, options = {}) {
+  const { transform = identity, logger, pulseCount = 200 } = options;
   const heqCommitStore = await makeHeqCommitStore({
     heqServer: toAddress,
     transform,
@@ -11,7 +12,7 @@ module.exports = async function* migrate(fromAddress, toAddress, transform) {
     stores: [heqCommitStore],
   });
 
-  for await (const output of journey.begin({ pulseCount: 20 })) {
+  for await (const output of journey.begin({ pulseCount, logger })) {
     const total = await getLatest(fromAddress);
     yield [output[0], total];
 
@@ -104,4 +105,8 @@ async function makeHeqCommitStore(config) {
   };
 
   return store;
+}
+
+function identity(x) {
+  return x;
 }

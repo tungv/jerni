@@ -1,0 +1,171 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`it should migrate everything if no configuration specified: DEBUG level logs 1`] = `
+Array [
+  "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
+  "[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})",
+  "[DBG] sending http request to: http://localhost:19999/subscribe",
+  "[DBG] headers {
+  'last-event-id': '0',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}",
+  "[DBG] socket opened!",
+  "[INF] start receiving data",
+  "[DBG] handling events #1 - #20",
+  "[DBG] done",
+  "[INF] [ 20, 20 ]",
+  "[INF] stop processing events",
+]
+`;
+
+exports[`it should migrate everything if no configuration specified: replicate everything 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "key": 2,
+    },
+    "type": "type_2",
+  },
+  Object {
+    "id": 4,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 5,
+    "payload": Object {
+      "key": 4,
+    },
+    "type": "type_4",
+  },
+  Object {
+    "id": 6,
+    "payload": Object {
+      "key": 5,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 7,
+    "payload": Object {
+      "key": 6,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 8,
+    "payload": Object {
+      "key": 7,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 9,
+    "payload": Object {
+      "key": 8,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 10,
+    "payload": Object {
+      "key": 9,
+    },
+    "type": "type_9",
+  },
+  Object {
+    "id": 11,
+    "payload": Object {
+      "key": 10,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 12,
+    "payload": Object {
+      "key": 11,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 13,
+    "payload": Object {
+      "key": 12,
+    },
+    "type": "type_2",
+  },
+  Object {
+    "id": 14,
+    "payload": Object {
+      "key": 13,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 15,
+    "payload": Object {
+      "key": 14,
+    },
+    "type": "type_4",
+  },
+  Object {
+    "id": 16,
+    "payload": Object {
+      "key": 15,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 17,
+    "payload": Object {
+      "key": 16,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 18,
+    "payload": Object {
+      "key": 17,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 19,
+    "payload": Object {
+      "key": 18,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 20,
+    "payload": Object {
+      "key": 19,
+    },
+    "type": "type_9",
+  },
+]
+`;

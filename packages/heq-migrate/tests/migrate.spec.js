@@ -1,29 +1,42 @@
 const migrate = require("../src/migrate");
 const makeServer = require("./makeServer");
+const makeTestLogger = require("./makeTestLogger");
 
-test("it should migrate everything if no configuration file specified", async () => {
+test("it should migrate everything if no configuration specified", async () => {
   jest.setTimeout(1000);
-  const { queue: src, server: srv1 } = await makeServer({ port: 19999 });
-  const { queue: dest, server: srv2 } = await makeServer({ port: 19998 });
+  const [logger, logs] = makeTestLogger();
+  const { server: srv1, queue: src } = await makeServer({ port: 19999 });
+  const { server: srv2, queue: dest } = await makeServer({ port: 19998 });
 
-  for (let i = 0; i < 100; ++i) {
-    await src.commit({
-      type: "type_" + (i % 10),
-      payload: { key: i },
+  try {
+    for (let i = 0; i < 20; ++i) {
+      await src.commit({
+        type: "type_" + (i % 10),
+        payload: { key: i },
+      });
+    }
+
+    expect(await src.getLatest()).toEqual({
+      id: 20,
+      payload: { key: 19 },
+      type: "type_9",
     });
-  }
 
-  expect(await src.getLatest()).toEqual({
-    id: 100,
-    payload: { key: 99 },
-    type: "type_9",
-  });
+    for await (const output of migrate(
+      "http://localhost:19999",
+      "http://localhost:19998",
+      { logger },
+    )) {
+      logger.info(output);
+    }
+    const results = await dest.query({ from: 0 });
 
-  for await (const output of migrate(
-    "http://localhost:19999",
-    "http://localhost:19998",
-    (x) => x,
-  )) {
-    console.log(output);
+    expect(results).toHaveLength(20);
+
+    expect(results).toMatchSnapshot("replicate everything");
+    expect(logs).toMatchSnapshot("DEBUG level logs");
+  } finally {
+    srv1.destroy();
+    srv2.destroy();
   }
 });
