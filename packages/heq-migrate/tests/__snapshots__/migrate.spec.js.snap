@@ -2,7 +2,7 @@
 
 exports[`it should be able to resume from a progress object if specified: DEBUG level logs 1`] = `
 Array [
-  "[INF] resuming… { srcId: 10, destId: 10, destOp: 0 }",
+  "[INF] resuming from event#10",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
   pulseCount: 200,
@@ -167,6 +167,118 @@ Array [
       "key": 19,
     },
     "type": "type_9",
+  },
+]
+`;
+
+exports[`it should correct mark progress in case of error while skipping events: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating from scratch",
+  "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
+  "[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})",
+  "[DBG] sending http request to: http://localhost:19999/subscribe",
+  "[DBG] headers {
+  'last-event-id': '0',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}",
+  "[DBG] socket opened!",
+  "[INF] start receiving data",
+  "[DBG] handling events #1 - #20",
+  "[DBG] default error handler",
+  "[ERR] Error: failed for some reason
+    at transform (**)
+    at Object.handleEvents (**)
+    at processTicksAndRejections (**)
+    at <anonymous> (**)
+    at async Promise.all (**)
+    at handleEvents (**)
+    at Object.output [as begin] (**)
+    at output (**)
+    at Object.<anonymous> (**)",
+  "[ERR] onError failed to complete with error=failed for some reason",
+  "[DBG] Error: failed for some reason
+    at transform (**)
+    at Object.handleEvents (**)
+    at processTicksAndRejections (**)
+    at <anonymous> (**)
+    at async Promise.all (**)
+    at handleEvents (**)
+    at Object.output [as begin] (**)
+    at output (**)
+    at Object.<anonymous> (**)",
+  "[ERR] unrecoverable error happened while processing event #6",
+  "[ERR] { type: 'type_5', payload: { key: 5 }, id: 6 }",
+  "[DBG] done",
+  "[ERR] failed for some reason",
+  "[DBG] Error: failed for some reason
+    at transform (**)
+    at Object.handleEvents (**)
+    at processTicksAndRejections (**)
+    at <anonymous> (**)
+    at async Promise.all (**)
+    at handleEvents (**)
+    at Object.output [as begin] (**)
+    at output (**)
+    at Object.<anonymous> (**)",
+  "[DBG] {
+  ex: JerniUnrecoverableError: JerniUnrecoverableError
+      at <anonymous> (**)
+      at processTicksAndRejections (**)
+      at async Promise.all (**)
+      at handleEvents (**)
+      at Object.output [as begin] (**)
+      at output (**)
+      at Object.<anonymous> (**) {
+    details: {
+      originalError: Error: failed for some reason
+          at transform (**)
+          at Object.handleEvents (**)
+          at processTicksAndRejections (**)
+          at <anonymous> (**)
+          at async Promise.all (**)
+          at handleEvents (**)
+          at Object.output [as begin] (**)
+          at output (**)
+          at Object.<anonymous> (**),
+      event: [Object],
+      store: [Object],
+      storeIndex: 0
+    }
+  }
+}",
+  "[INF] stop processing events",
+]
+`;
+
+exports[`it should correct mark progress in case of error while skipping events: should skip type_2 and type_4 while terminated at type_5 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
   },
 ]
 `;

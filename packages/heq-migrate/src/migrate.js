@@ -6,10 +6,8 @@ module.exports = async function* migrate(fromAddress, toAddress, options = {}) {
   if (!progress.srcId) {
     logger.info("migrating from scratch");
     progress.srcId = 0;
-    progress.destId = 0;
-    progress.destOp = 0;
   } else {
-    logger.info("resuming…", progress);
+    logger.info("resuming from event#%d", progress.srcId);
   }
 
   const heqCommitStore = await makeHeqCommitStore({
@@ -95,7 +93,6 @@ async function makeHeqCommitStore(config) {
 
         progress.srcId = id;
         progress.destId = inserted;
-        progress.destOp = 0;
 
         emit(id);
         last = id;
@@ -104,7 +101,7 @@ async function makeHeqCommitStore(config) {
       return last;
     },
     async getLastSeenId() {
-      return getLatest(heqServer);
+      return progress.srcId;
     },
     async *listen() {
       for await (const id of handled$) {
