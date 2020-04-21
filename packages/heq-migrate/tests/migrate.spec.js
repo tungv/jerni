@@ -333,3 +333,59 @@ test("it should be able to resume from a progress object if specified", async ()
     srv2.destroy();
   }
 });
+
+test("it should throw if resume from a progress object that does not match actual destination state", async () => {
+  jest.setTimeout(1000);
+  const [logger, logs] = makeTestLogger();
+  const { server: srv1, queue: src } = await makeServer({ port: 19999 });
+  const { server: srv2, queue: dest } = await makeServer({ port: 19998 });
+
+  try {
+    for (let i = 0; i < 20; ++i) {
+      await src.commit({
+        type: "type_" + (i % 10),
+        payload: { key: i },
+      });
+    }
+
+    // destination has proceeded to event #10
+    for (let i = 0; i < 10; ++i) {
+      await dest.commit({
+        type: "type_" + (i % 10),
+        payload: { key: i },
+      });
+    }
+
+    // but progress object stays at #8
+    const progress = {
+      srcId: 10,
+      destId: 8,
+    };
+
+    await expect(
+      (async function () {
+        for await (const output of migrate(
+          "http://localhost:19999",
+          "http://localhost:19998",
+          {
+            progress,
+            logger,
+          },
+        )) {
+          logger.info(output);
+        }
+      })(),
+    ).rejects.toThrow(
+      "provided progress object does not match actual destination state",
+    );
+    const results = await dest.query({ from: 0 });
+
+    expect(results).toHaveLength(10);
+
+    expect(results).toMatchSnapshot("destination stays put");
+    expect(logs).toMatchSnapshot("DEBUG level logs");
+  } finally {
+    srv1.destroy();
+    srv2.destroy();
+  }
+});

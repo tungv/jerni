@@ -2,12 +2,27 @@ const createJourney = require("jerni");
 
 module.exports = async function* migrate(fromAddress, toAddress, options = {}) {
   let { transform = identity, logger, pulseCount = 200, progress } = options;
-
+  logger.info("migrating events from %s to %s", fromAddress, toAddress);
   if (!progress.srcId) {
     logger.info("migrating from scratch");
     progress.srcId = 0;
+    progress.destId = 0;
   } else {
     logger.info("resuming from event#%d", progress.srcId);
+  }
+
+  const destLatest = await getLatest(toAddress);
+
+  if (destLatest !== progress.destId) {
+    logger.error(
+      "destination server does not match with provided resume data. Expected latest event on %s is %d. Received: %d",
+      toAddress,
+      progress.destId,
+      destLatest,
+    );
+    throw new Error(
+      "provided progress object does not match actual destination state",
+    );
   }
 
   const heqCommitStore = await makeHeqCommitStore({

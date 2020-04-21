@@ -2,6 +2,7 @@
 
 exports[`it should be able to resume from a progress object if specified: DEBUG level logs 1`] = `
 Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] resuming from event#10",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
@@ -173,6 +174,7 @@ Array [
 
 exports[`it should correct mark progress in case of error while skipping events: DEBUG level logs 1`] = `
 Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
@@ -285,6 +287,7 @@ Array [
 
 exports[`it should migrate everything if no configuration specified: DEBUG level logs 1`] = `
 Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
@@ -456,6 +459,7 @@ Array [
 
 exports[`it should modify events specified in transform function: DEBUG level logs 1`] = `
 Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
@@ -627,6 +631,7 @@ Array [
 
 exports[`it should not proceed if new event doesn't include a type property: DEBUG level logs 1`] = `
 Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
@@ -732,6 +737,7 @@ Array [
 
 exports[`it should replace events specified in transform function: DEBUG level logs 1`] = `
 Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
@@ -903,6 +909,7 @@ Array [
 
 exports[`it should skip events specified in transform function: DEBUG level logs 1`] = `
 Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
@@ -1038,6 +1045,89 @@ Array [
     "id": 16,
     "payload": Object {
       "key": 19,
+    },
+    "type": "type_9",
+  },
+]
+`;
+
+exports[`it should throw if resume from a progress object that does not match actual destination state: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
+  "[INF] resuming from event#10",
+  "[ERR] destination server does not match with provided resume data. Expected latest event on http://localhost:19998 is 8. Received: 10",
+]
+`;
+
+exports[`it should throw if resume from a progress object that does not match actual destination state: destination stays put 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "key": 2,
+    },
+    "type": "type_2",
+  },
+  Object {
+    "id": 4,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 5,
+    "payload": Object {
+      "key": 4,
+    },
+    "type": "type_4",
+  },
+  Object {
+    "id": 6,
+    "payload": Object {
+      "key": 5,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 7,
+    "payload": Object {
+      "key": 6,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 8,
+    "payload": Object {
+      "key": 7,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 9,
+    "payload": Object {
+      "key": 8,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 10,
+    "payload": Object {
+      "key": 9,
     },
     "type": "type_9",
   },
