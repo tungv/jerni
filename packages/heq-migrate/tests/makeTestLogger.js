@@ -1,8 +1,17 @@
-function makeLogger(logLevel = makeLogger.LEVEL_DEBUG) {
+function makeLogger(logLevel = makeLogger.LEVEL_DEBUG, masked = true) {
   const logs = [];
   const record = (label, level) => (...args) => {
     if (level < logLevel) return;
-    logs.push(label + require("util").format(...args));
+
+    let fmt = require("util").format(...args);
+
+    if (masked) {
+      fmt = fmt
+        .replace(/at (.*) \(.*\)/g, "at $1 (**)")
+        .replace(/at \/.*/g, "at <anonymous> (**)");
+    }
+
+    logs.push(label + fmt);
   };
   const logger = {
     debug: record("[DBG] ", makeLogger.LEVEL_DEBUG),

@@ -1,10 +1,21 @@
 const createJourney = require("jerni");
 
 module.exports = async function* migrate(fromAddress, toAddress, options = {}) {
-  const { transform = identity, logger, pulseCount = 200 } = options;
+  let { transform = identity, logger, pulseCount = 200, progress } = options;
+
+  if (!progress.srcId) {
+    logger.info("migrating from scratch");
+    progress.srcId = 0;
+    progress.destId = 0;
+    progress.destOp = 0;
+  } else {
+    logger.info("resuming…", progress);
+  }
+
   const heqCommitStore = await makeHeqCommitStore({
     heqServer: toAddress,
     transform,
+    progress,
   });
 
   const journey = createJourney({
@@ -34,7 +45,7 @@ async function getLatest(serverAddress) {
 async function makeHeqCommitStore(config) {
   const subject = require("@async-generator/subject");
 
-  const { heqServer, transform } = config;
+  const { heqServer, transform, progress } = config;
   const [handled$, emit, end] = subject();
 
   async function commit(event) {
@@ -63,6 +74,9 @@ async function makeHeqCommitStore(config) {
       let last = events[0].id;
 
       for (const { id, ...event } of events) {
+        if (progress.srcId >= id) {
+          continue;
+        }
         let transformed = transform(event);
 
         if (transformed === false || typeof transformed === "undefined") {
@@ -77,7 +91,11 @@ async function makeHeqCommitStore(config) {
         }
 
         // now commit that transformed event
-        await commit(transformed);
+        const inserted = await commit(transformed);
+
+        progress.srcId = id;
+        progress.destId = inserted;
+        progress.destOp = 0;
 
         emit(id);
         last = id;
