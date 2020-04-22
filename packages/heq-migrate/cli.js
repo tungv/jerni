@@ -2,7 +2,10 @@
 const sade = require("sade");
 const path = require("path");
 const fs = require("fs");
+const ProgressBar = require("progress");
+
 const migrate = require("./src/migrate");
+const getLogger = require("./logger");
 
 const program = sade("heq-migrate");
 const { version } = require("./package.json");
@@ -34,7 +37,8 @@ program
   )
   .action(async function (fromAddress, toAddress, options) {
     const cwd = process.cwd();
-    const logger = console;
+    const logger =
+      process.env.NODE_ENV === "test" ? console : getLogger("heq-migrate");
 
     const transform = options.transform
       ? safelyResolveTransformFunction(path.resolve(cwd, options.transform))
@@ -42,14 +46,22 @@ program
 
     const progressFile = path.resolve(cwd, options.progress);
     const progress = safelyLoadProgressFile();
-
+    let bar;
     try {
       for await (const [complete, total] of migrate(fromAddress, toAddress, {
         logger,
         progress,
         transform,
+        pulseCount: options.pulseCount,
       })) {
-        console.log("%d/%d", complete, total);
+        if (!bar) {
+          console.error("");
+          bar = new ProgressBar(
+            "MIGRATING [:bar] :rate events/second :percent :etas",
+            { total, width: 30, complete: "=", incomplete: " " },
+          );
+        }
+        bar.update(complete / total);
       }
 
       fs.writeFileSync(progressFile, JSON.stringify(progress, null, 2));

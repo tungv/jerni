@@ -12,7 +12,9 @@
     "got": "^10.7.0",
     "heq-server": "^2.2.6",
     "jerni": "^1.0.0-rc.3",
-    "sade": "^1.7.3"
+    "progress": "^2.0.3",
+    "sade": "^1.7.3",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "execa": "^4.0.0",
