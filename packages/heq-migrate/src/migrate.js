@@ -36,6 +36,10 @@ module.exports = async function* migrate(fromAddress, toAddress, options = {}) {
     stores: [heqCommitStore],
   });
 
+  const initialProgress = [progress.srcId, await getLatest(fromAddress)];
+
+  yield initialProgress;
+
   try {
     for await (const output of journey.begin({ pulseCount, logger })) {
       const total = await getLatest(fromAddress);
