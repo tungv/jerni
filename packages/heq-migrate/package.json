@@ -7,6 +7,10 @@
   "scripts": {
     "test": "jest"
   },
+  "files": [
+    "cli.js",
+    "src"
+  ],
   "dependencies": {
     "@async-generator/subject": "^1.0.2",
     "got": "^10.7.0",
