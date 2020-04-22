@@ -43,17 +43,22 @@ program
     const progressFile = path.resolve(cwd, options.progress);
     const progress = safelyLoadProgressFile();
 
-    for await (const [complete, total] of migrate(fromAddress, toAddress, {
-      logger,
-      progress,
-      transform,
-    })) {
-      console.log("%d/%d", complete, total);
+    try {
+      for await (const [complete, total] of migrate(fromAddress, toAddress, {
+        logger,
+        progress,
+        transform,
+      })) {
+        console.log("%d/%d", complete, total);
+      }
+
+      fs.writeFileSync(progressFile, JSON.stringify(progress, null, 2));
+
+      process.exit(0);
+    } catch (ex) {
+      logger.error("Failed to migrate with error: %s", ex.message);
+      process.exit(2);
     }
-
-    fs.writeFileSync(progressFile, JSON.stringify(progress, null, 2));
-
-    process.exit(0);
 
     function safelyResolveTransformFunction(transformFile) {
       try {

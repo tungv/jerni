@@ -22,7 +22,8 @@
   },
   "jest": {
     "watchPathIgnorePatterns": [
-      "<rootDir>/heq-migrate-progress.json"
+      "<rootDir>/heq-migrate-progress.json",
+      "<rootDir>/tests/fixtures/.*"
     ]
   }
 }
