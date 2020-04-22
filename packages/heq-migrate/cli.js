@@ -3,6 +3,7 @@ const sade = require("sade");
 const path = require("path");
 const fs = require("fs");
 const ProgressBar = require("progress");
+const { once } = require("events");
 
 const migrate = require("./src/migrate");
 const getLogger = require("./logger");
@@ -46,6 +47,18 @@ program
 
     const progressFile = path.resolve(cwd, options.progress);
     const progress = safelyLoadProgressFile();
+
+    process.on("SIGINT", async () => {
+      fs.writeFileSync(progressFile, JSON.stringify(progress, null, 2));
+      if (logger.end) {
+        console.log("flushing logs");
+        logger.end();
+        await once(logger, "finish");
+      }
+
+      process.exit();
+    });
+
     let bar;
     try {
       for await (const [complete, total] of migrate(fromAddress, toAddress, {
@@ -65,7 +78,11 @@ program
       }
 
       fs.writeFileSync(progressFile, JSON.stringify(progress, null, 2));
-
+      if (logger.end) {
+        console.log("flushing logs");
+        logger.end();
+        await once(logger, "finish");
+      }
       process.exit(0);
     } catch (ex) {
       logger.error("Failed to migrate with error: %s", ex.message);
