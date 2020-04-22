@@ -4,6 +4,7 @@ exports[`it should be able to resume from a progress object if specified: DEBUG 
 Array [
   "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] resuming from event#10",
+  "[INF] [ 10, 20 ]",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
   pulseCount: 200,
@@ -179,6 +180,7 @@ exports[`it should correct mark progress in case of error while skipping events:
 Array [
   "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
   pulseCount: 200,
@@ -295,6 +297,7 @@ exports[`it should migrate everything if no configuration specified: DEBUG level
 Array [
   "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
   pulseCount: 200,
@@ -470,6 +473,7 @@ exports[`it should modify events specified in transform function: DEBUG level lo
 Array [
   "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
   pulseCount: 200,
@@ -645,6 +649,7 @@ exports[`it should not proceed if new event doesn't include a type property: DEB
 Array [
   "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
   pulseCount: 200,
@@ -754,6 +759,7 @@ exports[`it should replace events specified in transform function: DEBUG level l
 Array [
   "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
   pulseCount: 200,
@@ -929,6 +935,7 @@ exports[`it should skip events specified in transform function: DEBUG level logs
 Array [
   "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
   "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
   "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
   "[DBG] journey.begin({{
   pulseCount: 200,
