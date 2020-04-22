@@ -36,13 +36,18 @@ module.exports = async function* migrate(fromAddress, toAddress, options = {}) {
     stores: [heqCommitStore],
   });
 
-  for await (const output of journey.begin({ pulseCount, logger })) {
-    const total = await getLatest(fromAddress);
-    yield [output[0], total];
+  try {
+    for await (const output of journey.begin({ pulseCount, logger })) {
+      const total = await getLatest(fromAddress);
+      yield [output[0], total];
 
-    if (output[0] === total) {
-      return;
+      if (output[0] === total) {
+        return;
+      }
     }
+  } finally {
+    logger.info("cleaning up");
+    await journey.dispose();
   }
 };
 

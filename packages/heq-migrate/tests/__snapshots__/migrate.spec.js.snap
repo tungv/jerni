@@ -24,6 +24,9 @@ Array [
   "[DBG] done",
   "[INF] [ 20, 20 ]",
   "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
 ]
 `;
 
@@ -256,6 +259,9 @@ Array [
   }
 }",
   "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
 ]
 `;
 
@@ -309,6 +315,9 @@ Array [
   "[DBG] done",
   "[INF] [ 20, 20 ]",
   "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
 ]
 `;
 
@@ -481,6 +490,9 @@ Array [
   "[DBG] done",
   "[INF] [ 20, 20 ]",
   "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
 ]
 `;
 
@@ -713,6 +725,9 @@ Array [
   }
 }",
   "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
 ]
 `;
 
@@ -759,6 +774,9 @@ Array [
   "[DBG] done",
   "[INF] [ 20, 20 ]",
   "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
 ]
 `;
 
@@ -931,6 +949,9 @@ Array [
   "[DBG] done",
   "[INF] [ 20, 20 ]",
   "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
 ]
 `;
 

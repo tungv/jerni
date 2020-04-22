@@ -5,7 +5,7 @@ const enableDestroy = require("server-destroy");
 
 const servers = [];
 
-const makeServer = async ({ ns, port, queue: existingQueue }) => {
+const makeServer = async ({ port, queue: existingQueue }) => {
   const queue = existingQueue || (await inMemoryAdapter());
 
   const service = await factory({ queue });

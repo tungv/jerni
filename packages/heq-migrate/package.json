@@ -15,8 +15,14 @@
     "sade": "^1.7.3"
   },
   "devDependencies": {
+    "execa": "^4.0.0",
     "jest": "^25.3.0",
     "micro": "^9.3.4",
     "server-destroy": "^1.0.1"
+  },
+  "jest": {
+    "watchPathIgnorePatterns": [
+      "<rootDir>/heq-migrate-progress.json"
+    ]
   }
 }

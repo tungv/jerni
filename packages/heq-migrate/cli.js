@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 const sade = require("sade");
+const path = require("path");
+const fs = require("fs");
+const migrate = require("./src/migrate");
 
 const program = sade("heq-migrate");
 const { version } = require("./package.json");
@@ -30,7 +33,59 @@ program
     "migrate https://some-server.com https://destination-server.com --pulseCount=1000",
   )
   .action(async function (fromAddress, toAddress, options) {
-    console.log(fromAddress, toAddress, options);
+    const cwd = process.cwd();
+    const logger = console;
+
+    const transform = options.transform
+      ? safelyResolveTransformFunction(path.resolve(cwd, options.transform))
+      : (x) => x;
+
+    const progressFile = path.resolve(cwd, options.progress);
+    const progress = safelyLoadProgressFile();
+
+    for await (const [complete, total] of migrate(fromAddress, toAddress, {
+      logger,
+      progress,
+      transform,
+    })) {
+      console.log("%d/%d", complete, total);
+    }
+
+    fs.writeFileSync(progressFile, JSON.stringify(progress, null, 2));
+
+    process.exit(0);
+
+    function safelyResolveTransformFunction(transformFile) {
+      try {
+        logger.info("transform filepath: %s", transformFile);
+        const transformFn = require(transformFile);
+        return transformFn.default || transformFn;
+      } catch (ex) {
+        logger.error("cannot resolve transform function from file");
+        logger.error("error", ex.message);
+        process.exit(1);
+      }
+    }
+
+    function safelyLoadProgressFile() {
+      try {
+        logger.info("progress filepath: %s", progressFile);
+        if (!fs.existsSync(progressFile)) {
+          logger.info(
+            "no progress file found. heq-migrate will attempt to migrate from scratch",
+          );
+          return {};
+        }
+
+        const fileContent = String(fs.readFileSync(progressFile));
+
+        const progress = JSON.parse(fileContent);
+        return progress;
+      } catch (ex) {
+        logger.error("Corrupted progress file");
+        logger.debug("parse error:", ex.message);
+      }
+    }
   });
 
 program.parse(process.argv);
