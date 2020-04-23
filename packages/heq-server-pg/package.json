@@ -1,0 +1,12 @@
+{
+  "name": "@heq/server-pg",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "url": "https://github.com/tungv/jerni",
+    "directory": "packages/heq-server-pg"
+  },
+  "author": "Tung Vu",
+  "license": "MIT",
+  "private": false
+}
