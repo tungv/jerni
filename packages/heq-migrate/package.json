@@ -1,0 +1,35 @@
+{
+  "name": "heq-migrate",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "bin": "cli.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "files": [
+    "cli.js",
+    "src"
+  ],
+  "dependencies": {
+    "@async-generator/subject": "^1.0.2",
+    "got": "^10.7.0",
+    "heq-server": "^2.2.6",
+    "jerni": "^1.0.0-rc.3",
+    "progress": "^2.0.3",
+    "sade": "^1.7.3",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "execa": "^4.0.0",
+    "jest": "^25.3.0",
+    "micro": "^9.3.4",
+    "server-destroy": "^1.0.1"
+  },
+  "jest": {
+    "watchPathIgnorePatterns": [
+      "<rootDir>/heq-migrate-progress.json",
+      "<rootDir>/tests/fixtures/.*"
+    ]
+  }
+}

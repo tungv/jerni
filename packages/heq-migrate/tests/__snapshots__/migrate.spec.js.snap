@@ -1,0 +1,1163 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`it should be able to resume from a progress object if specified: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
+  "[INF] resuming from event#10",
+  "[INF] [ 10, 20 ]",
+  "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
+  "[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})",
+  "[DBG] sending http request to: http://localhost:19999/subscribe",
+  "[DBG] headers {
+  'last-event-id': '10',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}",
+  "[DBG] socket opened!",
+  "[INF] start receiving data",
+  "[DBG] handling events #11 - #20",
+  "[DBG] done",
+  "[INF] [ 20, 20 ]",
+  "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
+]
+`;
+
+exports[`it should be able to resume from a progress object if specified: replicate everything 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "key": 2,
+    },
+    "type": "type_2",
+  },
+  Object {
+    "id": 4,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 5,
+    "payload": Object {
+      "key": 4,
+    },
+    "type": "type_4",
+  },
+  Object {
+    "id": 6,
+    "payload": Object {
+      "key": 5,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 7,
+    "payload": Object {
+      "key": 6,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 8,
+    "payload": Object {
+      "key": 7,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 9,
+    "payload": Object {
+      "key": 8,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 10,
+    "payload": Object {
+      "key": 9,
+    },
+    "type": "type_9",
+  },
+  Object {
+    "id": 11,
+    "payload": Object {
+      "key": 10,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 12,
+    "payload": Object {
+      "key": 11,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 13,
+    "payload": Object {
+      "key": 12,
+    },
+    "type": "type_2",
+  },
+  Object {
+    "id": 14,
+    "payload": Object {
+      "key": 13,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 15,
+    "payload": Object {
+      "key": 14,
+    },
+    "type": "type_4",
+  },
+  Object {
+    "id": 16,
+    "payload": Object {
+      "key": 15,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 17,
+    "payload": Object {
+      "key": 16,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 18,
+    "payload": Object {
+      "key": 17,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 19,
+    "payload": Object {
+      "key": 18,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 20,
+    "payload": Object {
+      "key": 19,
+    },
+    "type": "type_9",
+  },
+]
+`;
+
+exports[`it should correct mark progress in case of error while skipping events: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
+  "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
+  "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
+  "[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})",
+  "[DBG] sending http request to: http://localhost:19999/subscribe",
+  "[DBG] headers {
+  'last-event-id': '0',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}",
+  "[DBG] socket opened!",
+  "[INF] start receiving data",
+  "[DBG] handling events #1 - #20",
+  "[DBG] default error handler",
+  "[ERR] Error: failed for some reason
+    at transform (**)
+    at Object.handleEvents (**)
+    at processTicksAndRejections (**)
+    at <anonymous> (**)
+    at async Promise.all (**)
+    at handleEvents (**)
+    at Object.output [as begin] (**)
+    at output (**)
+    at Object.<anonymous> (**)",
+  "[ERR] onError failed to complete with error=failed for some reason",
+  "[DBG] Error: failed for some reason
+    at transform (**)
+    at Object.handleEvents (**)
+    at processTicksAndRejections (**)
+    at <anonymous> (**)
+    at async Promise.all (**)
+    at handleEvents (**)
+    at Object.output [as begin] (**)
+    at output (**)
+    at Object.<anonymous> (**)",
+  "[ERR] unrecoverable error happened while processing event #6",
+  "[ERR] { type: 'type_5', payload: { key: 5 }, id: 6 }",
+  "[DBG] done",
+  "[ERR] failed for some reason",
+  "[DBG] Error: failed for some reason
+    at transform (**)
+    at Object.handleEvents (**)
+    at processTicksAndRejections (**)
+    at <anonymous> (**)
+    at async Promise.all (**)
+    at handleEvents (**)
+    at Object.output [as begin] (**)
+    at output (**)
+    at Object.<anonymous> (**)",
+  "[DBG] {
+  ex: JerniUnrecoverableError: JerniUnrecoverableError
+      at <anonymous> (**)
+      at processTicksAndRejections (**)
+      at async Promise.all (**)
+      at handleEvents (**)
+      at Object.output [as begin] (**)
+      at output (**)
+      at Object.<anonymous> (**) {
+    details: {
+      originalError: Error: failed for some reason
+          at transform (**)
+          at Object.handleEvents (**)
+          at processTicksAndRejections (**)
+          at <anonymous> (**)
+          at async Promise.all (**)
+          at handleEvents (**)
+          at Object.output [as begin] (**)
+          at output (**)
+          at Object.<anonymous> (**),
+      event: [Object],
+      store: [Object],
+      storeIndex: 0
+    }
+  }
+}",
+  "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
+]
+`;
+
+exports[`it should correct mark progress in case of error while skipping events: should skip type_2 and type_4 while terminated at type_5 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
+  },
+]
+`;
+
+exports[`it should migrate everything if no configuration specified: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
+  "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
+  "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
+  "[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})",
+  "[DBG] sending http request to: http://localhost:19999/subscribe",
+  "[DBG] headers {
+  'last-event-id': '0',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}",
+  "[DBG] socket opened!",
+  "[INF] start receiving data",
+  "[DBG] handling events #1 - #20",
+  "[DBG] done",
+  "[INF] [ 20, 20 ]",
+  "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
+]
+`;
+
+exports[`it should migrate everything if no configuration specified: replicate everything 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "key": 2,
+    },
+    "type": "type_2",
+  },
+  Object {
+    "id": 4,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 5,
+    "payload": Object {
+      "key": 4,
+    },
+    "type": "type_4",
+  },
+  Object {
+    "id": 6,
+    "payload": Object {
+      "key": 5,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 7,
+    "payload": Object {
+      "key": 6,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 8,
+    "payload": Object {
+      "key": 7,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 9,
+    "payload": Object {
+      "key": 8,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 10,
+    "payload": Object {
+      "key": 9,
+    },
+    "type": "type_9",
+  },
+  Object {
+    "id": 11,
+    "payload": Object {
+      "key": 10,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 12,
+    "payload": Object {
+      "key": 11,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 13,
+    "payload": Object {
+      "key": 12,
+    },
+    "type": "type_2",
+  },
+  Object {
+    "id": 14,
+    "payload": Object {
+      "key": 13,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 15,
+    "payload": Object {
+      "key": 14,
+    },
+    "type": "type_4",
+  },
+  Object {
+    "id": 16,
+    "payload": Object {
+      "key": 15,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 17,
+    "payload": Object {
+      "key": 16,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 18,
+    "payload": Object {
+      "key": 17,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 19,
+    "payload": Object {
+      "key": 18,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 20,
+    "payload": Object {
+      "key": 19,
+    },
+    "type": "type_9",
+  },
+]
+`;
+
+exports[`it should modify events specified in transform function: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
+  "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
+  "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
+  "[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})",
+  "[DBG] sending http request to: http://localhost:19999/subscribe",
+  "[DBG] headers {
+  'last-event-id': '0',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}",
+  "[DBG] socket opened!",
+  "[INF] start receiving data",
+  "[DBG] handling events #1 - #20",
+  "[DBG] done",
+  "[INF] [ 20, 20 ]",
+  "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
+]
+`;
+
+exports[`it should modify events specified in transform function: modify type_2 and type_4 to modified 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "everything": "can change",
+    },
+    "type": "modified",
+  },
+  Object {
+    "id": 4,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 5,
+    "payload": Object {
+      "everything": "can change",
+    },
+    "type": "modified",
+  },
+  Object {
+    "id": 6,
+    "payload": Object {
+      "key": 5,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 7,
+    "payload": Object {
+      "key": 6,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 8,
+    "payload": Object {
+      "key": 7,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 9,
+    "payload": Object {
+      "key": 8,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 10,
+    "payload": Object {
+      "key": 9,
+    },
+    "type": "type_9",
+  },
+  Object {
+    "id": 11,
+    "payload": Object {
+      "key": 10,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 12,
+    "payload": Object {
+      "key": 11,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 13,
+    "payload": Object {
+      "everything": "can change",
+    },
+    "type": "modified",
+  },
+  Object {
+    "id": 14,
+    "payload": Object {
+      "key": 13,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 15,
+    "payload": Object {
+      "everything": "can change",
+    },
+    "type": "modified",
+  },
+  Object {
+    "id": 16,
+    "payload": Object {
+      "key": 15,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 17,
+    "payload": Object {
+      "key": 16,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 18,
+    "payload": Object {
+      "key": 17,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 19,
+    "payload": Object {
+      "key": 18,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 20,
+    "payload": Object {
+      "key": 19,
+    },
+    "type": "type_9",
+  },
+]
+`;
+
+exports[`it should not proceed if new event doesn't include a type property: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
+  "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
+  "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
+  "[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})",
+  "[DBG] sending http request to: http://localhost:19999/subscribe",
+  "[DBG] headers {
+  'last-event-id': '0',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}",
+  "[DBG] socket opened!",
+  "[INF] start receiving data",
+  "[DBG] handling events #1 - #20",
+  "[DBG] default error handler",
+  "[ERR] TypeError: Cannot commit an event without \`type\`
+    at commit (**)
+    at Object.handleEvents (**)
+    at processTicksAndRejections (**)
+    at <anonymous> (**)
+    at async Promise.all (**)
+    at handleEvents (**)
+    at Object.output [as begin] (**)
+    at output (**)
+    at Object.<anonymous> (**)",
+  "[ERR] onError failed to complete with error=Cannot commit an event without \`type\`",
+  "[DBG] TypeError: Cannot commit an event without \`type\`
+    at commit (**)
+    at Object.handleEvents (**)
+    at processTicksAndRejections (**)
+    at <anonymous> (**)
+    at async Promise.all (**)
+    at handleEvents (**)
+    at Object.output [as begin] (**)
+    at output (**)
+    at Object.<anonymous> (**)",
+  "[ERR] unrecoverable error happened while processing event #3",
+  "[ERR] { type: 'type_2', payload: { key: 2 }, id: 3 }",
+  "[DBG] done",
+  "[ERR] Cannot commit an event without \`type\`",
+  "[DBG] TypeError: Cannot commit an event without \`type\`
+    at commit (**)
+    at Object.handleEvents (**)
+    at processTicksAndRejections (**)
+    at <anonymous> (**)
+    at async Promise.all (**)
+    at handleEvents (**)
+    at Object.output [as begin] (**)
+    at output (**)
+    at Object.<anonymous> (**)",
+  "[DBG] {
+  ex: JerniUnrecoverableError: JerniUnrecoverableError
+      at <anonymous> (**)
+      at processTicksAndRejections (**)
+      at async Promise.all (**)
+      at handleEvents (**)
+      at Object.output [as begin] (**)
+      at output (**)
+      at Object.<anonymous> (**) {
+    details: {
+      originalError: TypeError: Cannot commit an event without \`type\`
+          at commit (**)
+          at Object.handleEvents (**)
+          at processTicksAndRejections (**)
+          at <anonymous> (**)
+          at async Promise.all (**)
+          at handleEvents (**)
+          at Object.output [as begin] (**)
+          at output (**)
+          at Object.<anonymous> (**),
+      event: [Object],
+      store: [Object],
+      storeIndex: 0
+    }
+  }
+}",
+  "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
+]
+`;
+
+exports[`it should not proceed if new event doesn't include a type property: stop after 2 events 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+]
+`;
+
+exports[`it should replace events specified in transform function: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
+  "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
+  "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
+  "[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})",
+  "[DBG] sending http request to: http://localhost:19999/subscribe",
+  "[DBG] headers {
+  'last-event-id': '0',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}",
+  "[DBG] socket opened!",
+  "[INF] start receiving data",
+  "[DBG] handling events #1 - #20",
+  "[DBG] done",
+  "[INF] [ 20, 20 ]",
+  "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
+]
+`;
+
+exports[`it should replace events specified in transform function: replace type_2 and type_4 to something_new 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "key": 2,
+    },
+    "type": "something_new",
+  },
+  Object {
+    "id": 4,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 5,
+    "payload": Object {
+      "key": 4,
+    },
+    "type": "something_new",
+  },
+  Object {
+    "id": 6,
+    "payload": Object {
+      "key": 5,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 7,
+    "payload": Object {
+      "key": 6,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 8,
+    "payload": Object {
+      "key": 7,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 9,
+    "payload": Object {
+      "key": 8,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 10,
+    "payload": Object {
+      "key": 9,
+    },
+    "type": "type_9",
+  },
+  Object {
+    "id": 11,
+    "payload": Object {
+      "key": 10,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 12,
+    "payload": Object {
+      "key": 11,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 13,
+    "payload": Object {
+      "key": 12,
+    },
+    "type": "something_new",
+  },
+  Object {
+    "id": 14,
+    "payload": Object {
+      "key": 13,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 15,
+    "payload": Object {
+      "key": 14,
+    },
+    "type": "something_new",
+  },
+  Object {
+    "id": 16,
+    "payload": Object {
+      "key": 15,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 17,
+    "payload": Object {
+      "key": 16,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 18,
+    "payload": Object {
+      "key": 17,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 19,
+    "payload": Object {
+      "key": 18,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 20,
+    "payload": Object {
+      "key": 19,
+    },
+    "type": "type_9",
+  },
+]
+`;
+
+exports[`it should skip events specified in transform function: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
+  "[INF] migrating from scratch",
+  "[INF] [ 0, 20 ]",
+  "[DBG] === SWITCH TO NEW LOGGER PROVIDED BY begin() ===",
+  "[DBG] journey.begin({{
+  pulseCount: 200,
+  pulseTime: 10,
+  serverUrl: undefined,
+  cleanStart: false
+}})",
+  "[DBG] sending http request to: http://localhost:19999/subscribe",
+  "[DBG] headers {
+  'last-event-id': '0',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}",
+  "[DBG] socket opened!",
+  "[INF] start receiving data",
+  "[DBG] handling events #1 - #20",
+  "[DBG] done",
+  "[INF] [ 20, 20 ]",
+  "[INF] stop processing events",
+  "[INF] cleaning up",
+  "[DBG] disposing 1 store(s)",
+  "[DBG] disposing complete",
+]
+`;
+
+exports[`it should skip events specified in transform function: should skip type_2 and type_4 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 4,
+    "payload": Object {
+      "key": 5,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 5,
+    "payload": Object {
+      "key": 6,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 6,
+    "payload": Object {
+      "key": 7,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 7,
+    "payload": Object {
+      "key": 8,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 8,
+    "payload": Object {
+      "key": 9,
+    },
+    "type": "type_9",
+  },
+  Object {
+    "id": 9,
+    "payload": Object {
+      "key": 10,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 10,
+    "payload": Object {
+      "key": 11,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 11,
+    "payload": Object {
+      "key": 13,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 12,
+    "payload": Object {
+      "key": 15,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 13,
+    "payload": Object {
+      "key": 16,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 14,
+    "payload": Object {
+      "key": 17,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 15,
+    "payload": Object {
+      "key": 18,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 16,
+    "payload": Object {
+      "key": 19,
+    },
+    "type": "type_9",
+  },
+]
+`;
+
+exports[`it should throw if resume from a progress object that does not match actual destination state: DEBUG level logs 1`] = `
+Array [
+  "[INF] migrating events from http://localhost:19999 to http://localhost:19998",
+  "[INF] resuming from event#10",
+  "[ERR] destination server does not match with provided resume data. Expected latest event on http://localhost:19998 is 8. Received: 10",
+]
+`;
+
+exports[`it should throw if resume from a progress object that does not match actual destination state: destination stays put 1`] = `
+Array [
+  Object {
+    "id": 1,
+    "payload": Object {
+      "key": 0,
+    },
+    "type": "type_0",
+  },
+  Object {
+    "id": 2,
+    "payload": Object {
+      "key": 1,
+    },
+    "type": "type_1",
+  },
+  Object {
+    "id": 3,
+    "payload": Object {
+      "key": 2,
+    },
+    "type": "type_2",
+  },
+  Object {
+    "id": 4,
+    "payload": Object {
+      "key": 3,
+    },
+    "type": "type_3",
+  },
+  Object {
+    "id": 5,
+    "payload": Object {
+      "key": 4,
+    },
+    "type": "type_4",
+  },
+  Object {
+    "id": 6,
+    "payload": Object {
+      "key": 5,
+    },
+    "type": "type_5",
+  },
+  Object {
+    "id": 7,
+    "payload": Object {
+      "key": 6,
+    },
+    "type": "type_6",
+  },
+  Object {
+    "id": 8,
+    "payload": Object {
+      "key": 7,
+    },
+    "type": "type_7",
+  },
+  Object {
+    "id": 9,
+    "payload": Object {
+      "key": 8,
+    },
+    "type": "type_8",
+  },
+  Object {
+    "id": 10,
+    "payload": Object {
+      "key": 9,
+    },
+    "type": "type_9",
+  },
+]
+`;
