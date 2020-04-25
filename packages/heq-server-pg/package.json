@@ -6,12 +6,16 @@
     "url": "https://github.com/tungv/jerni",
     "directory": "packages/heq-server-pg"
   },
+  "scripts": {
+    "test": "jest"
+  },
   "author": "Tung Vu",
   "license": "MIT",
   "private": false,
   "dependencies": {
     "@eventide/message-db": "^1.1.6",
-    "jest": "^25.4.0"
+    "@lukeed/uuid": "^1.0.1",
+    "pg": "^8.0.3"
   },
   "devDependencies": {
     "jest": "^25.4.0"
