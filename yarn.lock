@@ -366,6 +366,11 @@
   dependencies:
     arrify "^1.0.1"
 
+"@eventide/message-db@^1.1.6":
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/@eventide/message-db/-/message-db-1.1.6.tgz#451995fa1327b3462c02673a031a57294e2cd1bb"
+  integrity sha512-gpU8GMccRNqL6vNpRtj9QXGloGxtOmJ29KJ8a0q5rYpRw3PsagxYH+LMJx68kNczwY/YwcuiMbzEmFUlv6o39g==
+
 "@improved/node@^1.0.0":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@improved/node/-/node-1.1.1.tgz#7be3d401b7cd2f848d5bb8713d2826b84fc51817"
@@ -6023,7 +6028,7 @@ jest@^24.7.1, jest@^24.9.0:
     import-local "^2.0.0"
     jest-cli "^24.9.0"
 
-jest@^25.2.7, jest@^25.3.0:
+jest@^25.2.7, jest@^25.3.0, jest@^25.4.0:
   version "25.4.0"
   resolved "https://registry.yarnpkg.com/jest/-/jest-25.4.0.tgz#fb96892c5c4e4a6b9bcb12068849cddf4c5f8cc7"
   integrity sha512-XWipOheGB4wai5JfCYXd6vwsWNwM/dirjRoZgAa7H2wd8ODWbli2AiKjqG8AYhyx+8+5FBEdpO92VhGlBydzbw==

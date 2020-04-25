@@ -8,5 +8,12 @@
   },
   "author": "Tung Vu",
   "license": "MIT",
-  "private": false
+  "private": false,
+  "dependencies": {
+    "@eventide/message-db": "^1.1.6",
+    "jest": "^25.4.0"
+  },
+  "devDependencies": {
+    "jest": "^25.4.0"
+  }
 }
