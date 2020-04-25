@@ -9,7 +9,8 @@
   },
   "files": [
     "cli.js",
-    "src"
+    "src",
+    "logger.js"
   ],
   "dependencies": {
     "@async-generator/subject": "^1.0.2",
