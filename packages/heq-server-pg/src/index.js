@@ -1,8 +1,8 @@
-const { Pool } = require("pg");
+const pg = require("pg");
 const uuid = require("@lukeed/uuid");
 
 module.exports = function ({ ns, connection }) {
-  const pool = new Pool(connection);
+  const pool = new pg.Pool(connection);
 
   const queue = { commit, generate, query, destroy, getLatest };
 
@@ -64,6 +64,18 @@ module.exports = function ({ ns, connection }) {
   }
 
   async function getLatest() {
-    return {};
+    // @see: https://www.postgresql.org/docs/9.3/rowtypes.html#ROWTYPES-ACCESSING
+    const resp = await sql({
+      text: `SELECT
+      (s.msg).type,
+      (s.msg).position::int + 1 as id,
+      (s.msg).data::jsonb as payload,
+      (s.msg).metadata::jsonb as meta
+      FROM (SELECT get_last_stream_message($1::varchar) as msg) AS s`,
+      values: [ns],
+    });
+    const event = resp.rows[0];
+
+    return event;
   }
 };
