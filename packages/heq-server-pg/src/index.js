@@ -1,7 +1,8 @@
 const pg = require("pg");
 const uuid = require("@lukeed/uuid");
 
-module.exports = function ({ ns, connection }) {
+module.exports = function ({ ns: rawNs, connection }) {
+  const ns = `heq-${rawNs}`;
   const pool = new pg.Pool(connection);
 
   const queue = { commit, generate, query, destroy, getLatest };
@@ -49,10 +50,24 @@ module.exports = function ({ ns, connection }) {
   }
 
   async function query({ from = -1, to, types = [] }) {
-    return [];
+    const resp = await sql(
+      `
+    SELECT
+      (s.msg).type,
+      (s.msg).position::int + 1 as id,
+      (s.msg).data::jsonb as payload,
+      (s.msg).metadata::jsonb as meta
+    FROM (
+      SELECT get_stream_messages($1::varchar, $2::bigint, $3::bigint) as msg
+    ) AS s`,
+      [ns, from, to - from],
+    );
+    const events = resp.rows;
+
+    return events;
   }
 
-  async function* generate() {
+  async function* generate(from, max, time, includingTypes = []) {
     yield 1;
   }
 
@@ -65,15 +80,18 @@ module.exports = function ({ ns, connection }) {
 
   async function getLatest() {
     // @see: https://www.postgresql.org/docs/9.3/rowtypes.html#ROWTYPES-ACCESSING
-    const resp = await sql({
-      text: `SELECT
+    const resp = await sql(
+      `
+    SELECT
       (s.msg).type,
       (s.msg).position::int + 1 as id,
       (s.msg).data::jsonb as payload,
       (s.msg).metadata::jsonb as meta
-      FROM (SELECT get_last_stream_message($1::varchar) as msg) AS s`,
-      values: [ns],
-    });
+    FROM (
+      SELECT get_last_stream_message($1::varchar) as msg
+    ) AS s`,
+      [ns],
+    );
     const event = resp.rows[0];
 
     return event;
