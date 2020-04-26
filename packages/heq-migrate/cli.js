@@ -48,7 +48,8 @@ program
     const progressFile = path.resolve(cwd, options.progress);
     const progress = safelyLoadProgressFile();
 
-    process.on("SIGINT", async () => {
+    async function exitGracefully(code) {
+      console.log("receiving code", code);
       fs.writeFileSync(progressFile, JSON.stringify(progress, null, 2));
       if (logger.end) {
         console.log("flushing logs");
@@ -57,9 +58,13 @@ program
       }
 
       process.exit();
-    });
+    }
+
+    process.on("SIGINT", exitGracefully);
+    process.on("SIGTERM", exitGracefully);
 
     let bar;
+    let percentage = 0;
     try {
       for await (const [complete, total] of migrate(fromAddress, toAddress, {
         logger,
@@ -75,6 +80,19 @@ program
           );
         }
         bar.update(complete / total);
+
+        if (!process.stdout.isTTY) {
+          const next = Math.trunc((complete * 100) / total);
+          if (percentage === next) continue;
+
+          percentage = next;
+          console.log(
+            "MIGRATING: complete %d of %d (%d%)",
+            complete,
+            total,
+            percentage,
+          );
+        }
       }
 
       fs.writeFileSync(progressFile, JSON.stringify(progress, null, 2));

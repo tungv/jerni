@@ -120,6 +120,7 @@ test("cli: with transform file", async () => {
       "http://localhost:19989",
       "http://localhost:19988",
       "--transform=./tests/fixtures/simple.js",
+      "--pulseCount=1",
     ]);
 
     // instance.stdout.pipe(process.stdout);
@@ -127,6 +128,11 @@ test("cli: with transform file", async () => {
 
     const resp = await instance;
     expect(resp.exitCode).toBe(0);
+
+    expect(resp.stdout).toEqual(expect.stringContaining("10%"));
+    expect(resp.stdout).toEqual(expect.stringContaining("20%"));
+    expect(resp.stdout).toEqual(expect.stringContaining("50%"));
+    expect(resp.stdout).toEqual(expect.stringContaining("100%"));
 
     const results = await dest.query({ from: 0 });
     expect(results).toHaveLength(8);
