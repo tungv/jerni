@@ -7,6 +7,8 @@ module.exports = function ({ ns: rawNs, connection }) {
 
   const queue = { commit, generate, query, destroy, getLatest };
 
+  let ensureSQLConditionSettingIsOn;
+
   async function sql(query, params) {
     const client = await pool.connect();
     // TODO: set a name for better query planing on Postgres server
@@ -49,22 +51,57 @@ module.exports = function ({ ns: rawNs, connection }) {
     };
   }
 
-  async function query({ from = -1, to, types = [] }) {
-    const resp = await sql(
-      `
-    SELECT
-      (s.msg).type,
-      (s.msg).position::int + 1 as id,
-      (s.msg).data::jsonb as payload,
-      (s.msg).metadata::jsonb as meta
-    FROM (
-      SELECT get_stream_messages($1::varchar, $2::bigint, $3::bigint) as msg
-    ) AS s`,
-      [ns, from, to - from],
-    );
-    const events = resp.rows;
+  async function _queryAll(from, to) {
+    const { rows } = await sql({
+      text: `
+SELECT
+  (s.msg).type,
+  (s.msg).position::int + 1 as id,
+  (s.msg).data::jsonb as payload,
+  (s.msg).metadata::jsonb as meta
+FROM (
+  SELECT get_stream_messages($1::varchar, $2::bigint, $3::bigint) as msg
+) AS s`,
+      values: [ns, from, to - from],
+    });
+    return rows;
+  }
 
-    return events;
+  async function _queryByTypes(from, to, types) {
+    if (!ensureSQLConditionSettingIsOn) {
+      ensureSQLConditionSettingIsOn = sql(
+        `SET message_store.sql_condition TO TRUE`,
+      );
+    }
+
+    await ensureSQLConditionSettingIsOn;
+    const { rows } = await sql({
+      text: `
+SELECT
+  (s.msg).type,
+  (s.msg).position::int + 1 as id,
+  (s.msg).data::jsonb as payload,
+  (s.msg).metadata::jsonb as meta
+FROM (
+  SELECT get_stream_messages($1::varchar, $2::bigint, $3::bigint, $4::varchar) as msg
+) AS s`,
+      values: [
+        ns,
+        from,
+        to - from,
+        `messages.position <= ${to - 1} AND messages.type IN ('${types.join(
+          "', '",
+        )}')`,
+      ],
+    });
+
+    return rows;
+  }
+
+  async function query({ from = -1, to, types = [] }) {
+    return types.length === 0
+      ? await _queryAll(from, to)
+      : await _queryByTypes(from, to, types);
   }
 
   async function* generate(from, max, time, includingTypes = []) {
@@ -73,9 +110,7 @@ module.exports = function ({ ns: rawNs, connection }) {
 
   async function destroy() {
     // tear down
-    console.time("destroyed");
     await pool.end();
-    console.timeEnd("destroyed");
   }
 
   async function getLatest() {

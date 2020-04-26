@@ -113,3 +113,52 @@ test("query: should return events within a range of id", async () => {
     await queue.destroy();
   }
 });
+
+test("query: should return a certain type of events within a range of id", async () => {
+  const ns = `ns__${Math.random()}`;
+  const queue = adapter({
+    ns,
+    connection: {
+      host: "localhost",
+      port: "54320",
+      password: "simple",
+      user: "message_store",
+      database: "message_store",
+    },
+  });
+
+  try {
+    for (let i = 0; i < 10; ++i) {
+      await queue.commit({
+        type: "test_" + ((i + 1) % 3),
+        payload: { key: i + 1, another: "test,test" },
+      });
+    }
+    const [e4, e6, e7, e9] = await queue.query({
+      from: 3,
+      to: 8,
+      types: ["test_1", "test_0"],
+    });
+    expect(e4).toEqual({
+      id: 4,
+      type: "test_1",
+      payload: { key: 4, another: "test,test" },
+      meta: {},
+    });
+    expect(e6).toEqual({
+      id: 6,
+      type: "test_0",
+      payload: { key: 6, another: "test,test" },
+      meta: {},
+    });
+    expect(e7).toEqual({
+      id: 7,
+      type: "test_1",
+      payload: { key: 7, another: "test,test" },
+      meta: {},
+    });
+    expect(e9).toBeUndefined();
+  } finally {
+    await queue.destroy();
+  }
+});
