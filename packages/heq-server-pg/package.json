@@ -13,6 +13,8 @@
   "license": "MIT",
   "private": false,
   "dependencies": {
+    "@async-generator/buffer-time-count": "^1.0.6",
+    "@async-generator/subject": "^1.0.2",
     "@eventide/message-db": "^1.1.6",
     "@lukeed/uuid": "^1.0.1",
     "pg": "^8.0.3"

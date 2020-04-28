@@ -202,3 +202,57 @@ test("generate: should iterator through all events", async () => {
     await queue.destroy();
   }
 });
+
+test("generate: should iterator through a certain type events", async () => {
+  jest.setTimeout(1000);
+  const ns = `ns__${Math.random()}`;
+  const queue = adapter({
+    ns,
+    connection: {
+      host: "localhost",
+      port: "54320",
+      password: "simple",
+      user: "message_store",
+      database: "message_store",
+    },
+  });
+
+  try {
+    // seed 10 events with different types
+    for (let i = 0; i < 10; ++i) {
+      await queue.commit({
+        type: "test_" + ((i + 1) % 3),
+        payload: { key: i + 1, another: "test,test" },
+      });
+    }
+
+    let outputs = [];
+    let count = 0;
+
+    //  1  2  3  4  5  6  7  8  9 10
+    // _1 _2 _0 _1 _2 _0 _1 _2 _0 _1
+    //  x  _  x  x  _  x  x  _  x  x
+    // [<---------1------->] [<-2->]
+
+    for await (const buffer of queue.generate(0, 5, 100, [
+      "test_0",
+      "test_1",
+    ])) {
+      expect(buffer).toBeInstanceOf(Array);
+      outputs.push(...buffer);
+      if (count === 0) {
+        expect(buffer).toHaveLength(5);
+      }
+
+      if (count === 1) {
+        expect(buffer).toHaveLength(2);
+        break;
+      }
+      ++count;
+    }
+
+    expect(outputs).toHaveLength(7);
+  } finally {
+    await queue.destroy();
+  }
+});

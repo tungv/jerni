@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@async-generator/buffer-time-count@^1.0.3":
+"@async-generator/buffer-time-count@^1.0.3", "@async-generator/buffer-time-count@^1.0.6":
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/@async-generator/buffer-time-count/-/buffer-time-count-1.0.6.tgz#8506ce5de41afae19ce818803b12c0811293283d"
   integrity sha512-NVucaFqdrPFnh6oVMj3FDecLknoFRBsZoPKbt1dRhTvo5Kpwf+/U29tsBNHHcpPHxa7/IiYhYuUvbbuj43soUQ==

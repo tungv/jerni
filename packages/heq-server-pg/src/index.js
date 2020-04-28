@@ -1,5 +1,7 @@
 const pg = require("pg");
 const uuid = require("@lukeed/uuid");
+const subject = require("@async-generator/subject");
+const bufferCountTime = require("@async-generator/buffer-time-count");
 
 module.exports = function ({ ns: rawNs, connection }) {
   const ns = `heq-${rawNs}`;
@@ -105,18 +107,38 @@ FROM (
   }
 
   async function* generate(from, max, time, includingTypes = []) {
-    let start = from;
+    const [stream, emit, end] = subject();
+    let aborted = false;
 
-    while (true) {
-      const batch = await query({
-        from: start,
-        to: start + max,
-        types: includingTypes,
-      });
-      const lastInBatch = last(batch);
+    (async function () {
+      let start = from;
 
-      start = lastInBatch.id;
-      yield batch;
+      while (!aborted) {
+        const batch = await query({
+          from: start,
+          to: start + max,
+          types: includingTypes,
+        });
+        if (batch.length === 0) {
+          continue;
+        }
+
+        const lastInBatch = last(batch);
+        start = lastInBatch.id;
+
+        batch.forEach(emit);
+      }
+    })();
+
+    const buffered = bufferCountTime(stream, time, max);
+
+    try {
+      for await (const batch of buffered) {
+        yield batch;
+      }
+    } finally {
+      aborted = true;
+      end();
     }
   }
 
@@ -155,3 +177,5 @@ FROM (
 };
 
 const last = (array) => (array.length >= 1 ? array[array.length - 1] : null);
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
