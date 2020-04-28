@@ -105,7 +105,19 @@ FROM (
   }
 
   async function* generate(from, max, time, includingTypes = []) {
-    yield 1;
+    let start = from;
+
+    while (true) {
+      const batch = await query({
+        from: start,
+        to: start + max,
+        types: includingTypes,
+      });
+      const lastInBatch = last(batch);
+
+      start = lastInBatch.id;
+      yield batch;
+    }
   }
 
   async function destroy() {
@@ -113,6 +125,15 @@ FROM (
     await pool.end();
   }
 
+  /**
+   * @typedef {Object} Event
+   * @property {string} id
+   * @property {string} type
+   * @property {Object} payload
+   * @property {Object} meta
+   *
+   * @return {Event}
+   */
   async function getLatest() {
     // @see: https://www.postgresql.org/docs/9.3/rowtypes.html#ROWTYPES-ACCESSING
     const resp = await sql(
@@ -132,3 +153,5 @@ FROM (
     return event;
   }
 };
+
+const last = (array) => (array.length >= 1 ? array[array.length - 1] : null);

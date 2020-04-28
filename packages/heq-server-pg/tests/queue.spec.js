@@ -162,3 +162,43 @@ test("query: should return a certain type of events within a range of id", async
     await queue.destroy();
   }
 });
+
+test("generate: should iterator through all events", async () => {
+  jest.setTimeout(1000);
+  const ns = `ns__${Math.random()}`;
+  const queue = adapter({
+    ns,
+    connection: {
+      host: "localhost",
+      port: "54320",
+      password: "simple",
+      user: "message_store",
+      database: "message_store",
+    },
+  });
+
+  try {
+    // seed 10 events with different types
+    for (let i = 0; i < 10; ++i) {
+      await queue.commit({
+        type: "test_" + ((i + 1) % 3),
+        payload: { key: i + 1, another: "test,test" },
+      });
+    }
+
+    let outputs = [];
+    let count = 0;
+    for await (const buffer of queue.generate(0, 5, 100, [])) {
+      expect(buffer).toBeInstanceOf(Array);
+      expect(buffer).toHaveLength(5);
+      outputs.push(...buffer);
+      if (++count === 2) {
+        break;
+      }
+    }
+
+    expect(outputs).toHaveLength(10);
+  } finally {
+    await queue.destroy();
+  }
+});
