@@ -2,6 +2,7 @@ const pg = require("pg");
 const uuid = require("@lukeed/uuid");
 const subject = require("@async-generator/subject");
 const bufferCountTime = require("@async-generator/buffer-time-count");
+const createSubcriber = require("pg-listen");
 
 /**
  * @typedef {Object} Event
@@ -18,18 +19,36 @@ const bufferCountTime = require("@async-generator/buffer-time-count");
 
 module.exports = function ({ ns: rawNs, connection }) {
   const ns = `heq-${rawNs}`;
+  const CHANNEL_NAME = ns;
   const pool = new pg.Pool(connection);
+  const subscriber = createSubcriber(connection);
 
+  let terminated = false;
+
+  /**
+   * @namespace
+   */
   const queue = { commit, generate, query, destroy, getLatest };
 
   let ensureSQLConditionSettingIsOn;
 
   async function sql(query, params) {
+    if (terminated) return;
+
+    if (typeof query === "string") {
+      query = {
+        text: query,
+        values: params,
+      };
+    }
+
+    query.ns = ns;
+
     const client = await pool.connect();
     // TODO: set a name for better query planing on Postgres server
     // @see https://node-postgres.com/features/queries
     try {
-      return await client.query(query, params);
+      return await client.query(query);
     } catch (ex) {
       console.error(ex);
       throw ex;
@@ -63,12 +82,15 @@ module.exports = function ({ ns: rawNs, connection }) {
       rows: [{ write_message: idFromZero }],
     } = resp;
 
-    return {
+    const committed = {
       id: parseInt(idFromZero) + 1,
       type,
       payload,
       meta,
     };
+    subscriber.notify(CHANNEL_NAME, committed);
+
+    return committed;
   }
 
   /**
@@ -85,6 +107,7 @@ module.exports = function ({ ns: rawNs, connection }) {
   async function _queryAll({ from, to, max }) {
     const actualSize = max || to - from;
     const { rows } = await sql({
+      name: "get_all_types",
       text: `
 SELECT
   (s.msg).type,
@@ -127,6 +150,7 @@ FROM (
 
     await ensureSQLConditionSettingIsOn;
     const { rows } = await sql({
+      name: "get_certain_types",
       text: `
 SELECT
   (s.msg).type,
@@ -168,14 +192,31 @@ FROM (
    */
   async function* generate(from, max, time, types = []) {
     const buffer = [];
-    const [stream, emit, end] = subject(buffer);
+    const [stream, __emit, end] = subject(buffer);
     let aborted = false;
     let $ = defer();
     $.resolve();
 
+    let hasEmitted = 0;
+
+    function emit(event) {
+      if (hasEmitted >= event.id) return;
+      __emit(event);
+      hasEmitted = event.id;
+      // console.log("emitted", event.id);
+    }
+
+    await subscriber.connect();
+    await subscriber.listenTo(CHANNEL_NAME);
+
+    function subscription(event) {
+      //
+      // console.log(event);
+      emit(event);
+    }
+
     (async function () {
       let start = from;
-
       while (!aborted) {
         await $.promise;
 
@@ -185,14 +226,16 @@ FROM (
             : await _queryByTypes({ from: start, max, types });
 
         if (batch.length === 0) {
-          await sleep(time);
-          continue;
+          subscriber.notifications.on(CHANNEL_NAME, subscription);
+          // await sleep(time);
+          // continue;
+          break;
         }
 
         const lastInBatch = last(batch);
         start = lastInBatch.id;
-
         batch.forEach(emit);
+        subscriber.notifications.off(CHANNEL_NAME, subscription);
       }
     })();
 
@@ -207,6 +250,7 @@ FROM (
         }
       }
     } finally {
+      subscriber.notifications.off(CHANNEL_NAME, subscription);
       aborted = true;
       end();
     }
@@ -219,7 +263,9 @@ FROM (
    */
   async function destroy() {
     // tear down
+    terminated = true;
     await pool.end();
+    await subscriber.close();
   }
 
   /**

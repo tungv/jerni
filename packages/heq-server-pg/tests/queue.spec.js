@@ -1,6 +1,6 @@
 const adapter = require("../src/index");
 
-test("commit: id should go up", async () => {
+function makeQueue() {
   const ns = `ns__${Math.random()}`;
   const queue = adapter({
     ns,
@@ -12,6 +12,11 @@ test("commit: id should go up", async () => {
       database: "message_store",
     },
   });
+  return queue;
+}
+
+test("commit: id should go up", async () => {
+  const queue = makeQueue();
 
   try {
     const events = [];
@@ -37,17 +42,7 @@ test("commit: id should go up", async () => {
 });
 
 test("getLatest: should return latest event", async () => {
-  const ns = `ns__${Math.random()}`;
-  const queue = adapter({
-    ns,
-    connection: {
-      host: "localhost",
-      port: "54320",
-      password: "simple",
-      user: "message_store",
-      database: "message_store",
-    },
-  });
+  const queue = makeQueue();
 
   try {
     for (let i = 0; i < 10; ++i) {
@@ -70,17 +65,7 @@ test("getLatest: should return latest event", async () => {
 });
 
 test("query: should return events within a range of id", async () => {
-  const ns = `ns__${Math.random()}`;
-  const queue = adapter({
-    ns,
-    connection: {
-      host: "localhost",
-      port: "54320",
-      password: "simple",
-      user: "message_store",
-      database: "message_store",
-    },
-  });
+  const queue = makeQueue();
 
   try {
     for (let i = 0; i < 10; ++i) {
@@ -115,17 +100,7 @@ test("query: should return events within a range of id", async () => {
 });
 
 test("query: should return a certain type of events within a range of id", async () => {
-  const ns = `ns__${Math.random()}`;
-  const queue = adapter({
-    ns,
-    connection: {
-      host: "localhost",
-      port: "54320",
-      password: "simple",
-      user: "message_store",
-      database: "message_store",
-    },
-  });
+  const queue = makeQueue();
 
   try {
     for (let i = 0; i < 10; ++i) {
@@ -165,17 +140,7 @@ test("query: should return a certain type of events within a range of id", async
 
 test("generate: should iterator through all events", async () => {
   jest.setTimeout(1000);
-  const ns = `ns__${Math.random()}`;
-  const queue = adapter({
-    ns,
-    connection: {
-      host: "localhost",
-      port: "54320",
-      password: "simple",
-      user: "message_store",
-      database: "message_store",
-    },
-  });
+  const queue = makeQueue();
 
   try {
     // seed 10 events with different types
@@ -205,17 +170,7 @@ test("generate: should iterator through all events", async () => {
 
 test("generate: should iterator through a certain type events", async () => {
   jest.setTimeout(1000);
-  const ns = `ns__${Math.random()}`;
-  const queue = adapter({
-    ns,
-    connection: {
-      host: "localhost",
-      port: "54320",
-      password: "simple",
-      user: "message_store",
-      database: "message_store",
-    },
-  });
+  const queue = makeQueue();
 
   try {
     // seed 10 events with different types
@@ -256,3 +211,36 @@ test("generate: should iterator through a certain type events", async () => {
     await queue.destroy();
   }
 });
+
+test("generate: should continue to yield events", async () => {
+  const queue = makeQueue();
+
+  try {
+    for (let i = 0; i < 5; ++i) await queue.commit({ type: "test_1" });
+
+    sleep(100).then(async () => {
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+    });
+
+    let received = 0;
+    for await (const batch of queue.generate(0, 2, 50, [])) {
+      received += batch.length;
+      if (received === 10) {
+        break;
+      }
+    }
+  } finally {
+    await queue.destroy();
+  }
+});
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
