@@ -243,4 +243,61 @@ test("generate: should continue to yield events", async () => {
   }
 });
 
+test("generate: should continue to yield events from an empty queue", async () => {
+  const queue = makeQueue();
+
+  try {
+    sleep(100).then(async () => {
+      for (let i = 0; i < 5; ++i) await queue.commit({ type: "test_1" });
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+      await queue.commit({ type: "test_2" });
+      await sleep(100);
+    });
+
+    let received = 0;
+    for await (const batch of queue.generate(0, 2, 50, [])) {
+      received += batch.length;
+      if (received === 10) {
+        break;
+      }
+    }
+  } finally {
+    await queue.destroy();
+  }
+});
+
+test("generate: should always maintain orders", async () => {
+  const queue = makeQueue();
+
+  try {
+    sleep(100).then(async () => {
+      for (let i = 0; i < 10; ++i) {
+        // this can come in any order, but the result of generate must match with query all
+        queue.commit({ type: "test_1", payload: { i } });
+      }
+    });
+
+    let received = [];
+    for await (const batch of queue.generate(0, 2, 50, [])) {
+      received.push(...batch);
+      if (received.length === 10) {
+        break;
+      }
+    }
+
+    const all = await queue.query({ from: 0, to: 10 });
+
+    expect(received).toEqual(all);
+  } finally {
+    await queue.destroy();
+  }
+});
+
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
