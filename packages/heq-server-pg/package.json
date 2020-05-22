@@ -1,0 +1,26 @@
+{
+  "name": "@heq/server-pg",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "url": "https://github.com/tungv/jerni",
+    "directory": "packages/heq-server-pg"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "Tung Vu",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "@async-generator/buffer-time-count": "^1.0.6",
+    "@async-generator/subject": "^1.0.2",
+    "@eventide/message-db": "^1.1.6",
+    "@lukeed/uuid": "^1.0.1",
+    "pg": "^8.0.3",
+    "pg-listen": "^1.5.1"
+  },
+  "devDependencies": {
+    "jest": "^25.4.0"
+  }
+}
