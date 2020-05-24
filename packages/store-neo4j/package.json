@@ -1,14 +1,16 @@
 {
   "name": "@jerni/store-neo4j",
   "version": "1.0.1",
+  "publishConfig": {
+    "tag": "alpha"
+  },
   "description": "neo4j as a destination for jerni",
   "main": "src/index.js",
   "author": "Tung Vu <me@tungv.com>",
   "license": "MIT",
   "dependencies": {
-    "@jerni/base": "^0.1.5",
+    "@async-generator/interval": "^1.0.2",
     "cypher.js": "^1.0.0-beta.6",
-    "kefir": "^3.8.6",
     "neo4j-driver": "^1.7.5",
     "p-lazy": "^3.0.0"
   },

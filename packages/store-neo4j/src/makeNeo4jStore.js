@@ -1,15 +1,20 @@
 const createReadOnlyDriver = require("./createReadOnlyDriver");
 const enhanceQuery = require("./cypher-transform-update");
 const neo4j = require("neo4j-driver").v1;
+const interval = require("@async-generator/interval");
 
-module.exports = async function makeStore(config = {}) {
+module.exports = async function makeNeo4jStore(config = {}) {
   const { name, model, url, user, password } = config;
+
   const lock = locker();
+  let hasStopped = false;
+
+  const ns = `${name}_v${model.version}`;
+
   const driver = neo4j.driver(url, neo4j.auth.basic(user, password), {
     disableLosslessIntegers: true,
   });
 
-  const ns = `${name}_v${model.version}`;
   const runSerial = makeRunner(driver, { ns });
 
   const store = {
@@ -29,8 +34,37 @@ module.exports = async function makeStore(config = {}) {
 
   return store;
 
+  async function getLastSeenId() {
+    const [snapshot] = await runSerial([
+      /* cypher */ `MERGE (s:SNAPSHOT { __ns: $ns}) ON CREATE SET s.__v = 0 RETURN s.__v as version`,
+    ]);
+    return snapshot.records[0] ? snapshot.records[0].get("version") : 0;
+  }
+
+  async function* listen() {
+    // eslint-disable-next-line no-unused-vars
+    for await (const _ of interval(300)) {
+      yield await getLastSeenId();
+    }
+  }
+
+  async function clean() {
+    console.log("clean neo4j");
+    await runSerial(
+      [/* cypher */ `MATCH (n { __ns: $ns}) DETACH DELETE n`],
+      [
+        /* cypher */ `
+        CREATE (s:SNAPSHOT { __ns: $ns, __v: 0, __op: 0})
+        RETURN s;
+        `,
+      ],
+    );
+  }
+
   async function handleEvents(events) {
+    if (hasStopped) return {};
     const release = lock();
+
     let stats = {
       nodesCreated: 0,
       nodesDeleted: 0,
@@ -44,7 +78,9 @@ module.exports = async function makeStore(config = {}) {
       constraintsAdded: 0,
       constraintsRemoved: 0,
     };
+
     const latestEventId = await getLastSeenId();
+
     try {
       const commands = [];
 
@@ -53,7 +89,7 @@ module.exports = async function makeStore(config = {}) {
         const cmds = optimisticLocking(
           arrify(model.transform(event)),
           event,
-          ns
+          ns,
         );
         commands.push(...cmds);
       }
@@ -65,38 +101,31 @@ module.exports = async function makeStore(config = {}) {
       }
 
       const session = driver.session();
-      let lastQuery;
-
-      function amendStats(updateStatistics) {
-        [
-          "nodesCreated",
-          "nodesDeleted",
-          "relationshipsCreated",
-          "relationshipsDeleted",
-          "propertiesSet",
-          "labelsAdded",
-          "labelsRemoved",
-          "indexesAdded",
-          "indexesRemoved",
-          "constraintsAdded",
-          "constraintsRemoved",
-        ].forEach(stat => {
-          stats[stat] += updateStatistics[stat]();
-        });
-      }
+      let lastQueryForLoggingPurpose;
 
       try {
-        const tx = session.beginTransaction();
-
-        for (const cmd of commands) {
-          const [query, params] = cmd;
-          lastQuery = query;
-          const results = await tx.run(query, params);
-          amendStats(results.summary.updateStatistics);
-        }
-
-        await tx.commit();
-
+        await session.writeTransaction(async function (tx) {
+          for (const cmd of commands) {
+            const [query, params] = cmd;
+            lastQueryForLoggingPurpose = query;
+            const results = await tx.run(query, params);
+            [
+              "nodesCreated",
+              "nodesDeleted",
+              "relationshipsCreated",
+              "relationshipsDeleted",
+              "propertiesSet",
+              "labelsAdded",
+              "labelsRemoved",
+              "indexesAdded",
+              "indexesRemoved",
+              "constraintsAdded",
+              "constraintsRemoved",
+            ].forEach((stat) => {
+              stats[stat] += results.summary.updateStatistics[stat]();
+            });
+          }
+        });
         return {
           stats: omitZero(stats),
         };
@@ -104,10 +133,10 @@ module.exports = async function makeStore(config = {}) {
         console.error(ex.message);
         console.error(ex.code);
         console.error(
-          lastQuery
+          lastQueryForLoggingPurpose
             .split("\n")
             .map((line, index) => `${String(index + 1).padStart(3)}| ${line}`)
-            .join("\n")
+            .join("\n"),
         );
         throw ex;
       } finally {
@@ -118,32 +147,7 @@ module.exports = async function makeStore(config = {}) {
     }
   }
 
-  async function getLastSeenId() {
-    const [snapshot] = await runSerial([
-      /* cypher */ `MERGE (s:SNAPSHOT { __ns: $ns}) ON CREATE SET s.__v = 0 RETURN s.__v as version`,
-    ]);
-    return snapshot.records[0] ? snapshot.records[0].get("version") : 0;
-  }
-
-  async function clean() {
-    console.log("clean neo4j");
-    await runSerial(
-      [/* cypher */ `MATCH (n { __ns: $ns}) DETACH DELETE n`],
-      [
-        /* cypher */ `
-        CREATE (s:SNAPSHOT { __ns: $ns, __v: 0, __op: 0})
-        RETURN s;
-        `,
-      ]
-    );
-  }
-
-  async function getDriver() {
-    return createReadOnlyDriver(driver, ns);
-  }
-
   function registerModels(map) {
-    let includesAll = false;
     map.set(model, store);
 
     // handle meta.includes
@@ -153,25 +157,20 @@ module.exports = async function makeStore(config = {}) {
       !modelSpecificMeta.includes ||
       modelSpecificMeta.includes.length === 0
     ) {
-      includesAll = true;
-    }
-
-    if (includesAll) {
       store.meta.includes = [];
     } else {
       store.meta.includes = modelSpecificMeta.includes;
     }
   }
 
-  async function* listen() {
-    while (true) {
-      const next = await getLastSeenId();
-      yield next;
-      await sleep(300);
-    }
+  async function getDriver() {
+    return createReadOnlyDriver(driver, ns);
   }
 
   async function dispose() {
+    hasStopped = true;
+
+    // tear down
     await driver.close();
   }
 };
@@ -184,7 +183,7 @@ function makeRunner(driver, defaultParams) {
       for (const [query, params = {}] of queries) {
         const result = await session.run(
           query,
-          Object.assign({}, defaultParams, params)
+          Object.assign({}, defaultParams, params),
         );
         results.push(result);
       }
@@ -195,8 +194,6 @@ function makeRunner(driver, defaultParams) {
     }
   };
 }
-
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 function locker() {
   let on = false;
@@ -213,7 +210,7 @@ function locker() {
   };
 }
 
-const arrify = v => (Array.isArray(v) ? v : v == null ? [] : [v]);
+const arrify = (v) => (Array.isArray(v) ? v : v == null ? [] : [v]);
 
 function optimisticLocking(cmds, event, namespace) {
   return cmds.map((cmd, opIndex) => {
@@ -235,8 +232,8 @@ function optimisticLocking(cmds, event, namespace) {
     try {
       const normalizedSpacing = cmd.query
         .split("\n")
-        .map(row => row.replace(/^\s*/, ""))
-        .filter(row => !row.startsWith("//"))
+        .map((row) => row.replace(/^\s*/, ""))
+        .filter((row) => !row.startsWith("//"))
         .join("\n");
       const transformedQuery = enhanceQuery(normalizedSpacing);
 
@@ -258,7 +255,7 @@ ${transformedQuery || "RETURN s"}
         cmd.query
           .split("\n")
           .map((line, index) => `${String(index + 1).padStart(3)}| ${line}`)
-          .join("\n")
+          .join("\n"),
       );
       console.error("%j", params);
       console.error(ex);
@@ -267,7 +264,7 @@ ${transformedQuery || "RETURN s"}
   });
 }
 
-const omitZero = obj => {
+const omitZero = (obj) => {
   const o = {};
   for (const key in obj) {
     if (obj[key]) {
