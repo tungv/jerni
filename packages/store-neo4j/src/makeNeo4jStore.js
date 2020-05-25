@@ -1,6 +1,6 @@
 const createReadOnlyDriver = require("./createReadOnlyDriver");
 const enhanceQuery = require("./cypher-transform-update");
-const neo4j = require("neo4j-driver").v1;
+const neo4j = require("neo4j-driver").default;
 const interval = require("@async-generator/interval");
 
 module.exports = async function makeNeo4jStore(config = {}) {
@@ -109,6 +109,7 @@ module.exports = async function makeNeo4jStore(config = {}) {
             const [query, params] = cmd;
             lastQueryForLoggingPurpose = query;
             const results = await tx.run(query, params);
+            const updateStatistics = results.summary.updateStatistics;
             [
               "nodesCreated",
               "nodesDeleted",
@@ -122,7 +123,7 @@ module.exports = async function makeNeo4jStore(config = {}) {
               "constraintsAdded",
               "constraintsRemoved",
             ].forEach((stat) => {
-              stats[stat] += results.summary.updateStatistics[stat]();
+              stats[stat] += updateStatistics[stat];
             });
           }
         });
