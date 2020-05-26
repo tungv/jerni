@@ -13,25 +13,33 @@ describe("Store", () => {
       password: "test",
     });
 
-    await store.handleEvents([
-      { id: 1, type: "test" },
-      { id: 2, type: "test" },
-      { id: 3, type: "test" },
-    ]);
+    try {
+      await store.handleEvents([
+        { id: 1, type: "test" },
+        { id: 2, type: "test" },
+        { id: 3, type: "test" },
+      ]);
 
-    const driver = await store.getDriver(model);
-    const session = driver.session();
+      const driver = await store.getDriver(model);
+      const session = driver.session();
 
-    const result = await session.run(/* cypher */ `
-      MATCH (item:Item) RETURN item ORDER BY id(item);
-    `);
+      const result = await session.run(/* cypher */ `
+        MATCH (item:Item) RETURN item ORDER BY id(item);
+      `);
 
-    const itemsProps = result.records.map((r) => r.toObject().item.properties);
-    expect(itemsProps).toEqual([
-      expect.objectContaining({ x: 1, __ns: "test_1_v1" }),
-      expect.objectContaining({ x: 1, __ns: "test_1_v1" }),
-      expect.objectContaining({ x: 1, __ns: "test_1_v1" }),
-    ]);
+      const itemsProps = result.records.map(
+        (r) => r.toObject().item.properties,
+      );
+      expect(itemsProps).toEqual([
+        expect.objectContaining({ x: 1, __ns: "test_1_v1" }),
+        expect.objectContaining({ x: 1, __ns: "test_1_v1" }),
+        expect.objectContaining({ x: 1, __ns: "test_1_v1" }),
+      ]);
+      await session.close();
+      await driver.close();
+    } finally {
+      await store.dispose();
+    }
   });
 
   it("should update last seen", async () => {
@@ -44,20 +52,23 @@ describe("Store", () => {
       user: "neo4j",
       password: "test",
     });
+    try {
+      const lastSeenAtTheBeginning = await store.getLastSeenId();
 
-    const lastSeenAtTheBeginning = await store.getLastSeenId();
+      expect(lastSeenAtTheBeginning).toBe(0);
 
-    expect(lastSeenAtTheBeginning).toBe(0);
+      await store.handleEvents([
+        { id: 1, type: "test" },
+        { id: 2, type: "test" },
+        { id: 3, type: "test" },
+      ]);
 
-    await store.handleEvents([
-      { id: 1, type: "test" },
-      { id: 2, type: "test" },
-      { id: 3, type: "test" },
-    ]);
+      const lastSeenAfterUpdate = await store.getLastSeenId();
 
-    const lastSeenAfterUpdate = await store.getLastSeenId();
-
-    expect(lastSeenAfterUpdate).toBe(3);
+      expect(lastSeenAfterUpdate).toBe(3);
+    } finally {
+      await store.dispose();
+    }
   });
 
   it("should be able to subscribe to new changes on different store instance", async () => {
@@ -81,17 +92,22 @@ describe("Store", () => {
       password: "test",
     });
 
-    (async function () {
-      await sleep(100);
-      await storeForPublish.handleEvents([{ id: 1, type: "test" }]);
-      await sleep(100);
-      await storeForPublish.handleEvents([{ id: 2, type: "test" }]);
-    })();
+    try {
+      (async function () {
+        await sleep(100);
+        await storeForPublish.handleEvents([{ id: 1, type: "test" }]);
+        await sleep(100);
+        await storeForPublish.handleEvents([{ id: 2, type: "test" }]);
+        await storeForPublish.dispose();
+      })();
 
-    for await (const checkpoint of storeForSubscribe.listen()) {
-      if (checkpoint === 2) {
-        break;
+      for await (const checkpoint of storeForSubscribe.listen()) {
+        if (checkpoint === 2) {
+          break;
+        }
       }
+    } finally {
+      await storeForSubscribe.dispose();
     }
   });
 });
@@ -117,6 +133,7 @@ async function clean(ns) {
   });
 
   await session.close();
+  await driver.close();
 }
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
