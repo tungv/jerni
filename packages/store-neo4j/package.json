@@ -4,6 +4,9 @@
   "publishConfig": {
     "tag": "alpha"
   },
+  "scripts": {
+    "test": "jest"
+  },
   "description": "neo4j as a destination for jerni",
   "main": "src/index.js",
   "author": "Tung Vu <me@tungv.com>",
