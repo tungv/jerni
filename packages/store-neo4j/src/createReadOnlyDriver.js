@@ -54,16 +54,16 @@ function trapSession(session, ns) {
 module.exports = async function createReadOnlyDriver(driver, ns) {
   const readOnlyDriver = new Proxy(driver, {
     get(target, prop, receiver) {
-      if (prop === "session") {
+      if (prop === "session" || prop === "rxSession") {
         // console.log("[PROXY] driver.%s()", prop);
         return function (...args) {
-          const session = target.session(...args);
+          const session = target[prop](...args);
 
           return trapSession(session, ns);
         };
-      } else {
-        return Reflect.get(target, prop, receiver);
       }
+
+      return Reflect.get(target, prop, receiver);
     },
   });
 
