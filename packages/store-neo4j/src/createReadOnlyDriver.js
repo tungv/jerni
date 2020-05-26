@@ -4,25 +4,33 @@ function trapTransaction(tx, ns) {
   return new Proxy(tx, {
     get(target, prop, receiver) {
       if (prop === "run") {
-        // console.log("[PROXY] transaction.run()");
+        // console.log("[PROXY] transaction.run()", target);
         return function (query, ...args) {
           // console.log("[PROXY] query:", query, ...args);
           return target.run(ensureNamespace(query, ns), ...args);
         };
-      } else {
-        return Reflect.get(target, prop, receiver);
       }
+      return Reflect.get(target, prop, receiver);
     },
   });
 }
 
-function trapSession(session, ns) {
+function trapSession(session, ns, useRx) {
   return new Proxy(session, {
     get(target, prop, receiver) {
       if (prop === "beginTransaction") {
         // console.log("[PROXY] session.%s()", prop);
         return function (config) {
           const tx = target.beginTransaction(config);
+
+          if (useRx) {
+            const err = new Error(
+              "@jerni/store-neo4j does NOT support RxSession#beginTransaction()",
+            );
+            err.name = "StoreNeo4jError";
+            throw err;
+          }
+
           return trapTransaction(tx, ns);
         };
       }
@@ -59,7 +67,7 @@ module.exports = async function createReadOnlyDriver(driver, ns) {
         return function (...args) {
           const session = target[prop](...args);
 
-          return trapSession(session, ns);
+          return trapSession(session, ns, prop === "rxSession");
         };
       }
 
