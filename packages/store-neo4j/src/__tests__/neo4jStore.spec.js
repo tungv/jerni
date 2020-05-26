@@ -20,6 +20,7 @@ describe("Store", () => {
         { id: 3, type: "test" },
       ]);
 
+      // this driver is 1) read-only 2) will only return the nodes within the namespace in most cases
       const driver = await store.getDriver(model);
       const session = driver.session();
 
@@ -36,6 +37,57 @@ describe("Store", () => {
         expect.objectContaining({ x: 1, __ns: "test_1_v1" }),
       ]);
       await session.close();
+      await driver.close();
+    } finally {
+      await store.dispose();
+    }
+  });
+
+  it("should return native driver that trap transactions to the specified namespace", async () => {
+    await clean("test_ns_v1");
+    const model = simpleModel();
+    const store = await makeNeo4jStore({
+      name: "test_ns",
+      url: "bolt://localhost:7687",
+      model,
+      user: "neo4j",
+      password: "test",
+    });
+
+    try {
+      await store.handleEvents([
+        { id: 1, type: "test" },
+        { id: 2, type: "test" },
+        { id: 3, type: "test" },
+      ]);
+
+      // this driver is 1) read-only 2) will only return the nodes within the namespace in most cases
+      const driver = await store.getDriver(model);
+      const session = driver.session();
+
+      const result = await session.run(/* cypher */ `
+        MATCH (item:Item) RETURN count(item) as count;
+      `);
+
+      expect(result.records[0].get("count")).toEqual(3);
+
+      await session.close();
+
+      const rxSession = driver.rxSession();
+      const { promise, resolve } = defer();
+      const rxResult = await rxSession.run(/* cypher */ `
+        MATCH (item:Item) RETURN count(item) as count;
+      `);
+
+      rxResult.records().subscribe({
+        next(value) {
+          resolve(value);
+        },
+      });
+      const record = await promise;
+
+      expect(record.get("count")).toEqual(3);
+
       await driver.close();
     } finally {
       await store.dispose();
@@ -137,3 +189,17 @@ async function clean(ns) {
 }
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function defer() {
+  let resolve, reject;
+
+  const promise = new Promise((_1, _2) => {
+    resolve = _1;
+    reject = _2;
+  });
+  return {
+    promise,
+    resolve,
+    reject,
+  };
+}
