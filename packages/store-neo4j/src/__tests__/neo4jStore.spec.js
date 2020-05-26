@@ -63,30 +63,40 @@ describe("Store", () => {
 
       // this driver is 1) read-only 2) will only return the nodes within the namespace in most cases
       const driver = await store.getDriver(model);
+
+      const query = /* cypher */ `
+      MATCH (item:Item) RETURN count(item) as count;
+    `;
+
       const session = driver.session();
 
-      const result = await session.run(/* cypher */ `
-        MATCH (item:Item) RETURN count(item) as count;
-      `);
+      const result = await session.run(query);
 
       expect(result.records[0].get("count")).toEqual(3);
+
+      // transactions
+      const trx = session.beginTransaction();
+
+      const trxResult = await trx.run(query);
+      expect(trxResult.records[0].get("count")).toEqual(3);
+      await trx.commit();
 
       await session.close();
 
       const rxSession = driver.rxSession();
-      const { promise, resolve } = defer();
-      const rxResult = await rxSession.run(/* cypher */ `
-        MATCH (item:Item) RETURN count(item) as count;
-      `);
+      const d1 = defer();
+      const rxResult = await rxSession.run(query);
 
       rxResult.records().subscribe({
         next(value) {
-          resolve(value);
+          d1.resolve(value);
         },
       });
-      const record = await promise;
+      const record = await d1.promise;
 
       expect(record.get("count")).toEqual(3);
+
+      await rxSession.close();
 
       await driver.close();
     } finally {
