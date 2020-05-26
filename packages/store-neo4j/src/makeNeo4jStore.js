@@ -38,6 +38,7 @@ module.exports = async function makeNeo4jStore(config = {}) {
     const [snapshot] = await runSerial([
       /* cypher */ `MERGE (s:SNAPSHOT { __ns: $ns}) ON CREATE SET s.__v = 0 RETURN s.__v as version`,
     ]);
+
     return snapshot.records[0] ? snapshot.records[0].get("version") : 0;
   }
 

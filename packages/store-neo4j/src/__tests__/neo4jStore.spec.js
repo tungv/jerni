@@ -2,8 +2,8 @@ const makeNeo4jStore = require("../makeNeo4jStore");
 const neo4j = require("neo4j-driver").default;
 
 describe("Store", () => {
-  it.only("should provide handleEvents method", async () => {
-    await clean("test_1");
+  it("should provide handleEvents method", async () => {
+    await clean("test_1_v1");
     const model = simpleModel();
     const store = await makeNeo4jStore({
       name: "test_1",
@@ -35,13 +35,14 @@ describe("Store", () => {
   });
 
   it("should update last seen", async () => {
-    await clean("test_2");
+    await clean("test_2_v1");
     const model = simpleModel();
     const store = await makeNeo4jStore({
       name: "test_2",
       url: "bolt://localhost:7687",
-      dbName: "test_2",
       model,
+      user: "neo4j",
+      password: "test",
     });
 
     const lastSeenAtTheBeginning = await store.getLastSeenId();
@@ -61,21 +62,23 @@ describe("Store", () => {
 
   it("should be able to subscribe to new changes on different store instance", async () => {
     // make 2 store
-    await clean("test_3");
+    await clean("test_3_v1");
 
     const model = simpleModel();
     const storeForPublish = await makeNeo4jStore({
       name: "test_3",
       url: "bolt://localhost:7687",
-      dbName: "test_3",
       model,
+      user: "neo4j",
+      password: "test",
     });
 
     const storeForSubscribe = await makeNeo4jStore({
       name: "test_3",
       url: "bolt://localhost:7687",
-      dbName: "test_3",
       model,
+      user: "neo4j",
+      password: "test",
     });
 
     (async function () {
@@ -109,7 +112,7 @@ async function clean(ns) {
     neo4j.auth.basic("neo4j", "test"),
   );
   const session = driver.session();
-  await session.run(/* cypher */ `MATCH (n { __ns: $ns}) DETACH DELETE n`, {
+  await session.run(/* cypher */ `MATCH (n { __ns: $ns }) DETACH DELETE n`, {
     ns,
   });
 
