@@ -26,7 +26,7 @@
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "./history"
+      "/.history"
     ]
   }
 }

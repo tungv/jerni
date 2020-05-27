@@ -81,6 +81,11 @@ describe("Store", () => {
       expect(trxResult.records[0].get("count")).toEqual(3);
       await trx.commit();
 
+      await session.readTransaction(async (trx) => {
+        const trxResult = await trx.run(query);
+        expect(trxResult.records[0].get("count")).toEqual(3);
+      });
+
       await session.close();
 
       const rxSession = driver.rxSession();
