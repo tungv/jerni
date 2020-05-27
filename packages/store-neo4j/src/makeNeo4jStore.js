@@ -1,5 +1,6 @@
 const createReadOnlyDriver = require("./createReadOnlyDriver");
-const enhanceQuery = require("./cypher-transform-update");
+const transformQuery = require("./cypher-transform-update");
+
 const neo4j = require("neo4j-driver").default;
 const interval = require("@async-generator/interval");
 
@@ -237,7 +238,7 @@ function optimisticLocking(cmds, event, namespace) {
         .map((row) => row.replace(/^\s*/, ""))
         .filter((row) => !row.startsWith("//"))
         .join("\n");
-      const transformedQuery = enhanceQuery(normalizedSpacing);
+      const transformedQuery = transformQuery(normalizedSpacing);
 
       if (!transformedQuery) {
         console.error(`invalid query`, normalizedSpacing);
