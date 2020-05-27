@@ -1,4 +1,5 @@
 const ensureNamespace = require("./ensureNamespace");
+const neo4j = require("neo4j-driver").default;
 
 function trapTransaction(tx, ns) {
   return new Proxy(tx, {
@@ -45,6 +46,14 @@ function trapSession(session, ns, useRx) {
           return target.readTransaction(trappedWork, config);
         };
       }
+      if (prop === "writeTransaction") {
+        // console.log("[PROXY] session.%s()", prop);
+        const error = new Error(
+          "starting a WRITE transaction on a read-only driver is not allowed",
+        );
+        error.name = "StoreNeo4jError";
+        throw error;
+      }
 
       if (prop === "run") {
         return function (query, ...args) {
@@ -64,8 +73,15 @@ module.exports = async function createReadOnlyDriver(driver, ns) {
     get(target, prop, receiver) {
       if (prop === "session" || prop === "rxSession") {
         // console.log("[PROXY] driver.%s()", prop);
-        return function (...args) {
-          const session = target[prop](...args);
+        return function (opts) {
+          if (opts && opts.defaultAccessMode === neo4j.session.WRITE) {
+            const error = new Error(
+              "creating a session with WRITE persmission is not allowed",
+            );
+            error.name = "StoreNeo4jError";
+            throw error;
+          }
+          const session = target[prop](opts);
 
           return trapSession(session, ns, prop === "rxSession");
         };

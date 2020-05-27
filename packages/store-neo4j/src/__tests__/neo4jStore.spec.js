@@ -104,6 +104,78 @@ describe("Store", () => {
     }
   });
 
+  it("should not let you call writeTransaction on read-only driver", async () => {
+    await clean("test_write_trx_v1");
+    const model = simpleModel();
+    const store = await makeNeo4jStore({
+      name: "test_ns",
+      url: "bolt://localhost:7687",
+      model,
+      user: "neo4j",
+      password: "test",
+    });
+    const driver = await store.getDriver(model);
+
+    try {
+      const session = driver.session();
+      expect(() =>
+        session.writeTransaction(async () => {
+          // do nothing
+        }),
+      ).toThrow(
+        "starting a WRITE transaction on a read-only driver is not allowed",
+      );
+    } finally {
+      await driver.close();
+      await store.dispose();
+    }
+  });
+
+  it("should not let you use explicit transaction (RxSession) on read-only driver", async () => {
+    await clean("test_write_trx_v1");
+    const model = simpleModel();
+    const store = await makeNeo4jStore({
+      name: "test_ns",
+      url: "bolt://localhost:7687",
+      model,
+      user: "neo4j",
+      password: "test",
+    });
+    const driver = await store.getDriver(model);
+
+    try {
+      const session = driver.rxSession();
+      expect(() => session.beginTransaction()).toThrow(
+        "@jerni/store-neo4j does NOT support RxSession#beginTransaction()",
+      );
+    } finally {
+      await driver.close();
+      await store.dispose();
+    }
+  });
+
+  it("should not let you use create session with WRITE permission on read-only driver", async () => {
+    await clean("test_write_trx_v1");
+    const model = simpleModel();
+    const store = await makeNeo4jStore({
+      name: "test_ns",
+      url: "bolt://localhost:7687",
+      model,
+      user: "neo4j",
+      password: "test",
+    });
+    const driver = await store.getDriver(model);
+
+    try {
+      expect(() =>
+        driver.session({ defaultAccessMode: neo4j.session.WRITE }),
+      ).toThrow("creating a session with WRITE persmission is not allowed");
+    } finally {
+      await driver.close();
+      await store.dispose();
+    }
+  });
+
   it("should update last seen", async () => {
     await clean("test_2_v1");
     const model = simpleModel();
