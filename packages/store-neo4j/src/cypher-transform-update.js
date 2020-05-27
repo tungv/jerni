@@ -2,7 +2,7 @@ const { parse } = require("cypher.js");
 const transformAndFormat = require("cypher.js/src/format");
 
 const caches = {};
-module.exports = query => {
+module.exports = (query) => {
   if (!caches[query]) caches[query] = format(query);
 
   return caches[query];
@@ -56,11 +56,13 @@ function transform(walk) {
       isMerging = true;
       mergingNodes.length = 0;
       return () => {
+        /* istanbul ignore next */
         if (mergingNodes.length > 0) {
+          /* istanbul ignore next */
           node.actions = node.actions || [];
           node.actions.push({
             type: "on-create",
-            items: mergingNodes.map(nodeName => ({
+            items: mergingNodes.map((nodeName) => ({
               type: "merge-properties",
               identifier: { type: "identifier", name: nodeName },
               expression: { type: "parameter", name: "upd" },
