@@ -65,12 +65,13 @@ describe("Store", () => {
       const driver = await store.getDriver(model);
 
       const query = /* cypher */ `
-      MATCH (item:Item) RETURN count(item) as count;
+      MATCH (item)-->(:Anchor) RETURN count(item) as count;
     `;
 
       const session = driver.session();
 
       const result = await session.run(query);
+      expect(result.records[0].get("count")).toEqual(3);
 
       expect(result.records[0].get("count")).toEqual(3);
 
@@ -110,7 +111,6 @@ describe("Store", () => {
   });
 
   it("should not let you call writeTransaction on read-only driver", async () => {
-    await clean("test_write_trx_v1");
     const model = simpleModel();
     const store = await makeNeo4jStore({
       name: "test_ns",
@@ -137,7 +137,6 @@ describe("Store", () => {
   });
 
   it("should not let you use explicit transaction (RxSession) on read-only driver", async () => {
-    await clean("test_write_trx_v1");
     const model = simpleModel();
     const store = await makeNeo4jStore({
       name: "test_ns",
@@ -160,7 +159,6 @@ describe("Store", () => {
   });
 
   it("should not let you use create session with WRITE permission on read-only driver", async () => {
-    await clean("test_write_trx_v1");
     const model = simpleModel();
     const store = await makeNeo4jStore({
       name: "test_ns",
@@ -176,6 +174,47 @@ describe("Store", () => {
         driver.session({ defaultAccessMode: neo4j.session.WRITE }),
       ).toThrow("creating a session with WRITE persmission is not allowed");
     } finally {
+      await driver.close();
+      await store.dispose();
+    }
+  });
+
+  it("should not let you use MERGE/DELETE/CREATE on read-only driver", async () => {
+    const model = simpleModel();
+    const store = await makeNeo4jStore({
+      name: "test_ns",
+      url: "bolt://localhost:7687",
+      model,
+      user: "neo4j",
+      password: "test",
+    });
+    const driver = await store.getDriver(model);
+    const session = driver.session();
+
+    try {
+      expect(() =>
+        session.run(/* cypher */ `
+        MERGE (node:Item { x: 1 });
+      `),
+      ).toThrow(
+        "write operations [MERGE] are forbidden on this read-only driver.",
+      );
+      expect(() =>
+        session.run(/* cypher */ `
+        DELETE (node:Item { x: 1 });
+      `),
+      ).toThrow(
+        "write operations [DELETE] are forbidden on this read-only driver.",
+      );
+      expect(() =>
+        session.run(/* cypher */ `
+        CREATE (node:Item { x: 1 });
+      `),
+      ).toThrow(
+        "write operations [CREATE] are forbidden on this read-only driver.",
+      );
+    } finally {
+      await session.close();
       await driver.close();
       await store.dispose();
     }
@@ -256,7 +295,12 @@ function simpleModel() {
     name: "test_model",
     version: "1",
     transform(event) {
-      return { query: /* cypher */ `CREATE (node:Item { x: 1 }) RETURN node` };
+      return {
+        query: /* cypher */ `
+      MERGE (anchor:Anchor)
+      WITH anchor
+      CREATE (node:Item { x: 1 })-[:Bounded]->(anchor) RETURN node`,
+      };
     },
   };
 }

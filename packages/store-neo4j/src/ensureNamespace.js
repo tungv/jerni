@@ -9,13 +9,18 @@ function addProperties(node, props) {
 
 module.exports = function ensureNamespace(query, namespace) {
   const ast = parse(
+    // cypher.js workarounds
     query
-      .replace(/\$\d/g, $1 => `$ESCAPED_${$1}`)
+      .replace(
+        /\$\d/g,
+        /* istanbul ignore next */
+        ($1) => `$ESCAPED_${$1}`,
+      )
       .split("apoc.cypher.runFirstColumn")
-      .join("`apoc.cypher.runFirstColumn`")
+      .join("`apoc.cypher.runFirstColumn`"),
   );
 
-  return transformAndFormat(ast, walk => {
+  return transformAndFormat(ast, (walk) => {
     let idCount = 0;
     const declaredIdentifiers = {};
     function declareIdentifier(id) {
@@ -31,19 +36,25 @@ module.exports = function ensureNamespace(query, namespace) {
         };
       },
       merge() {
-        throw new Error(
-          "Neo4jStore(jerni): write operations [MERGE] are forbidden on this read-only driver."
+        const err = new Error(
+          "write operations [MERGE] are forbidden on this read-only driver.",
         );
+        err.name = "StoreNeo4jError";
+        throw err;
       },
       create() {
-        throw new Error(
-          "Neo4jStore(jerni): write operations [CREATE] are forbidden on this read-only driver."
+        const err = new Error(
+          "write operations [CREATE] are forbidden on this read-only driver.",
         );
+        err.name = "StoreNeo4jError";
+        throw err;
       },
       delete() {
-        throw new Error(
-          "Neo4jStore(jerni): write operations [DELETE] are forbidden on this read-only driver."
+        const err = new Error(
+          "write operations [DELETE] are forbidden on this read-only driver.",
         );
+        err.name = "StoreNeo4jError";
+        throw err;
       },
 
       "node-pattern"(node) {
@@ -63,6 +74,7 @@ module.exports = function ensureNamespace(query, namespace) {
       },
 
       parameter(node) {
+        /* istanbul ignore next */
         if (node.name.startsWith("ESCAPED_$")) {
           node.name = node.name.substr("ESCAPED_$".length);
         }
