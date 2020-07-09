@@ -15,14 +15,17 @@ test("e2e", async () => {
       { id: 3, type: "TEST_3" },
       { id: 4, type: "TEST_1" },
     ],
-    [{ id: 5, type: "TEST_3" }, { id: 6, type: "TEST_4" }],
+    [
+      { id: 5, type: "TEST_3" },
+      { id: 6, type: "TEST_4" },
+    ],
     [{ id: 7, type: "TEST_5" }],
   ];
 
   const model = new Model({
     name: "collection_1",
     version: "e2e",
-    transform: event =>
+    transform: (event) =>
       [
         { insertOne: { event_type: event.type, counter: 0 } },
         event.type === "TEST_4" && {
@@ -77,7 +80,7 @@ test("e2e", async () => {
             },
           },
         },
-      ].filter(x => x),
+      ].filter((x) => x),
   });
 
   const pub = await makeStore({
@@ -94,7 +97,7 @@ test("e2e", async () => {
     models: [model],
   });
 
-  (async function() {
+  (async function () {
     for (const events of incomingBatchedEvents) {
       await sleep(10);
       await pub.handleEvents(events);
@@ -139,7 +142,7 @@ test("e2e", async () => {
   }
 });
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function clean(dbName) {
   const client = await MongoClient.connect("mongodb://localhost:27017", {
     useNewUrlParser: true,
@@ -147,4 +150,5 @@ async function clean(dbName) {
   });
   const db = client.db(dbName);
   await db.dropDatabase();
+  await client.close();
 }
