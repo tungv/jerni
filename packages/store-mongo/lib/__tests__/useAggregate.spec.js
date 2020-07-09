@@ -1,6 +1,7 @@
 const makeStore = require("../makeStore");
 const { MongoClient } = require("mongodb");
 const useAggregate = require("../useAggregate");
+const MongoDBReadModel = require("../MongoDBReadModel");
 
 function useCount(condition) {
   const result = useAggregate([{ $match: condition }, { $count: "count" }]);
@@ -264,6 +265,113 @@ describe("useAggregate(pipeline, opts)", () => {
           _id: expect.any(Object),
           id: 3,
           usernames: ["1"],
+        },
+      ]);
+    } finally {
+      await store.dispose();
+    }
+  });
+
+  test("cross model pipeline", async () => {
+    await clean("hooks_cross_model");
+
+    function useFindOne(model, condition) {
+      const result = useAggregate(model, [
+        { $match: condition },
+        { $limit: 1 },
+      ]);
+
+      if (!result) return null;
+      return result[0];
+    }
+
+    const itemModel = new MongoDBReadModel({
+      name: "items",
+      version: "1",
+      transform: limit(20, function (event) {
+        if (event.type === "item_added") {
+          return [
+            {
+              insertOne: {
+                id: event.payload.id,
+                name: event.payload.name,
+              },
+            },
+          ];
+        }
+      }),
+    });
+    const listModel = new MongoDBReadModel({
+      name: "lists",
+      version: "1",
+      transform: limit(20, function (event) {
+        if (event.type === "list_created") {
+          return [
+            {
+              insertOne: {
+                id: event.payload.id,
+                listName: event.payload.name,
+                items: [],
+              },
+            },
+          ];
+        }
+
+        if (event.type === "list_appended") {
+          const item = useFindOne(itemModel, { id: event.payload.itemId });
+          return [
+            {
+              updateOne: {
+                where: { id: event.payload.listId },
+                changes: {
+                  $push: {
+                    items: { id: item.id, name: item.name },
+                  },
+                },
+              },
+            },
+          ];
+        }
+      }),
+    });
+
+    const store = await makeStore({
+      name: "hooks_cross_model",
+      url: "mongodb://localhost:27017",
+      dbName: "hooks_cross_model",
+      models: [itemModel, listModel],
+    });
+
+    try {
+      await store.handleEvents([
+        // create 3 items
+        { id: 1, type: "item_added", payload: { id: 1, name: "item 1" } },
+        { id: 2, type: "item_added", payload: { id: 2, name: "item 2" } },
+        { id: 3, type: "item_added", payload: { id: 3, name: "item 3" } },
+
+        // create a list
+        { id: 4, type: "list_created", payload: { id: 1, name: "list 1" } },
+
+        // append to list
+        { id: 5, type: "list_appended", payload: { listId: 1, itemId: 1 } },
+        { id: 6, type: "list_appended", payload: { listId: 1, itemId: 2 } },
+      ]);
+
+      const List = await store.getDriver(listModel);
+
+      const lists = await List.find({}).toArray();
+
+      expect(lists).toEqual([
+        {
+          __op: 0,
+          __v: 6,
+          _id: expect.any(Object),
+          id: 1,
+          listName: "list 1",
+          items: [
+            { id: 1, name: "item 1" },
+            { id: 2, name: "item 2" },
+          ],
         },
       ]);
     } finally {

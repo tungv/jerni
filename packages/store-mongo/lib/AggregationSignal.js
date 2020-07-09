@@ -23,13 +23,15 @@ class AggregationSignal {
   }
 
   async prime(convertModelToCollection) {
-    let { index, collection, model, pipeline, opts } = this;
+    const { index, collection, model, pipeline, opts } = this;
 
-    if (model != null) {
-      collection = convertModelToCollection(model);
-    }
+    let queryingCollection =
+      model != null ? convertModelToCollection(model) : collection;
 
-    const results = await collection.aggregate(pipeline, opts).toArray();
+    const results = await queryingCollection
+      .aggregate(pipeline, opts)
+      .toArray();
+
     const cacheKey = [collection.collectionName, index].join("##");
 
     cache.set(cacheKey, results);
