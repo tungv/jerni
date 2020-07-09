@@ -5,6 +5,8 @@ const MongoClient = require("mongodb").MongoClient;
 
 const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 
+const AggregationSignal = require("./AggregationSignal");
+
 module.exports = async function makeStore(config = {}) {
   const { name, url, dbName, models } = config;
   const lock = locker();
@@ -36,7 +38,7 @@ module.exports = async function makeStore(config = {}) {
     await client.close();
   }
 
-  async function handleEvents(events) {
+  async function handleEvents(events, prevChanges = {}) {
     if (hasStopped) return {};
     const release = lock();
     try {
@@ -58,25 +60,62 @@ module.exports = async function makeStore(config = {}) {
         }),
       );
 
+      // step 2 - calculate all possible operators to apply on models
       const opsByModelIndex = Array.from({ length: models.length }, () => []);
 
-      events.forEach((event) => {
-        const currentEventOpsByModelIndex = models.map((model, modelIndex) => {
-          const { __v, __op } = mostRecentByModelIndex[modelIndex] || {
-            __v: 0,
-            __op: 0,
-          };
-          try {
-            return transform(model.transform, event, { __v, __op });
-          } catch (ex) {
-            return [];
-          }
-        });
+      // keep track of aggregation signals
+      const signals = [];
+      let processedEventsCount = 0;
+      try {
+        events.forEach((event) => {
+          const currentEventOpsByModelIndex = models.map(
+            (model, modelIndex) => {
+              return AggregationSignal.collect(
+                db.collection(getCollectionName(model)),
+                () => {
+                  const { __v, __op } = mostRecentByModelIndex[modelIndex] || {
+                    __v: 0,
+                    __op: 0,
+                  };
+                  try {
+                    return transform(model.transform, event, { __v, __op });
+                  } catch (exceptionOrSignal) {
+                    if (exceptionOrSignal instanceof AggregationSignal) {
+                      signals.push(exceptionOrSignal);
+                    }
+                    return [];
+                  }
+                },
+              );
+            },
+          );
 
-        opsByModelIndex.forEach((ops, index) => {
-          ops.push(...currentEventOpsByModelIndex[index]);
+          // stop collecting operations if there are some signals
+          if (signals.length !== 0) {
+            throw signals;
+          }
+
+          opsByModelIndex.forEach((ops, index) => {
+            ops.push(...currentEventOpsByModelIndex[index]);
+          });
+
+          processedEventsCount++;
+          AggregationSignal.cache.clear();
         });
-      });
+      } catch (signals) {
+        if (Array.isArray(signals)) {
+          // ..
+          console.log(
+            "%d pending signal found\n",
+            signals.length,
+            ...signals.map((sgn) => {
+              return ` - ${sgn.collection.collectionName}\n`;
+            }),
+          );
+        } else {
+          throw signals;
+        }
+      }
 
       // actual mongodb calls
       const allPromises = opsByModelIndex.map(async (ops, index) => {
@@ -122,7 +161,33 @@ module.exports = async function makeStore(config = {}) {
 
       const pairs = await Promise.all(allPromises);
       if (hasStopped) return {};
-      return Object.fromEntries(pairs.filter(([collName, changes]) => changes));
+
+      const partialChanges = Object.fromEntries(
+        pairs
+          .map((collName, changes) => [
+            collName,
+            (prevChanges[collName] || 0) + (changes || 0),
+          ])
+          .filter(([collName, changes]) => changes),
+      );
+
+      // priming values for signals
+      if (signals.length) {
+        for (const signal of signals) {
+          await signal.prime();
+        }
+
+        console.log("finished priming");
+
+        // retry
+        release();
+        return await handleEvents(
+          events.slice(processedEventsCount),
+          partialChanges,
+        );
+      }
+
+      return partialChanges;
     } finally {
       release();
     }
