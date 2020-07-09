@@ -2,6 +2,10 @@
   "name": "@heq/server-pg",
   "version": "1.0.1",
   "main": "index.js",
+  "publishConfig": {
+    "access": "public",
+    "tag": "next"
+  },
   "repository": {
     "url": "https://github.com/tungv/jerni",
     "directory": "packages/heq-server-pg"
@@ -22,5 +26,6 @@
   },
   "devDependencies": {
     "jest": "^25.4.0"
-  }
+  },
+  "gitHead": "5eeb6a4b0cb6c6f7abd9af4a05b44ee90c9ce549"
 }
