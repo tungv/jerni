@@ -40,10 +40,85 @@ module.exports = async function makeStore(config = {}) {
     if (hasStopped) return {};
     const release = lock();
     try {
-      const allPromises = models.map(async (model) => [
-        getCollectionName(model),
-        await executeOpsOnOneModel(model, events),
-      ]);
+      // step 1 - get most recent updates for each collection
+      const mostRecentByModelIndex = await Promise.all(
+        models.map(async (model) => {
+          // FIXME: this can be optimized by including all models in one request
+          const coll = db.collection(getCollectionName(model));
+          const [mostRecentlyUpdated] = await coll
+            .find({}, { __v: 1, __op: 1 })
+            .sort([
+              ["__v", "desc"],
+              ["__op", "desc"],
+            ])
+            .limit(1)
+            .toArray();
+
+          return mostRecentlyUpdated;
+        }),
+      );
+
+      const opsByModelIndex = Array.from({ length: models.length }, () => []);
+
+      events.forEach((event) => {
+        const currentEventOpsByModelIndex = models.map((model, modelIndex) => {
+          const { __v, __op } = mostRecentByModelIndex[modelIndex] || {
+            __v: 0,
+            __op: 0,
+          };
+          try {
+            return transform(model.transform, event, { __v, __op });
+          } catch (ex) {
+            return [];
+          }
+        });
+
+        opsByModelIndex.forEach((ops, index) => {
+          ops.push(...currentEventOpsByModelIndex[index]);
+        });
+      });
+
+      // actual mongodb calls
+      const allPromises = opsByModelIndex.map(async (ops, index) => {
+        const model = models[index];
+        const coll = db.collection(getCollectionName(model));
+        const modelName = getCollectionName(model);
+
+        if (ops.length === 0) return [modelName, null];
+
+        try {
+          const modelOpsResult = await coll.bulkWrite(ops);
+          if (hasStopped) return {};
+          const changes = {};
+          if (modelOpsResult.nUpserted)
+            changes.added = modelOpsResult.nUpserted;
+          if (modelOpsResult.nModified)
+            changes.modified = modelOpsResult.nModified;
+          if (modelOpsResult.nRemoved)
+            changes.removed = modelOpsResult.nRemoved;
+
+          return [modelName, changes];
+        } catch (bulkWriteError) {
+          throw new JerniStoreMongoWriteError(bulkWriteError, model);
+        }
+      });
+
+      await snapshotsCol.findOneAndUpdate(
+        {
+          $and: [
+            {
+              $or: models.map((model) => ({
+                name: model.name,
+                version: model.version,
+              })),
+            },
+            { __v: { $lt: events[events.length - 1].id } },
+          ],
+        },
+        {
+          $set: { __v: events[events.length - 1].id },
+        },
+      );
 
       const pairs = await Promise.all(allPromises);
       if (hasStopped) return {};
@@ -87,62 +162,6 @@ module.exports = async function makeStore(config = {}) {
     } else {
       store.meta.includes = Array.from(includes);
     }
-  }
-
-  async function executeOpsOnOneModel(model, events) {
-    if (hasStopped) return {};
-    const coll = db.collection(getCollectionName(model));
-    const [mostRecentlyUpdated] = await coll
-      .find({}, { __v: 1, __op: 1 })
-      .sort([
-        ["__v", "desc"],
-        ["__op", "desc"],
-      ])
-      .limit(1)
-      .toArray();
-
-    const { __v, __op } = mostRecentlyUpdated || { __v: 0, __op: 0 };
-
-    const ops = [].concat(
-      ...events
-        .filter((event) => event.id >= __v)
-        .map((event) => {
-          try {
-            return transform(model.transform, event, { __v, __op });
-          } catch (ex) {
-            return [];
-          }
-        }),
-    );
-
-    let changes = null;
-
-    if (ops.length > 0) {
-      try {
-        const modelOpsResult = await coll.bulkWrite(ops);
-        if (hasStopped) return {};
-        changes = {};
-        if (modelOpsResult.nUpserted) changes.added = modelOpsResult.nUpserted;
-        if (modelOpsResult.nModified)
-          changes.modified = modelOpsResult.nModified;
-        if (modelOpsResult.nRemoved) changes.removed = modelOpsResult.nRemoved;
-      } catch (bulkWriteError) {
-        throw new JerniStoreMongoWriteError(bulkWriteError, model);
-      }
-    }
-
-    await snapshotsCol.findOneAndUpdate(
-      {
-        name: model.name,
-        version: model.version,
-        __v: { $lt: events[events.length - 1].id },
-      },
-      {
-        $set: { __v: events[events.length - 1].id },
-      },
-    );
-
-    return changes;
   }
 
   async function getLastSeenId() {
