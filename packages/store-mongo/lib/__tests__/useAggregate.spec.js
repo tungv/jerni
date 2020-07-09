@@ -2,9 +2,27 @@ const makeStore = require("../makeStore");
 const { MongoClient } = require("mongodb");
 
 const AggregationSignal = require("../AggregationSignal");
+const MongoDBReadModel = require("../MongoDBReadModel");
 
-function useAggregate(pipeline) {
+function useAggregate(a1, a2) {
+  let model, pipeline;
+
+  if (a1 instanceof MongoDBReadModel) {
+    model = a1;
+    pipeline = a2;
+  } else if (Array.isArray(a1)) {
+    pipeline = a1;
+    model = null;
+  } else {
+    throw new TypeError(
+      "first argument of useAggregate must be either a pipeline or a MongoDBReadModel",
+    );
+  }
+
   const signal = new AggregationSignal(pipeline, {});
+  if (model) {
+    signal.model = model;
+  }
   const results = signal.results();
 
   if (results) {
@@ -154,7 +172,7 @@ describe("useAggregate(pipeline, opts)", () => {
     const model1 = {
       name: "users",
       version: "1",
-      transform: limit(6, function (event) {
+      transform: limit(10, function (event) {
         const count = useCount({ username: event.payload.username });
 
         return [
@@ -170,17 +188,33 @@ describe("useAggregate(pipeline, opts)", () => {
     const model2 = {
       name: "groups",
       version: "2",
-      transform: limit(6, function (event) {
-        const count = useCount({ group: event.payload.group });
+      transform: limit(10, function (event) {
+        const ops = event.payload.groups.flatMap((id) => {
+          const count = useCount({ id });
 
-        return [
-          {
-            insertOne: {
-              group: event.payload.group,
-              activated: count === 0,
+          if (count === 0) {
+            return [
+              {
+                insertOne: { id, usernames: [event.payload.username] },
+              },
+            ];
+          }
+
+          return [
+            {
+              updateOne: {
+                where: { id },
+                changes: {
+                  $push: {
+                    usernames: event.payload.username,
+                  },
+                },
+              },
             },
-          },
-        ];
+          ];
+        });
+
+        return ops;
       }),
     };
 
@@ -196,17 +230,17 @@ describe("useAggregate(pipeline, opts)", () => {
         {
           id: 1,
           type: "user_registered",
-          payload: { username: "1", group: 1 },
+          payload: { username: "1", groups: [1] },
         },
         {
           id: 2,
           type: "user_registered",
-          payload: { username: "2", group: 1 },
+          payload: { username: "2", groups: [1, 2] },
         },
         {
           id: 3,
           type: "user_registered",
-          payload: { username: "1", group: 2 },
+          payload: { username: "1", groups: [2, 3] },
         },
       ]);
 
@@ -241,24 +275,24 @@ describe("useAggregate(pipeline, opts)", () => {
       expect(groups).toEqual([
         {
           __op: 0,
-          __v: 1,
-          _id: expect.any(Object),
-          group: 1,
-          activated: true,
-        },
-        {
-          __op: 0,
           __v: 2,
           _id: expect.any(Object),
-          group: 1,
-          activated: false,
+          id: 1,
+          usernames: ["1", "2"],
         },
         {
           __op: 0,
           __v: 3,
           _id: expect.any(Object),
-          group: 2,
-          activated: true,
+          id: 2,
+          usernames: ["2", "1"],
+        },
+        {
+          __op: 1,
+          __v: 3,
+          _id: expect.any(Object),
+          id: 3,
+          usernames: ["1"],
         },
       ]);
     } finally {
@@ -274,6 +308,7 @@ async function clean(dbName) {
   });
   const db = client.db(dbName);
   await db.dropDatabase();
+  await client.close();
 }
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

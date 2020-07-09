@@ -1,44 +1,17 @@
-module.exports = class AggregationSignal {
-  static counter = 0;
-  static cache = new Map();
-
-  static activeCollection = null;
-
-  static collect(collection, cb) {
-    this.activeCollection = collection;
-
-    try {
-      return cb();
-    } finally {
-      this.reset();
-    }
-  }
-
-  static reset() {
-    this.counter = 0;
-    this.activeCollection = null;
-  }
-
+class AggregationSignal {
   constructor(pipeline, opts) {
-    this.index = AggregationSignal.counter++;
+    this.index = counter++;
     this.pipeline = pipeline;
     this.opts = opts;
-    this.collection = AggregationSignal.activeCollection;
+    this.collection = activeCollection;
   }
 
   results() {
     const { index, collection } = this;
     const cacheKey = [collection.collectionName, index].join("##");
 
-    console.log(
-      require("util").inspect(AggregationSignal.cache, {
-        depth: null,
-        colors: true,
-      }),
-    );
-
-    if (AggregationSignal.cache.has(cacheKey)) {
-      return AggregationSignal.cache.get(cacheKey);
+    if (cache.has(cacheKey)) {
+      return cache.get(cacheKey);
     }
 
     return;
@@ -49,11 +22,41 @@ module.exports = class AggregationSignal {
     this.collection = collection;
   }
 
-  async prime() {
-    const { index, collection, pipeline, opts } = this;
+  async prime(convertModelToCollection) {
+    let { index, collection, model, pipeline, opts } = this;
+
+    if (model != null) {
+      collection = convertModelToCollection(model);
+    }
+
     const results = await collection.aggregate(pipeline, opts).toArray();
     const cacheKey = [collection.collectionName, index].join("##");
 
-    AggregationSignal.cache.set(cacheKey, results);
+    cache.set(cacheKey, results);
   }
-};
+}
+
+let counter = 0;
+let cache = new Map();
+
+let activeCollection = null;
+
+function collect(collection, cb) {
+  activeCollection = collection;
+
+  try {
+    return cb();
+  } finally {
+    reset();
+  }
+}
+
+function reset() {
+  counter = 0;
+  activeCollection = null;
+}
+
+AggregationSignal.collect = collect;
+AggregationSignal.cache = cache;
+
+module.exports = AggregationSignal;

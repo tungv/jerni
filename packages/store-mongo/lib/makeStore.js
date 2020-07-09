@@ -105,13 +105,13 @@ module.exports = async function makeStore(config = {}) {
       } catch (signals) {
         if (Array.isArray(signals)) {
           // ..
-          console.log(
-            "%d pending signal found\n",
-            signals.length,
-            ...signals.map((sgn) => {
-              return ` - ${sgn.collection.collectionName}\n`;
-            }),
-          );
+          // console.log(
+          //   "%d pending signal found\n",
+          //   signals.length,
+          //   ...signals.map((sgn) => {
+          //     return ` - ${sgn.collection.collectionName}\n`;
+          //   }),
+          // );
         } else {
           throw signals;
         }
@@ -174,10 +174,10 @@ module.exports = async function makeStore(config = {}) {
       // priming values for signals
       if (signals.length) {
         for (const signal of signals) {
-          await signal.prime();
+          await signal.prime((model) =>
+            db.collection(getCollectionName(model)),
+          );
         }
-
-        console.log("finished priming");
 
         // retry
         release();
