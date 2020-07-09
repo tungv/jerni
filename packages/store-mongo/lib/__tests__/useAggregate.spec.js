@@ -1,35 +1,6 @@
 const makeStore = require("../makeStore");
 const { MongoClient } = require("mongodb");
-
-const AggregationSignal = require("../AggregationSignal");
-const MongoDBReadModel = require("../MongoDBReadModel");
-
-function useAggregate(a1, a2) {
-  let model, pipeline;
-
-  if (a1 instanceof MongoDBReadModel) {
-    model = a1;
-    pipeline = a2;
-  } else if (Array.isArray(a1)) {
-    pipeline = a1;
-    model = null;
-  } else {
-    throw new TypeError(
-      "first argument of useAggregate must be either a pipeline or a MongoDBReadModel",
-    );
-  }
-
-  const signal = new AggregationSignal(pipeline, {});
-  if (model) {
-    signal.model = model;
-  }
-  const results = signal.results();
-
-  if (results) {
-    return results;
-  }
-  throw signal;
-}
+const useAggregate = require("../useAggregate");
 
 function useCount(condition) {
   const result = useAggregate([{ $match: condition }, { $count: "count" }]);
