@@ -1,7 +1,7 @@
 const AggregationSignal = require("./AggregationSignal");
 const MongoDBReadModel = require("./MongoDBReadModel");
 
-module.exports = function useAggregate(a1, a2) {
+module.exports = function readPipeline(a1, a2) {
   let model, pipeline;
 
   if (a1 instanceof MongoDBReadModel) {

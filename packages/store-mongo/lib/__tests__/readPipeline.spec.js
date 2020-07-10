@@ -1,16 +1,16 @@
 const makeStore = require("../makeStore");
 const { MongoClient } = require("mongodb");
-const useAggregate = require("../useAggregate");
+const readPipeline = require("../readPipeline");
 const MongoDBReadModel = require("../MongoDBReadModel");
 
-function useCount(condition) {
-  const result = useAggregate([{ $match: condition }, { $count: "count" }]);
+function readCount(condition) {
+  const result = readPipeline([{ $match: condition }, { $count: "count" }]);
 
   if (result.length === 0) return 0;
   return result[0].count;
 }
 
-describe("useAggregate(pipeline, opts)", () => {
+describe("readPipeline(pipeline, opts)", () => {
   test("single hooks inside transform", async () => {
     await clean("aggregate_match");
 
@@ -18,7 +18,7 @@ describe("useAggregate(pipeline, opts)", () => {
       name: "model",
       version: "1",
       transform(event) {
-        const result = useAggregate([
+        const result = readPipeline([
           { $match: { username: event.payload.username } },
           { $count: "count" },
         ]);
@@ -88,7 +88,7 @@ describe("useAggregate(pipeline, opts)", () => {
       name: "model",
       version: "1",
       transform(event) {
-        const count = useCount({ username: event.payload.username });
+        const count = readCount({ username: event.payload.username });
 
         return [
           {
@@ -145,7 +145,7 @@ describe("useAggregate(pipeline, opts)", () => {
       name: "users",
       version: "1",
       transform: limit(10, function (event) {
-        const count = useCount({ username: event.payload.username });
+        const count = readCount({ username: event.payload.username });
 
         return [
           {
@@ -162,7 +162,7 @@ describe("useAggregate(pipeline, opts)", () => {
       version: "2",
       transform: limit(10, function (event) {
         const ops = event.payload.groups.flatMap((id) => {
-          const count = useCount({ id });
+          const count = readCount({ id });
 
           if (count === 0) {
             return [
@@ -275,8 +275,8 @@ describe("useAggregate(pipeline, opts)", () => {
   test("cross model pipeline", async () => {
     await clean("hooks_cross_model");
 
-    function useFindOne(model, condition) {
-      const result = useAggregate(model, [
+    function readFindOne(model, condition) {
+      const result = readPipeline(model, [
         { $match: condition },
         { $limit: 1 },
       ]);
@@ -318,7 +318,7 @@ describe("useAggregate(pipeline, opts)", () => {
         }
 
         if (event.type === "list_appended") {
-          const item = useFindOne(itemModel, { id: event.payload.itemId });
+          const item = readFindOne(itemModel, { id: event.payload.itemId });
           return [
             {
               updateOne: {
@@ -389,8 +389,6 @@ async function clean(dbName) {
   await db.dropDatabase();
   await client.close();
 }
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function limit(times, fn) {
   let elapsed = 0;
