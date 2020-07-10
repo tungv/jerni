@@ -1,11 +1,11 @@
 {
   "name": "integration_tests",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "index.js",
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@jerni/store-mongo": "^1.0.0-rc.6",
+    "@jerni/store-mongo": "^1.0.0-rc.7",
     "jerni": "^1.0.0-rc.4"
   },
   "devDependencies": {
