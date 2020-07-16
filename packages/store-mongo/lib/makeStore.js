@@ -164,9 +164,9 @@ module.exports = async function makeStore(config = {}) {
 
       const partialChanges = Object.fromEntries(
         pairs
-          .map((collName, changes) => [
+          .map(([collName, changes]) => [
             collName,
-            (prevChanges[collName] || 0) + (changes || 0),
+            mergeWithSum(prevChanges[collName], changes),
           ])
           .filter(([collName, changes]) => changes),
       );
@@ -313,4 +313,16 @@ function locker() {
       on = false;
     };
   };
+}
+
+function mergeWithSum(src, obj) {
+  if (obj == null) {
+    return src;
+  }
+  const dest = {};
+  for (const srcKey in src) {
+    dest[srcKey] = src[srcKey] + (obj[srcKey] || 0);
+  }
+
+  return { ...obj, ...dest };
 }
