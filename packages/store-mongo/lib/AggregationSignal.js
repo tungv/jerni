@@ -17,11 +17,6 @@ class AggregationSignal {
     return;
   }
 
-  fill(event, collection) {
-    this.event = event;
-    this.collection = collection;
-  }
-
   async prime(convertModelToCollection) {
     const { index, collection, model, pipeline, opts } = this;
 
