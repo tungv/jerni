@@ -3,7 +3,7 @@
   "publishConfig": {
     "tag": "latest"
   },
-  "version": "1.0.0-rc.7",
+  "version": "1.0.0",
   "main": "index.js",
   "files": [
     "lib",

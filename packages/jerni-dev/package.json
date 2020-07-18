@@ -3,7 +3,7 @@
   "publishConfig": {
     "tag": "latest"
   },
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0",
   "description": "CLI tool for develop clients of `heq-server` instances",
   "main": "index.js",
   "bin": "cli/index.js",
