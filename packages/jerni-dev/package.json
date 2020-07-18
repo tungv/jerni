@@ -1,7 +1,7 @@
 {
   "name": "jerni-dev",
   "publishConfig": {
-    "tag": "next"
+    "tag": "latest"
   },
   "version": "1.0.0-rc.2",
   "description": "CLI tool for develop clients of `heq-server` instances",
