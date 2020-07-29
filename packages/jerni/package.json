@@ -12,7 +12,6 @@
   "license": "MIT",
   "devDependencies": {
     "@async-generator/emitter-on": "^1.0.0",
-    "@jerni/base": "^0.1.5",
     "heq-server": "^2.2.7",
     "jest": "^25.2.7",
     "micro": "^9.3.2",
@@ -24,7 +23,6 @@
     "@async-generator/map": "^1.0.1",
     "@async-generator/subject": "^1.0.1",
     "arrify": "^1.0.1",
-    "buffer-time-count-generator": "^1.0.0",
     "got": "^9.0.0",
     "pretty-ms": "^5.0.0",
     "read-pkg-up": "^4.0.0",
