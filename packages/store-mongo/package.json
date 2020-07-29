@@ -18,7 +18,7 @@
   "license": "MIT",
   "dependencies": {
     "mongo-heartbeat": "^1.1.0",
-    "mongodb": "^3.1.1",
+    "mongodb": "^3.5.9",
     "saslprep": "^1.0.3"
   },
   "devDependencies": {
