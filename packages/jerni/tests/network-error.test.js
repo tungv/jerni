@@ -13,7 +13,7 @@ describe("IO error handling", () => {
     });
 
     try {
-      const store = makeTestStore(event => event.id);
+      const store = makeTestStore((event) => event.id);
 
       const journey = createJourney({
         writeTo: "http://localhost:19070",
@@ -23,9 +23,9 @@ describe("IO error handling", () => {
 
       await journey.commit({ type: "event1", payload: {} });
 
-      (async function() {
+      (async function () {
         await sleep(100);
-        console.log("kill");
+        logger.debug("[test] kill");
         server.destroy();
         await sleep(100);
         server = (
@@ -35,13 +35,13 @@ describe("IO error handling", () => {
             queue,
           })
         ).server;
-        console.log("server restored");
+        logger.debug("[test] server restored");
         await journey.commit({ type: "event2", payload: {} });
       })();
 
       const db = await store.getDriver();
       for await (const output of journey.begin()) {
-        if (output.some(o => o === "done 2")) break;
+        if (output.some((o) => o === "done 2")) break;
       }
 
       expect(db).toEqual([1, 2]);
@@ -52,4 +52,4 @@ describe("IO error handling", () => {
   });
 });
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
