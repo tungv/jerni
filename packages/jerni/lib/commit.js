@@ -14,8 +14,7 @@ module.exports = async (endpoint, event) => {
     },
   };
   const resp = await got.post(endpoint, {
-    json: true,
-    body: finalEvent,
+    json: finalEvent,
   });
 
   return resp.body;
