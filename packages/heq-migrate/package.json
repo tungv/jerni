@@ -1,6 +1,6 @@
 {
   "name": "heq-migrate",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "index.js",
   "license": "MIT",
   "bin": "cli.js",
@@ -16,7 +16,7 @@
     "@async-generator/subject": "^1.0.2",
     "got": "^10.7.0",
     "heq-server": "^2.2.6",
-    "jerni": "^1.0.0",
+    "jerni": "^1.0.1",
     "progress": "^2.0.3",
     "sade": "^1.7.3",
     "winston": "^3.2.1"
