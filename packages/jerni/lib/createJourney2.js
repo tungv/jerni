@@ -141,17 +141,22 @@ module.exports = function createJourney({
       ? await require("./dev-aware").getDevServerUrl(currentWriteTo)
       : currentWriteTo;
 
-    const eventWithId = await commitEventToHeqServer(
-      `${serverUrl}/commit`,
-      event,
-    );
+    try {
+      const eventWithId = await commitEventToHeqServer(
+        `${serverUrl}/commit`,
+        event,
+      );
 
-    if (dev) {
-      eventWithId.meta.sent_to = serverUrl;
-      require("./dev-aware").logCommitted(serverUrl, eventWithId);
+      if (dev) {
+        eventWithId.meta.sent_to = serverUrl;
+        require("./dev-aware").logCommitted(serverUrl, eventWithId);
+      }
+
+      return eventWithId;
+    } catch (ex) {
+      logger.error("cannot commit", ex.message);
+      throw ex;
     }
-
-    return eventWithId;
   }
 
   async function waitFor(event, maxWait = 3000) {
