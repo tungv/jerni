@@ -72,6 +72,7 @@ module.exports = function createJourney({
   };
 
   const last10 = [];
+  let forcedStop = false;
   let latestServer = null;
   let latestClient = null;
   let currentWriteTo = writeTo;
@@ -378,8 +379,9 @@ module.exports = function createJourney({
   async function requestEvents({ count, time }) {
     const parseChunk = makeChunkParser();
     const [http$, emit] = subject();
-    let forcedStop = false;
+
     let request = null;
+    let aborted = false;
 
     request = await connectHeqServer({ delay: 0 });
 
@@ -410,12 +412,18 @@ module.exports = function createJourney({
 
       const requestPromise = new Promise((resolve) => {
         let currentRequest = null;
+        let hasEnded = false;
+        let hasError = false;
         resp$.on("request", (r) => {
           currentRequest = r;
           logger.debug("socket opened!");
         });
 
         resp$.once("error", (error) => {
+          hasError = true;
+          if (forcedStop || aborted || hasEnded) {
+            return;
+          }
           if (delay < 500) {
             logger.debug("sub 500ms reconnection… %j", {
               message: error.message,
@@ -445,10 +453,14 @@ module.exports = function createJourney({
         });
 
         resp$.once("end", () => {
-          // make sure we reconnect
-          if (!forcedStop) {
-            reconnect();
+          hasEnded = true;
+          logger.debug("connection ended");
+          if (hasError || aborted || forcedStop) {
+            return;
           }
+
+          // make sure we reconnect
+          reconnect();
         });
       });
 
@@ -466,7 +478,7 @@ module.exports = function createJourney({
 
     function abort() {
       logger.info("aborting");
-      forcedStop = true;
+      aborted = true;
       request && request.abort();
     }
 
@@ -526,6 +538,7 @@ module.exports = function createJourney({
   }
 
   async function dispose() {
+    forcedStop = true;
     logger.debug("disposing %d store(s)", stores.length);
     for (const store of stores) {
       await store.dispose();
