@@ -18,6 +18,7 @@ exports[`IO error handling should recover when connection to heq-server fails 1`
 [INF] start receiving data
 [DBG] handling event #1
 [DBG] done
+[DBG] reconnection scheduled after 10ms
 [DBG] sub 500ms reconnection… {\\"message\\":\\"The server aborted pending request\\",\\"name\\":\\"ReadError\\"}
 [DBG] reconnection scheduled after 10ms
 [DBG] sending http request to: http://localhost:19070/subscribe
@@ -28,8 +29,6 @@ exports[`IO error handling should recover when connection to heq-server fails 1`
   'burst-time': 10
 }
 [DBG] socket opened!
-[DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
-[DBG] reconnection scheduled after 10ms
 [DBG] sending http request to: http://localhost:19070/subscribe
 [DBG] headers {
   'last-event-id': '1',
@@ -40,14 +39,6 @@ exports[`IO error handling should recover when connection to heq-server fails 1`
 [DBG] socket opened!
 [DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
 [DBG] reconnection scheduled after 20ms
-[DBG] sending http request to: http://localhost:19070/subscribe
-[DBG] headers {
-  'last-event-id': '1',
-  includes: '',
-  'burst-count': 200,
-  'burst-time': 10
-}
-[DBG] socket opened!
 [DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
 [DBG] reconnection scheduled after 30ms
 [DBG] sending http request to: http://localhost:19070/subscribe
@@ -60,6 +51,26 @@ exports[`IO error handling should recover when connection to heq-server fails 1`
 [DBG] socket opened!
 [DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
 [DBG] reconnection scheduled after 50ms
+[DBG] sending http request to: http://localhost:19070/subscribe
+[DBG] headers {
+  'last-event-id': '1',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}
+[DBG] socket opened!
+[DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
+[DBG] reconnection scheduled after 80ms
+[DBG] sending http request to: http://localhost:19070/subscribe
+[DBG] headers {
+  'last-event-id': '1',
+  includes: '',
+  'burst-count': 200,
+  'burst-time': 10
+}
+[DBG] socket opened!
+[DBG] sub 500ms reconnection… {\\"message\\":\\"connect ECONNREFUSED 127.0.0.1:19070\\",\\"name\\":\\"RequestError\\"}
+[DBG] reconnection scheduled after 130ms
 [DBG] sending http request to: http://localhost:19070/subscribe
 [DBG] headers {
   'last-event-id': '1',
