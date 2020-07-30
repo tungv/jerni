@@ -23,7 +23,7 @@
     "@async-generator/map": "^1.0.1",
     "@async-generator/subject": "^1.0.1",
     "arrify": "^1.0.1",
-    "got": "^9.0.0",
+    "got": "^11.5.1",
     "pretty-ms": "^5.0.0",
     "read-pkg-up": "^4.0.0",
     "sade": "^1.4.1",
