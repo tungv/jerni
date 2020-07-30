@@ -19,14 +19,14 @@ module.exports = function makeTestStore(transform) {
 
       return () => {
         console.log("notifying");
-        listeners = listeners.filter(fn => fn !== listener);
+        listeners = listeners.filter((fn) => fn !== listener);
       };
     },
     async handleEvents(events) {
       db.push(
-        ...events.filter(event => event.id > checkpoint).flatMap(transform),
+        ...events.filter((event) => event.id > checkpoint).flatMap(transform),
       );
-      listeners.forEach(fn => fn(last(events).id));
+      listeners.forEach((fn) => fn(last(events).id));
       checkpoint = last(events).id;
       pubsub.emit("persisted", checkpoint);
       return `done ${last(events).id}`;
@@ -61,6 +61,4 @@ module.exports = function makeTestStore(transform) {
   return store;
 };
 
-const last = array => (array.length >= 1 ? array[array.length - 1] : null);
-
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const last = (array) => (array.length >= 1 ? array[array.length - 1] : null);
