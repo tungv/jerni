@@ -13,7 +13,7 @@ describe("#waitFor", () => {
     });
 
     try {
-      const store = makeTestStore(event => event.id);
+      const store = makeTestStore((event) => event.id);
       const db = await store.getDriver();
 
       const journey = createJourney({
@@ -41,22 +41,20 @@ describe("#waitFor", () => {
       ns: "test_wait_for",
     });
 
+    const store = makeTestStore((event) => event.id);
+    const journey = createJourney({
+      writeTo: "http://localhost:19060",
+      stores: [store],
+      logger: logger1,
+    });
+    const subInstance = createJourney({
+      writeTo: "http://localhost:19060",
+      stores: [store],
+      logger: logger2,
+    });
+    const db = await store.getDriver();
     try {
-      const store = makeTestStore(event => event.id);
-      const journey = createJourney({
-        writeTo: "http://localhost:19060",
-        stores: [store],
-        logger: logger1,
-      });
-
-      const subInstance = createJourney({
-        writeTo: "http://localhost:19060",
-        stores: [store],
-        logger: logger2,
-      });
-      const db = await store.getDriver();
-
-      (async function() {
+      (async function () {
         // eslint-disable-next-line no-unused-vars
         for await (const item of subInstance.begin({ pulseTime: 1 })) {
         }
@@ -64,9 +62,11 @@ describe("#waitFor", () => {
 
       await sleep(100);
       const event = await journey.commit({ type: "test" });
-      await journey.waitFor(event, 500);
+      await journey.waitFor(event, 200);
       expect(db).toHaveLength(1);
     } finally {
+      await journey.dispose();
+      await subInstance.dispose();
       server.destroy();
       expect(appLogs.join("\n")).toMatchSnapshot("application logs");
       expect(jobLogs.join("\n")).toMatchSnapshot("jerni cli logs");
@@ -74,4 +74,4 @@ describe("#waitFor", () => {
   });
 });
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

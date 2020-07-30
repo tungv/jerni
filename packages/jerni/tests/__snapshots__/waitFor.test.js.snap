@@ -1,6 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`#waitFor should wait until the event is fully committed to stores: application logs 1`] = `""`;
+exports[`#waitFor should wait until the event is fully committed to stores: application logs 1`] = `
+"[DBG] disposing 1 store(s)
+[DBG] disposing complete"
+`;
 
 exports[`#waitFor should wait until the event is fully committed to stores: jerni cli logs 1`] = `
 "[DBG] journey.begin({{
@@ -19,5 +22,7 @@ exports[`#waitFor should wait until the event is fully committed to stores: jern
 [DBG] socket opened!
 [INF] start receiving data
 [DBG] handling event #1
-[DBG] done"
+[DBG] done
+[DBG] disposing 1 store(s)
+[DBG] disposing complete"
 `;
