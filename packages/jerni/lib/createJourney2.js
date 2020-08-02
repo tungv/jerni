@@ -522,7 +522,7 @@ module.exports = function createJourney({
 
   async function updateLatestServer() {
     const url = `${currentWriteTo}/events/latest`;
-    const { body } = await got(url, { json: true });
+    const { body } = await got(url, { responseType: "json" });
     latestServer = body.id;
   }
 
