@@ -1,6 +1,6 @@
 {
   "name": "jerni-demo",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "demo how to work with jerni",
   "main": "index.js",
   "author": "Tung Vu <me@tungv.com>",
@@ -20,6 +20,6 @@
     "test": "jest"
   },
   "devDependencies": {
-    "jerni-dev": "^1.0.0"
+    "jerni-dev": "^1.0.2"
   }
 }
