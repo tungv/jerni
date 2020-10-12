@@ -142,6 +142,7 @@ module.exports = async function makeStore(config = {}) {
         }
       });
 
+      const pairs = await Promise.all(allPromises);
       await snapshotsCol.findOneAndUpdate(
         {
           $and: [
@@ -159,7 +160,6 @@ module.exports = async function makeStore(config = {}) {
         },
       );
 
-      const pairs = await Promise.all(allPromises);
       if (hasStopped) return {};
 
       const partialChanges = Object.fromEntries(
