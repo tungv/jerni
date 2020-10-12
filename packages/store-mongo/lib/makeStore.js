@@ -143,7 +143,7 @@ module.exports = async function makeStore(config = {}) {
       });
 
       const pairs = await Promise.all(allPromises);
-      await snapshotsCol.findOneAndUpdate(
+      await snapshotsCol.updateMany(
         {
           $and: [
             {
