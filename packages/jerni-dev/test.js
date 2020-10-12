@@ -42,7 +42,9 @@ module.exports = async function getJerniDevInstance(
         return;
       }
 
-      throw ex;
+      hasStopped = true;
+      await originalJourney.dispose();
+      return
     }
     buffer.length = 0;
 
