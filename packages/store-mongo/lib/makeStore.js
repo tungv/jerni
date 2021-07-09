@@ -8,10 +8,10 @@ const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 const AggregationSignal = require("./AggregationSignal");
 
 module.exports = async function makeStore(config = {}) {
-  const { name, url, dbName, models } = config;
+  const { name, url, dbName, models, mongoClientOpts = {} } = config;
   const lock = locker();
 
-  const client = await connect(url);
+  const client = await connect(url, mongoClientOpts);
   const db = client.db(dbName);
   const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
   let hasStopped = false;
@@ -290,10 +290,11 @@ module.exports = async function makeStore(config = {}) {
   }
 };
 
-async function connect(url) {
+async function connect(url, opts) {
   const client = await MongoClient.connect(url, {
     useUnifiedTopology: true,
     useNewUrlParser: true,
+    ...opts,
   });
   return client;
 }
