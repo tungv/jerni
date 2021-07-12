@@ -1,6 +1,6 @@
 {
   "name": "@jerni/store-neo4j",
-  "version": "1.0.2-alpha.5",
+  "version": "1.0.2-alpha.6",
   "publishConfig": {
     "access": "public",
     "tag": "alpha"
