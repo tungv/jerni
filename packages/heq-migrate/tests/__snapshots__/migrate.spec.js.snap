@@ -671,6 +671,7 @@ Array [
   "[ERR] TypeError: Cannot commit an event without \`type\`
     at commit (**)
     at Object.handleEvents (**)
+    at runMicrotasks (**)
     at processTicksAndRejections (**)
     at <anonymous> (**)
     at async Promise.all (**)
@@ -682,6 +683,7 @@ Array [
   "[DBG] TypeError: Cannot commit an event without \`type\`
     at commit (**)
     at Object.handleEvents (**)
+    at runMicrotasks (**)
     at processTicksAndRejections (**)
     at <anonymous> (**)
     at async Promise.all (**)
@@ -696,6 +698,7 @@ Array [
   "[DBG] TypeError: Cannot commit an event without \`type\`
     at commit (**)
     at Object.handleEvents (**)
+    at runMicrotasks (**)
     at processTicksAndRejections (**)
     at <anonymous> (**)
     at async Promise.all (**)
@@ -706,6 +709,7 @@ Array [
   "[DBG] {
   ex: JerniUnrecoverableError: JerniUnrecoverableError
       at <anonymous> (**)
+      at runMicrotasks (**)
       at processTicksAndRejections (**)
       at async Promise.all (**)
       at handleEvents (**)
@@ -716,6 +720,7 @@ Array [
       originalError: TypeError: Cannot commit an event without \`type\`
           at commit (**)
           at Object.handleEvents (**)
+          at runMicrotasks (**)
           at processTicksAndRejections (**)
           at <anonymous> (**)
           at async Promise.all (**)
