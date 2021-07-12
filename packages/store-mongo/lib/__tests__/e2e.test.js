@@ -5,7 +5,7 @@ const makeStore = require("../makeStore");
 const { MONGODB = "mongodb://localhost:27017" } = process.env;
 
 test("e2e", async () => {
-  jest.setTimeout(1000);
+  jest.setTimeout(10000);
   await clean("test_e2e");
 
   const incomingBatchedEvents = [

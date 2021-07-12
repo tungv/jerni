@@ -7,6 +7,7 @@ const version = require("../package.json").version;
 const backoff = require("./backoff");
 const commitEventToHeqServer = require("./commit");
 const makeRacer = require("./racer");
+const { nanoid } = require("nanoid");
 
 const SKIP = Symbol.for("@@jerni/skipOnError");
 
@@ -41,12 +42,15 @@ function getLogger(dev) {
   return require("./dev-aware").getLogger();
 }
 
+function noop() {}
+
 module.exports = function createJourney({
   writeTo,
   stores,
   dev = process.env.NODE_ENV !== "production",
   onError,
   logger = getLogger(dev),
+  onReport,
 }) {
   if (typeof onError !== "function") {
     onError = function (error, store, event) {
@@ -54,6 +58,20 @@ module.exports = function createJourney({
       logger.error(error);
       throw error;
     };
+  }
+
+  let __onReport;
+  if (onReport) {
+    __onReport = (reportName, msg) => {
+      try {
+        msg.ts = Date.now();
+        onReport(reportName, msg);
+      } catch (ex) {
+        logger.error("Error while handling reports", ex);
+      }
+    };
+  } else {
+    __onReport = noop;
   }
 
   const journey = {
@@ -88,11 +106,21 @@ module.exports = function createJourney({
     store.registerModels(STORE_BY_MODELS);
 
     await listener.waitForFirstListen();
+    __onReport("listener:first");
 
     const lastSeenId = await store.getLastSeenId();
     racer.bump(index, lastSeenId);
+    __onReport("racer:bump:first", { data: lastSeenId });
+    __onReport("racer:bump", { data: lastSeenId });
 
+    let reported = lastSeenId;
     for await (const checkpoint of store.listen()) {
+      if (reported !== checkpoint) {
+        __onReport("racer:bump:new", {
+          data: (reported = checkpoint),
+        });
+      }
+      __onReport("racer:bump", { data: checkpoint });
       racer.bump(index, checkpoint);
     }
   });
@@ -100,6 +128,7 @@ module.exports = function createJourney({
   // request these event.type only
   const includes = new Set();
   const racer = makeRacer(stores.map(() => 0));
+  __onReport("racer:make", { data: stores.map(() => 0) });
 
   if (!dev) {
     for (const store of stores) {
@@ -129,6 +158,8 @@ module.exports = function createJourney({
   }
 
   async function commit(event) {
+    let localId = nanoid();
+    const startTime = Date.now();
     if (dev) {
       racer.reset();
 
@@ -142,11 +173,22 @@ module.exports = function createJourney({
       ? await require("./dev-aware").getDevServerUrl(currentWriteTo)
       : currentWriteTo;
 
+    __onReport("events:commit", { data: { localId, event, serverUrl } });
     try {
       const eventWithId = await commitEventToHeqServer(
         `${serverUrl}/commit`,
         event,
       );
+
+      __onReport("events:commit:success", {
+        data: {
+          localId,
+          serverId: eventWithId.id,
+          event: eventWithId,
+          serverUrl,
+          commitDuration: Date.now() - startTime,
+        },
+      });
 
       if (dev) {
         eventWithId.meta.sent_to = serverUrl;
@@ -156,11 +198,22 @@ module.exports = function createJourney({
       return eventWithId;
     } catch (ex) {
       logger.error("cannot commit", ex.message);
+      __onReport("events:commit:failed", {
+        data: {
+          localId,
+          event,
+          serverUrl,
+          error: ex,
+          commitDuration: Date.now() - startTime,
+        },
+      });
       throw ex;
     }
   }
 
   async function waitFor(event, maxWait = 3000) {
+    __onReport("events:waitFor", { data: { event, maxWait } });
+    const startTime = Date.now();
     if (racer.max() >= event.id) {
       return;
     }
@@ -176,6 +229,12 @@ module.exports = function createJourney({
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
+
+        const actualWait = Date.now() - startTime;
+        const sinceCommitted = Date.now() - event.meta.occurred_at;
+        __onReport("events:waitFor:done", {
+          data: { event, maxWait, actualWait, sinceCommitted },
+        });
         resolve();
       });
 
@@ -185,6 +244,12 @@ module.exports = function createJourney({
         if (dev) {
           require("./dev-aware").waitTooLongExplain({ event, stores });
         }
+
+        const actualWait = Date.now() - startTime;
+        const sinceCommitted = Date.now() - event.meta.occurred_at;
+        __onReport("events:waitFor:failed", {
+          data: { event, maxWait, actualWait, sinceCommitted },
+        });
 
         const err = new JerniPersistenceTimeout(event);
         reject(err);
@@ -373,7 +438,10 @@ module.exports = function createJourney({
       stores.map((source) => source.getLastSeenId().catch(() => 0)),
     );
 
-    return Math.min(...latestEventIdArray);
+    const latestSuccesfulCheckpoint = Math.min(...latestEventIdArray);
+    __onReport("client:latest_checkpoint", latestSuccesfulCheckpoint);
+
+    return latestSuccesfulCheckpoint;
   }
 
   async function requestEvents({ count, time }) {
@@ -523,7 +591,11 @@ module.exports = function createJourney({
   async function updateLatestServer() {
     const url = `${currentWriteTo}/events/latest`;
     const { body } = await got(url, { responseType: "json" });
-    latestServer = body.id;
+    __onReport("monitor:latest_server", { data: body.id });
+    if (latestServer !== body.id) {
+      __onReport("monitor:latest_server:new", { data: body.id });
+      latestServer = body.id;
+    }
   }
 
   async function clean() {
