@@ -62,7 +62,7 @@ module.exports = function createJourney({
 
   let __onReport;
   if (onReport) {
-    __onReport = (reportName, msg) => {
+    __onReport = (reportName, msg = {}) => {
       try {
         msg.ts = Date.now();
         onReport(reportName, msg);
@@ -128,7 +128,6 @@ module.exports = function createJourney({
   // request these event.type only
   const includes = new Set();
   const racer = makeRacer(stores.map(() => 0));
-  __onReport("racer:make", { data: stores.map(() => 0) });
 
   if (!dev) {
     for (const store of stores) {
@@ -439,7 +438,7 @@ module.exports = function createJourney({
     );
 
     const latestSuccesfulCheckpoint = Math.min(...latestEventIdArray);
-    __onReport("client:latest_checkpoint", latestSuccesfulCheckpoint);
+    __onReport("client:latest_checkpoint", { data: latestSuccesfulCheckpoint });
 
     return latestSuccesfulCheckpoint;
   }
