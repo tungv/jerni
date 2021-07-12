@@ -1,6 +1,6 @@
 {
   "name": "jerni-demo",
-  "version": "1.0.21",
+  "version": "1.0.22",
   "description": "demo how to work with jerni",
   "main": "index.js",
   "author": "Tung Vu <me@tungv.com>",
@@ -9,7 +9,7 @@
   "dependencies": {
     "@jerni/store-mongo": "^0.5.9",
     "express": "^4.17.1",
-    "jerni": "^1.1.0",
+    "jerni": "^1.1.1",
     "lodash": "^4.17.19",
     "nanoid": "^2.1.6"
   },
