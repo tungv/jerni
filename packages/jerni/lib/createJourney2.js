@@ -309,17 +309,12 @@ module.exports = function createJourney({
       const incoming$ = bufferTimeCount(event$, pulseTime, pulseCount);
 
       async function waitForOverflow() {
-        if (buffer.length >= MAX) {
-          logger.warn(
-            "buffer overflow. %d over maximum %d",
-            buffer.length,
-            MAX,
-          );
-          return;
+        while (buffer.length <= MAX) {
+          await sleep(100);
         }
 
-        await sleep(100);
-        await waitForOverflow();
+        logger.warn("buffer overflow. %d over maximum %d", buffer.length, MAX);
+        return;
       }
 
       waitForOverflow()
