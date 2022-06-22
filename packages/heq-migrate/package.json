@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "@async-generator/subject": "^1.0.2",
-    "got": "^10.7.0",
+    "got": "^11.8.5",
     "heq-server": "^2.2.6",
     "jerni": "^1.1.4",
     "progress": "^2.0.3",
