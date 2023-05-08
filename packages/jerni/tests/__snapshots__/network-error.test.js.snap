@@ -19,7 +19,7 @@ exports[`IO error handling should recover when connection to heq-server fails 1`
 [DBG] handling event #1
 [DBG] done
 [DBG] [test] kill
-[DBG] connection ended
+[DBG] sub 500ms reconnection… {\\"message\\":\\"aborted\\",\\"name\\":\\"Error\\"}
 [DBG] reconnection scheduled after 10ms
 [DBG] sending http request to: http://localhost:19070/subscribe
 [DBG] headers {
