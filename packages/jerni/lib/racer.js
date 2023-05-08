@@ -31,9 +31,9 @@ const makeRacer = initialArray => {
     versions(index) {
       return initialArray[index];
     },
-    reset() {
+    reset(latest = 0) {
       for (let i = 0; i < initialArray.length; ++i) {
-        initialArray[i] = 0;
+        initialArray[i] = latest;
       }
     },
   };
