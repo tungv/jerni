@@ -237,8 +237,27 @@ module.exports = function createJourney({
         resolve();
       });
 
-      timeoutId = setTimeout(() => {
+      timeoutId = setTimeout(async () => {
         if (resolved) return;
+
+        // attempt to check if the event is already persisted
+        const latestClient = await getLatestSuccessfulCheckPoint();
+        if (latestClient >= event.id) {
+          const actualWait = Date.now() - startTime;
+          const sinceCommitted = Date.now() - event.meta.occurred_at;
+          __onReport("events:waitFor:done", {
+            data: { event, maxWait, actualWait, sinceCommitted },
+          });
+
+          const reported = racer.max();
+          racer.reset(latestClient);
+
+          __onReport("events:waitFor:resynced", {
+            reported,
+            latestClient
+          });
+          resolve();
+        }
 
         if (dev) {
           require("./dev-aware").waitTooLongExplain({ event, stores });
