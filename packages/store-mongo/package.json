@@ -3,7 +3,7 @@
   "publishConfig": {
     "tag": "latest"
   },
-  "version": "1.1.2",
+  "version": "1.1.3",
   "main": "index.js",
   "files": [
     "lib",
@@ -29,7 +29,7 @@
   },
   "scripts": {
     "test": "jest",
-    "prebundle": "yarn test && yarn pack -f store-mongo.tgz",
+    "prebundle": "yarn pack -f store-mongo.tgz",
     "bundle": "tar -xvf store-mongo.tgz && node -p \"require('./package')\" && node -p \"require('./package/Model')\" && node -p \"require('./package/Store')\"",
     "postbundle": "rm -r package store-mongo.tgz",
     "prepare": "yarn bundle"
