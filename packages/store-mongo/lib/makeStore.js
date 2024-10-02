@@ -153,11 +153,11 @@ module.exports = async function makeStore(config = {}) {
                   version: model.version,
                 })),
               },
-              { __v: { $lt: events[processedEventsCount].id } },
+              { __v: { $lt: events[processedEventsCount - 1].id } },
             ],
           },
           {
-            $set: { __v: events[processedEventsCount].id },
+            $set: { __v: events[processedEventsCount - 1].id },
           },
         );
       }
