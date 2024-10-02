@@ -67,7 +67,7 @@ module.exports = async function makeStore(config = {}) {
       const signals = [];
       let processedEventsCount = 0;
       try {
-        events.forEach((event) => {
+        for (const event of events) {
           const currentEventOpsByModelIndex = models.map(
             (model, modelIndex) => {
               return AggregationSignal.collect(
@@ -101,7 +101,7 @@ module.exports = async function makeStore(config = {}) {
 
           processedEventsCount++;
           AggregationSignal.cache.clear();
-        });
+        }
       } catch (signals) {
         if (Array.isArray(signals)) {
           // ..
@@ -143,22 +143,24 @@ module.exports = async function makeStore(config = {}) {
       });
 
       const pairs = await Promise.all(allPromises);
-      await snapshotsCol.updateMany(
-        {
-          $and: [
-            {
-              $or: models.map((model) => ({
-                name: model.name,
-                version: model.version,
-              })),
-            },
-            { __v: { $lt: events[events.length - 1].id } },
-          ],
-        },
-        {
-          $set: { __v: events[events.length - 1].id },
-        },
-      );
+      if (processedEventsCount !== 0) {
+        await snapshotsCol.updateMany(
+          {
+            $and: [
+              {
+                $or: models.map((model) => ({
+                  name: model.name,
+                  version: model.version,
+                })),
+              },
+              { __v: { $lt: events[processedEventsCount].id } },
+            ],
+          },
+          {
+            $set: { __v: events[processedEventsCount].id },
+          },
+        );
+      }
 
       if (hasStopped) return {};
 
