@@ -43,7 +43,7 @@ describe("getLastSeenId() snapshot checkpoint", () => {
     await dropDb(dbName);
 
     const models = [model("model_a"), model("model_b")];
-    const spy = spyOnSnapshotUpserts();
+    const spy = spyOnSnapshotReads();
 
     try {
       const store = await makeStore({ name: dbName, url: URL, dbName, models });
@@ -58,8 +58,9 @@ describe("getLastSeenId() snapshot checkpoint", () => {
 
       expect(results).toEqual([0, 0, 0, 0]);
 
-      // each missing model is created once total, not once per caller
-      expect(spy.count).toBeLessThanOrEqual(models.length);
+      // concurrent callers share one computation instead of each racing to
+      // read the snapshot collection and create the missing docs
+      expect(spy.count).toBe(1);
 
       await withSnapshots(dbName, async (col) => {
         const docs = await col.find({}).toArray();
@@ -83,16 +84,18 @@ function model(name) {
   };
 }
 
-function spyOnSnapshotUpserts() {
+// computeLastSeenId() reads the snapshot collection exactly once per run, so
+// the number of reads tells us how many times the computation actually ran
+function spyOnSnapshotReads() {
   const proto = mongodb.Collection.prototype;
-  const original = proto.findOneAndUpdate;
+  const original = proto.find;
   const spy = {
     count: 0,
     restore() {
-      proto.findOneAndUpdate = original;
+      proto.find = original;
     },
   };
-  proto.findOneAndUpdate = function(...args) {
+  proto.find = function(...args) {
     if (this.collectionName === SNAPSHOT_COLLECTION_NAME) spy.count++;
     return original.apply(this, args);
   };
