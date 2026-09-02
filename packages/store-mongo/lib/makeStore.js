@@ -16,8 +16,8 @@ module.exports = async function makeStore(config = {}) {
   const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
   let hasStopped = false;
 
-  // in-flight getLastSeenId() computation shared by concurrent callers
-  let lastSeenIdInFlight = null;
+  // pending getLastSeenId() computation, shared by concurrent callers
+  let lastSeenIdPromise = null;
 
   const store = {
     meta: {},
@@ -234,20 +234,20 @@ module.exports = async function makeStore(config = {}) {
     }
   }
 
-  function getLastSeenId() {
-    if (hasStopped) return Promise.resolve(0);
+  async function getLastSeenId() {
+    if (hasStopped) return 0;
 
     // share one computation across concurrent callers so they don't each run
     // the create-missing-docs loop and insert duplicate snapshot docs
-    if (!lastSeenIdInFlight) {
-      lastSeenIdInFlight = computeLastSeenId();
+    if (!lastSeenIdPromise) {
+      lastSeenIdPromise = computeLastSeenId();
       const clear = () => {
-        lastSeenIdInFlight = null;
+        lastSeenIdPromise = null;
       };
-      lastSeenIdInFlight.then(clear, clear);
+      lastSeenIdPromise.then(clear, clear);
     }
 
-    return lastSeenIdInFlight;
+    return lastSeenIdPromise;
   }
 
   async function computeLastSeenId() {
