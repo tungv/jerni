@@ -16,6 +16,10 @@ module.exports = async function makeStore(config = {}) {
   const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
   let hasStopped = false;
 
+  // shared in-flight promise so concurrent callers within this process run a
+  // single getLastSeenId() computation instead of racing each other
+  let lastSeenIdInFlight = null;
+
   const store = {
     meta: {},
     name,
@@ -231,18 +235,45 @@ module.exports = async function makeStore(config = {}) {
     }
   }
 
-  async function getLastSeenId() {
+  function getLastSeenId() {
+    if (hasStopped) return Promise.resolve(0);
+
+    // createJourney2 resolves getLastSeenId() from two independent,
+    // unsynchronized call sites at startup. Each computation does its own
+    // find() + create-missing-docs loop; without collapsing concurrent
+    // callers onto one promise they both see the same model(s) missing and
+    // both upsert a snapshot doc for the same { name, version }, which is not
+    // atomic across callers and leaves duplicate docs behind.
+    if (!lastSeenIdInFlight) {
+      lastSeenIdInFlight = computeLastSeenId();
+      const clear = () => {
+        lastSeenIdInFlight = null;
+      };
+      lastSeenIdInFlight.then(clear, clear);
+    }
+
+    return lastSeenIdInFlight;
+  }
+
+  async function computeLastSeenId() {
     if (hasStopped) return 0;
     const condition = {
       $or: models.map((m) => ({ name: m.name, version: m.version })),
     };
 
-    const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
     const resp = await snapshotsCol.find(condition).toArray();
     if (hasStopped) return 0;
 
-    if (resp.length < models.length) {
-      for (const model of models) {
+    // compare per-model existence, not raw counts: the $or matches *every*
+    // doc for a given { name, version }, so a single model with duplicate
+    // docs would otherwise inflate resp.length past models.length and hide a
+    // genuinely missing model
+    const key = (m) => `${m.name}@${m.version}`;
+    const found = new Set(resp.map(key));
+    const missing = models.filter((m) => !found.has(key(m)));
+
+    if (missing.length > 0) {
+      for (const model of missing) {
         await snapshotsCol.findOneAndUpdate(
           {
             name: model.name,
