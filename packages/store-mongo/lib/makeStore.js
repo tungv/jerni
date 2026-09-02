@@ -262,9 +262,8 @@ module.exports = async function makeStore(config = {}) {
     // check per-model existence: the $or matches every doc for a
     // { name, version }, so duplicates would inflate a raw count and hide a
     // model that has no doc
-    const key = (m) => `${m.name}@${m.version}`;
-    const found = new Set(resp.map(key));
-    const missing = models.filter((m) => !found.has(key(m)));
+    const found = new Set(resp.map(getCollectionName));
+    const missing = models.filter((m) => !found.has(getCollectionName(m)));
 
     if (missing.length > 0) {
       for (const model of missing) {
