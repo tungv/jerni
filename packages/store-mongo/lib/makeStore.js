@@ -16,8 +16,7 @@ module.exports = async function makeStore(config = {}) {
   const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
   let hasStopped = false;
 
-  // shared in-flight promise so concurrent callers within this process run a
-  // single getLastSeenId() computation instead of racing each other
+  // in-flight getLastSeenId() computation shared by concurrent callers
   let lastSeenIdInFlight = null;
 
   const store = {
@@ -238,12 +237,8 @@ module.exports = async function makeStore(config = {}) {
   function getLastSeenId() {
     if (hasStopped) return Promise.resolve(0);
 
-    // createJourney2 resolves getLastSeenId() from two independent,
-    // unsynchronized call sites at startup. Each computation does its own
-    // find() + create-missing-docs loop; without collapsing concurrent
-    // callers onto one promise they both see the same model(s) missing and
-    // both upsert a snapshot doc for the same { name, version }, which is not
-    // atomic across callers and leaves duplicate docs behind.
+    // share one computation across concurrent callers so they don't each run
+    // the create-missing-docs loop and insert duplicate snapshot docs
     if (!lastSeenIdInFlight) {
       lastSeenIdInFlight = computeLastSeenId();
       const clear = () => {
@@ -264,10 +259,9 @@ module.exports = async function makeStore(config = {}) {
     const resp = await snapshotsCol.find(condition).toArray();
     if (hasStopped) return 0;
 
-    // compare per-model existence, not raw counts: the $or matches *every*
-    // doc for a given { name, version }, so a single model with duplicate
-    // docs would otherwise inflate resp.length past models.length and hide a
-    // genuinely missing model
+    // check per-model existence: the $or matches every doc for a
+    // { name, version }, so duplicates would inflate a raw count and hide a
+    // model that has no doc
     const key = (m) => `${m.name}@${m.version}`;
     const found = new Set(resp.map(key));
     const missing = models.filter((m) => !found.has(key(m)));

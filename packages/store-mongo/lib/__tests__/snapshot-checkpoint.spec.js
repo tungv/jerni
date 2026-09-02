@@ -6,15 +6,14 @@ const URL = "mongodb://localhost:27017";
 const SNAPSHOT_COLLECTION_NAME = "__snapshots_v1.0.0";
 
 describe("getLastSeenId() snapshot checkpoint", () => {
-  it("Bug 1: detects a model with no snapshot doc even when another model has duplicate docs", async () => {
-    const dbName = "test_snapshot_bug1";
+  it("detects a model with no snapshot doc even when another model has duplicate docs", async () => {
+    const dbName = "test_snapshot_dup_docs";
     await dropDb(dbName);
 
     const models = [model("model_a"), model("model_b"), model("model_c")];
 
-    // Pre-seed snapshots: model_a has TWO docs (duplicate), model_b has one,
-    // model_c has none. `resp.length` (3) now equals `models.length` (3), which
-    // is what fooled the old raw-count comparison.
+    // model_a has two docs, model_b one, model_c none: resp.length (3) equals
+    // models.length (3), so a raw-count check would miss model_c
     await withSnapshots(dbName, async (col) => {
       await col.insertMany([
         { name: "model_a", version: "1.0.0", __v: 10 },
@@ -25,7 +24,7 @@ describe("getLastSeenId() snapshot checkpoint", () => {
 
     const store = await makeStore({ name: dbName, url: URL, dbName, models });
 
-    // model_c is missing a doc -> must reset to 0 and create the missing doc
+    // model_c has no doc: reset to 0 and create it
     expect(await store.getLastSeenId()).toBe(0);
 
     await withSnapshots(dbName, async (col) => {
@@ -33,14 +32,14 @@ describe("getLastSeenId() snapshot checkpoint", () => {
       expect(cDoc).toMatchObject({ __v: 0 });
     });
 
-    // once every model has a doc, the checkpoint is the oldest __v (0 here)
+    // every model now has a doc: checkpoint is the oldest __v
     expect(await store.getLastSeenId()).toBe(0);
 
     await store.dispose();
   });
 
-  it("Bug 2: concurrent calls at startup do not each run the create-missing-docs loop", async () => {
-    const dbName = "test_snapshot_bug2";
+  it("does not create duplicate snapshot docs when called concurrently at startup", async () => {
+    const dbName = "test_snapshot_concurrent";
     await dropDb(dbName);
 
     const models = [model("model_a"), model("model_b")];
@@ -49,8 +48,7 @@ describe("getLastSeenId() snapshot checkpoint", () => {
     try {
       const store = await makeStore({ name: dbName, url: URL, dbName, models });
 
-      // Two independent, unsynchronized call sites at startup both resolve to
-      // store.getLastSeenId(); simulate that with concurrent invocations.
+      // startup resolves getLastSeenId() from two unsynchronized call sites
       const results = await Promise.all([
         store.getLastSeenId(),
         store.getLastSeenId(),
@@ -60,8 +58,7 @@ describe("getLastSeenId() snapshot checkpoint", () => {
 
       expect(results).toEqual([0, 0, 0, 0]);
 
-      // the create-missing-docs loop must run for each model at most once in
-      // total, not once per concurrent caller
+      // each missing model is created once total, not once per caller
       expect(spy.count).toBeLessThanOrEqual(models.length);
 
       await withSnapshots(dbName, async (col) => {
