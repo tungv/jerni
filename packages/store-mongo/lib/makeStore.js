@@ -1,4 +1,5 @@
 const transform = require("./transform");
+const dedupeConcurrent = require("./dedupeConcurrent");
 const JerniStoreMongoWriteError = require("./JerniStoreMongoWriteError");
 
 const MongoClient = require("mongodb").MongoClient;
@@ -16,8 +17,10 @@ module.exports = async function makeStore(config = {}) {
   const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
   let hasStopped = false;
 
-  // pending getLastSeenId() computation, shared by concurrent callers
-  let lastSeenIdPromise = null;
+  // startup resolves getLastSeenId() from two unsynchronized call sites; share
+  // one computation so they don't both run the create-missing-docs loop and
+  // insert duplicate snapshot docs for the same { name, version }
+  const loadLastSeenId = dedupeConcurrent(computeLastSeenId);
 
   const store = {
     meta: {},
@@ -235,21 +238,7 @@ module.exports = async function makeStore(config = {}) {
   }
 
   async function getLastSeenId() {
-    if (hasStopped) return 0;
-
-    // share one computation across concurrent callers so they don't each run
-    // the create-missing-docs loop and insert duplicate snapshot docs
-    if (!lastSeenIdPromise) {
-      const pending = computeLastSeenId();
-      lastSeenIdPromise = pending;
-      // release the shared promise once settled, unless a newer call replaced it
-      const clear = () => {
-        if (lastSeenIdPromise === pending) lastSeenIdPromise = null;
-      };
-      pending.then(clear, clear);
-    }
-
-    return lastSeenIdPromise;
+    return loadLastSeenId();
   }
 
   async function computeLastSeenId() {
