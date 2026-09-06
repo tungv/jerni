@@ -1,4 +1,5 @@
 const transform = require("./transform");
+const dedupeConcurrent = require("./dedupeConcurrent");
 const JerniStoreMongoWriteError = require("./JerniStoreMongoWriteError");
 
 const MongoClient = require("mongodb").MongoClient;
@@ -15,6 +16,11 @@ module.exports = async function makeStore(config = {}) {
   const db = client.db(dbName);
   const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
   let hasStopped = false;
+
+  // startup resolves getLastSeenId() from two unsynchronized call sites; share
+  // one computation so they don't both run the create-missing-docs loop and
+  // insert duplicate snapshot docs for the same { name, version }
+  const loadLastSeenId = dedupeConcurrent(computeLastSeenId);
 
   const store = {
     meta: {},
@@ -232,17 +238,26 @@ module.exports = async function makeStore(config = {}) {
   }
 
   async function getLastSeenId() {
+    return loadLastSeenId();
+  }
+
+  async function computeLastSeenId() {
     if (hasStopped) return 0;
     const condition = {
       $or: models.map((m) => ({ name: m.name, version: m.version })),
     };
 
-    const snapshotsCol = db.collection(SNAPSHOT_COLLECTION_NAME);
     const resp = await snapshotsCol.find(condition).toArray();
     if (hasStopped) return 0;
 
-    if (resp.length < models.length) {
-      for (const model of models) {
+    // check per-model existence: the $or matches every doc for a
+    // { name, version }, so duplicates would inflate a raw count and hide a
+    // model that has no doc
+    const found = new Set(resp.map(getCollectionName));
+    const missing = models.filter((m) => !found.has(getCollectionName(m)));
+
+    if (missing.length > 0) {
+      for (const model of missing) {
         await snapshotsCol.findOneAndUpdate(
           {
             name: model.name,
