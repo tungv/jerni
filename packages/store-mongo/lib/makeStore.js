@@ -240,11 +240,13 @@ module.exports = async function makeStore(config = {}) {
     // share one computation across concurrent callers so they don't each run
     // the create-missing-docs loop and insert duplicate snapshot docs
     if (!lastSeenIdPromise) {
-      lastSeenIdPromise = computeLastSeenId();
+      const pending = computeLastSeenId();
+      lastSeenIdPromise = pending;
+      // release the shared promise once settled, unless a newer call replaced it
       const clear = () => {
-        lastSeenIdPromise = null;
+        if (lastSeenIdPromise === pending) lastSeenIdPromise = null;
       };
-      lastSeenIdPromise.then(clear, clear);
+      pending.then(clear, clear);
     }
 
     return lastSeenIdPromise;
